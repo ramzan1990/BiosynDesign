@@ -26,6 +26,7 @@ public class GUI extends JFrame {
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
     private JLabel newProject, openProject, saveProject;
+    JTextField tf;
 
     public GUI() {
         // <editor-fold defaultstate="collapsed" desc="menu">
@@ -330,14 +331,20 @@ public class GUI extends JFrame {
         dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
-        JPanel labelPan1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        labelPan1.add(new JLabel("Stuff"));
-
-        dataPanel.add(labelPan1);
-
+        tf = new JTextField();
+        tf.setPreferredSize(new Dimension(250, 20));
+        tf.setMaximumSize(new Dimension(500, 20));
+        dataPanel.add(tf);
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-
+        JButton b1 = new JButton("Render");
+        dataPanel.add(b1);
+        b1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createFrame("Test", new JComponent() {
+                });
+            }
+        });
         workSpacePanel = new JDesktopPane();
         workSpacePanel.setBackground(Color.GRAY);
         workSpacePanel.setBorder(BorderFactory.createEmptyBorder());
