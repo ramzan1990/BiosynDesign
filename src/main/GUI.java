@@ -1,5 +1,17 @@
 package main;
 
+import net.guha.util.cdk.Misc;
+import net.guha.util.cdk.Renderer2DPanel;
+import org.openscience.cdk.AtomContainer;
+import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.depict.DepictionGenerator;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.layout.StructureDiagramGenerator;
+import org.openscience.cdk.layout.TemplateHandler;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyVetoException;
@@ -10,6 +22,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.vecmath.Vector2d;
 
 public class GUI extends JFrame {
 
@@ -334,6 +347,7 @@ public class GUI extends JFrame {
         tf = new JTextField();
         tf.setPreferredSize(new Dimension(250, 20));
         tf.setMaximumSize(new Dimension(500, 20));
+        tf.setText("c1cc(CC=CC#N)ccn1");
         dataPanel.add(tf);
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         JButton b1 = new JButton("Render");
@@ -341,8 +355,18 @@ public class GUI extends JFrame {
         b1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                createFrame("Test", new JComponent() {
-                });
+                String smiles = tf.getText();
+                try{
+                    IChemObjectBuilder bldr
+                            = SilentChemObjectBuilder.getInstance();
+                    SmilesParser smipar = new SmilesParser(bldr);
+                    IAtomContainer mol = smipar.parseSmiles(smiles);
+
+                    createFrame("Test", new ImageComponent(mol));
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+
             }
         });
         workSpacePanel = new JDesktopPane();
