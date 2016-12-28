@@ -1,4 +1,4 @@
-package main;
+package biosyndesign.core.ui;
 
 import java.awt.Component;
 import javax.swing.JInternalFrame;

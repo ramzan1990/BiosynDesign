@@ -1,4 +1,4 @@
-package main;
+package biosyndesign.core.ui;
 
 
 import javax.swing.*;

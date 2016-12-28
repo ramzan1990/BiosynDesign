@@ -1,4 +1,4 @@
-package main;
+package biosyndesign.core.ui;
 
 import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.interfaces.IAtomContainer;
