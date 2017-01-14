@@ -400,6 +400,7 @@ public class GUI extends JFrame {
         dataPanel.add(cmb1);
         dataPanel.add(l2);
         dataPanel.add(cmb2);
+        cmb1.setSelectedIndex(0);
         dataPanel.add(l3);
         qValueTF = new JTextField();
         qValueTF.setPreferredSize(new Dimension(250, 20));
