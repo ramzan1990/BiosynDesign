@@ -6,9 +6,6 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import javax.swing.*;
 import java.awt.*;
 
-/**
- * Created by Umarov on 12/26/2016.
- */
 public class ImageComponent extends JComponent {
     IAtomContainer mol;
 

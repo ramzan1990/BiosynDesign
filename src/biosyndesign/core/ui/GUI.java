@@ -1,5 +1,7 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.graphics.PartsGraph;
+import biosyndesign.core.sbol.SBOLInterface;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
@@ -31,7 +33,9 @@ public class GUI extends JFrame {
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
     private JLabel newProject, openProject, saveProject;
-    JTextField tf;
+    JTextField tf, tf2;
+    JComboBox cmb1, cmb2;
+    JTextField qValueTF;
 
     public GUI() {
         // <editor-fold defaultstate="collapsed" desc="menu">
@@ -361,6 +365,72 @@ public class GUI extends JFrame {
 
             }
         });
+        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+
+        JLabel l1 = new JLabel("Search for");
+        JLabel l2 = new JLabel("Filter By");
+        JLabel l3 = new JLabel("Value");
+        dataPanel.add(l1);
+        cmb1 = new JComboBox();
+        cmb1.setPreferredSize(new Dimension(250, 20));
+        cmb1.setMaximumSize(new Dimension(500, 20));
+        cmb2 = new JComboBox();
+        cmb2.setPreferredSize(new Dimension(250, 20));
+        cmb2.setMaximumSize(new Dimension(500, 20));
+        cmb1.addItem("Compound");
+        cmb1.addItem("Reaction");
+        cmb1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cmb2.removeAllItems();
+                if(cmb1.getSelectedIndex()==0){
+                    cmb2.addItem("Compound name or ID");
+                    cmb2.addItem("Drug ID");
+                    cmb2.addItem("Reaction participation");
+                    cmb2.addItem("Associated compound");
+                    cmb2.addItem("Transforming enzyme");
+                    cmb2.addItem("Compound substructure");
+                }else if(cmb1.getSelectedIndex()==1){
+                    cmb2.addItem("Reaction ID");
+                    cmb2.addItem("Participating compound");
+                    cmb2.addItem("Catalyzing enzyme class");
+                }
+            }
+        });
+        dataPanel.add(cmb1);
+        dataPanel.add(l2);
+        dataPanel.add(cmb2);
+        dataPanel.add(l3);
+        qValueTF = new JTextField();
+        qValueTF.setPreferredSize(new Dimension(250, 20));
+        qValueTF.setMaximumSize(new Dimension(500, 20));
+        dataPanel.add(qValueTF);
+
+        JButton b2 = new JButton("Search");
+        dataPanel.add(b2);
+        b2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try{
+                    SBOLInterface i = new SBOLInterface();
+                    System.out.println(i.findCompund(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText()));
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+
+            }
+        });
+
+        JButton b3 = new JButton("Draw");
+        dataPanel.add(b3);
+        b3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createFrame("Parts Graph", new PartsGraph());
+
+            }
+        });
+
         workSpacePanel = new JDesktopPane();
         workSpacePanel.setBackground(Color.GRAY);
         workSpacePanel.setBorder(BorderFactory.createEmptyBorder());
@@ -514,5 +584,57 @@ public class GUI extends JFrame {
         }
     }
 
+    void createFrame(String title, final Canvas c) {
+        JScrollPane sp = new JScrollPane(c);
+        sp.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                c.dispatchEvent(e);
+
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            public void mouseExited(MouseEvent e) {
+            }
+        });
+        MyInternalFrame frame = new MyInternalFrame(title, sp);
+        frame.setVisible(true);
+        frame.addInternalFrameListener(new InternalFrameListener() {
+            public void internalFrameOpened(InternalFrameEvent e) {
+            }
+
+            public void internalFrameClosing(InternalFrameEvent e) {
+            }
+
+            public void internalFrameClosed(InternalFrameEvent e) {
+                Main.removeFromComponentList(c);
+            }
+
+            public void internalFrameIconified(InternalFrameEvent e) {
+            }
+
+            public void internalFrameDeiconified(InternalFrameEvent e) {
+            }
+
+            public void internalFrameActivated(InternalFrameEvent e) {
+                Main.setSelectedComponent(c);
+            }
+
+            public void internalFrameDeactivated(InternalFrameEvent e) {
+            }
+        });
+        workSpacePanel.add(frame);
+        try {
+            frame.setSelected(true);
+        } catch (PropertyVetoException e) {
+        }
+    }
 
 }
