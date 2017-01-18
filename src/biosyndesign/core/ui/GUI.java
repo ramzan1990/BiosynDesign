@@ -25,7 +25,7 @@ public class GUI extends JFrame {
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
     ButtonGroup transformGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
-    private JPanel dataPanel;
+    private JToolBar dataPanel;
     private JToolBar toolsPanel;
     private JPanel workSpacePanel;
     private JMenuBar menu;
@@ -321,7 +321,8 @@ Main.newProject();
         toolsPanel.addSeparator();
         //</editor-fold>
 
-        dataPanel = new JPanel();
+        dataPanel = new JToolBar();
+        dataPanel.setPreferredSize(new Dimension(250, 500));
         dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.PAGE_AXIS));
         dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -333,7 +334,7 @@ Main.newProject();
         dataPanel.add(tf);
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         JButton b1 = new JButton("Render");
-        dataPanel.add(b1);
+        addTo(dataPanel, b1);
         b1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -356,7 +357,7 @@ Main.newProject();
         JLabel l1 = new JLabel("Search for");
         JLabel l2 = new JLabel("Filter By");
         JLabel l3 = new JLabel("Value");
-        dataPanel.add(l1);
+        addTo(dataPanel, l1);
         cmb1 = new JComboBox();
         cmb1.setPreferredSize(new Dimension(250, 20));
         cmb1.setMaximumSize(new Dimension(500, 20));
@@ -384,17 +385,18 @@ Main.newProject();
             }
         });
         dataPanel.add(cmb1);
-        dataPanel.add(l2);
+        addTo(dataPanel, l2);
         dataPanel.add(cmb2);
         cmb1.setSelectedIndex(0);
-        dataPanel.add(l3);
+        addTo(dataPanel, l3);
         qValueTF = new JTextField();
         qValueTF.setPreferredSize(new Dimension(250, 20));
         qValueTF.setMaximumSize(new Dimension(500, 20));
         dataPanel.add(qValueTF);
 
         JButton b2 = new JButton("Search");
-        dataPanel.add(b2);
+        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        addTo(dataPanel, b2);
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -416,11 +418,14 @@ Main.newProject();
         partsList = new JList();
         JScrollPane partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
-        partsPane.setPreferredSize(new Dimension(130, 200));
+        partsPane.setPreferredSize(new Dimension(240, 400));
+        partsPane.setMaximumSize(new Dimension(240, 400));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
+        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         dataPanel.add(partsPane);
+        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         JButton b3 = new JButton("Add");
-        dataPanel.add(b3);
+        addTo(dataPanel, b3);
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -432,8 +437,7 @@ Main.newProject();
             }
         });
 
-        workSpacePanel = new JPanel();
-        workSpacePanel.add(new PartsGraph());
+        workSpacePanel = new PartsGraph();
         // </editor-fold>
         // <editor-fold desc="console">
         consoleArea = new JTextArea();
@@ -461,8 +465,15 @@ Main.newProject();
         // </editor-fold>
     }
 
+    private void addTo(JToolBar dataPanel, Component b1) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(b1);
 
+        panel.setPreferredSize(new Dimension(250, 30));
+        panel.setMaximumSize(new Dimension(250, 30));
 
+        dataPanel.add(panel);
+    }
 
 
     void writeToConsole(String text) {

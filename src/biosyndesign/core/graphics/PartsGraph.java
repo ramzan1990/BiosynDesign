@@ -1,5 +1,6 @@
 package biosyndesign.core.graphics;
 
+import javax.swing.*;
 import java.applet.Applet;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -17,7 +18,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class PartsGraph extends Canvas implements MouseListener, MouseMotionListener {
+public class PartsGraph extends JPanel implements MouseListener, MouseMotionListener {
     Rectangle rect = new Rectangle(0, 0, 100, 50);
 
     Graphics2D g2;
