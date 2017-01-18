@@ -1,5 +1,6 @@
 package biosyndesign.core.sbol;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -54,7 +55,7 @@ public class SBOLInterface {
         return null;
     }
 
-    public String findCompund(int type, int data1, String data2) {
+    public Part[] findCompound(int type, int data1, String data2) {
         StringBuffer result = new StringBuffer();
         try {
             URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
@@ -90,7 +91,12 @@ public class SBOLInterface {
             e.printStackTrace();
         }
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
-        System.out.println(jsonObject.getAsJsonArray("rows").get(0));
-        return result.toString();
+        JsonArray a = jsonObject.getAsJsonArray("rows");
+        Part[] parts = new Part[a.size()];
+        for(int i =0;i<a.size(); i++){
+            JsonObject o = a.get(i).getAsJsonObject();
+            parts[i] = new Part(o.get("ID").getAsString(), o.get("Names").getAsString(), o.get("URL").getAsString());
+        }
+        return parts;
     }
 }

@@ -1,7 +1,9 @@
 package biosyndesign.core.ui;
 
 import biosyndesign.core.graphics.PartsGraph;
+import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
+import com.google.gson.JsonArray;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
@@ -9,26 +11,23 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyVetoException;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.event.InternalFrameListener;
 
 public class GUI extends JFrame {
 
     private static final int panelMargin = 6;
     private JMenu File, HelpM, Options, Window;
-    private JMenuItem ClearConsole, Exit,   Save, Help, About, NewProject, SaveAs, OpenProject, Tile, Cascade;
+    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
     ButtonGroup transformGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JPanel dataPanel;
     private JToolBar toolsPanel;
-    private JDesktopPane workSpacePanel;
+    private JPanel workSpacePanel;
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
@@ -36,6 +35,8 @@ public class GUI extends JFrame {
     JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
+    Part[] parts;
+    JList partsList;
 
     public GUI() {
         // <editor-fold defaultstate="collapsed" desc="menu">
@@ -55,12 +56,10 @@ public class GUI extends JFrame {
         NewProject = new JMenuItem("New Project");
         SaveAs = new JMenuItem("Save As");
         OpenProject = new JMenuItem("Open Project");
-        Tile = new JMenuItem("Tile");
-        Cascade = new JMenuItem("Cascade");
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
+                Main.newProject();
             }
         });
 
@@ -73,12 +72,12 @@ public class GUI extends JFrame {
         File.add(Exit);
         OpenProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
+                Main.openProject();
             }
         });
         SaveAs.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
+                Main.saveProjectAs();
             }
         });
         Exit.addActionListener(new ActionListener() {
@@ -89,11 +88,11 @@ public class GUI extends JFrame {
 
         Save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-
+                Main.saveProject();
             }
         });
 
-        
+
         HideConsole.setSelected(true);
         HideConsole.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -131,8 +130,6 @@ public class GUI extends JFrame {
         Window.add(HideTools);
         Window.add(HideConsole);
         Window.addSeparator();
-        Window.add(Tile);
-        Window.add(Cascade);
         Window.addSeparator();
         Window.add(ClearConsole);
         ClearConsole.addActionListener(new ActionListener() {
@@ -140,16 +137,7 @@ public class GUI extends JFrame {
                 consoleArea.setText("");
             }
         });
-        Tile.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                tile(workSpacePanel);
-            }
-        });
-        Cascade.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                cascade(workSpacePanel);
-            }
-        });
+
 
         HelpM.add(Help);
         HelpM.addSeparator();
@@ -173,13 +161,13 @@ public class GUI extends JFrame {
                 editorPane.setContentType("text/html");
                 editorPane.setText(
                         "<html>"
-                        + "<body link=\"#009aff\" vlink=\"#009aff\" alink=\"#009aff\">"
-                        + "BiosynDesign - Best thing on Earth,  (c) SFB 2016"
-                        + "<br>Authors: Hiroyuki Kuwahara & Ramzan Umarov<br>"
-                        + "<a href=\"mailto:hkuwahara@gmail.com?Subject=BiosynDesign\" target=\"_top\"><br>"
-                        + "<font color=\"009aff\">Send Mail</font></a>"
-                        + "</body>"
-                        + "</html>");
+                                + "<body link=\"#009aff\" vlink=\"#009aff\" alink=\"#009aff\">"
+                                + "BiosynDesign - Best thing on Earth,  (c) SFB 2016"
+                                + "<br>Authors: Hiroyuki Kuwahara & Ramzan Umarov<br>"
+                                + "<a href=\"mailto:hkuwahara@gmail.com?Subject=BiosynDesign\" target=\"_top\"><br>"
+                                + "<font color=\"009aff\">Send Mail</font></a>"
+                                + "</body>"
+                                + "</html>");
 
                 editorPane.setBorder(BorderFactory.createEmptyBorder());
                 editorPane.setBackground(new Color(0, 0, 0, 0));
@@ -227,7 +215,6 @@ public class GUI extends JFrame {
         });
 
 
-
         menu.add(File);
         menu.add(Options);
         menu.add(Window);
@@ -255,7 +242,7 @@ public class GUI extends JFrame {
         newProject.setToolTipText("New Project");
         newProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-
+Main.newProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -278,7 +265,7 @@ public class GUI extends JFrame {
         openProject.setToolTipText("Open Project");
         openProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-
+                Main.openProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -301,7 +288,7 @@ public class GUI extends JFrame {
         saveProject.setToolTipText("Save Project");
         saveProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-
+                Main.saveProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -318,7 +305,6 @@ public class GUI extends JFrame {
                 saveProject.setIcon(new ImageIcon(Main.class.getResource("images/save.png")));
             }
         });
-
 
 
         toolsPanel = new JToolBar();
@@ -352,14 +338,14 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String smiles = tf.getText();
-                try{
+                try {
                     IChemObjectBuilder bldr
                             = SilentChemObjectBuilder.getInstance();
                     SmilesParser smipar = new SmilesParser(bldr);
                     IAtomContainer mol = smipar.parseSmiles(smiles);
 
-                    createFrame("Test", new ImageComponent(mol));
-                }catch(Exception ex){
+                    //createFrame("Test", new ImageComponent(mol));
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
 
@@ -383,14 +369,14 @@ public class GUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cmb2.removeAllItems();
-                if(cmb1.getSelectedIndex()==0){
+                if (cmb1.getSelectedIndex() == 0) {
                     cmb2.addItem("Compound name or ID");
                     cmb2.addItem("Drug ID");
                     cmb2.addItem("Reaction participation");
                     cmb2.addItem("Associated compound");
                     cmb2.addItem("Transforming enzyme");
                     cmb2.addItem("Compound substructure");
-                }else if(cmb1.getSelectedIndex()==1){
+                } else if (cmb1.getSelectedIndex() == 1) {
                     cmb2.addItem("Reaction ID");
                     cmb2.addItem("Participating compound");
                     cmb2.addItem("Catalyzing enzyme class");
@@ -412,29 +398,42 @@ public class GUI extends JFrame {
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try{
-                    SBOLInterface i = new SBOLInterface();
-                    System.out.println(i.findCompund(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText()));
-                }catch(Exception ex){
+                try {
+                    SBOLInterface sInt = new SBOLInterface();
+                    parts = sInt.findCompound(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                    String[] names = new String[parts.length];
+                    for(int i=0; i<names.length;i++){
+                        names[i] = parts[i].name;
+                    }
+                    partsList.setModel(new DefaultComboBoxModel(names));
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
 
             }
         });
 
-        JButton b3 = new JButton("Draw");
+        partsList = new JList();
+        JScrollPane partsPane = new JScrollPane();
+        partsPane.setViewportView(partsList);
+        partsPane.setPreferredSize(new Dimension(130, 200));
+        partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
+        dataPanel.add(partsPane);
+        JButton b3 = new JButton("Add");
         dataPanel.add(b3);
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                createFrame("Parts Graph", new PartsGraph());
-
+                Part[] p = new Part[partsList.getSelectedIndices().length];
+                for(int i =0; i<p.length;i++){
+                    p[i] = parts[partsList.getSelectedIndices()[i]];
+                }
+                Main.addParts(p);
             }
         });
 
-        workSpacePanel = new JDesktopPane();
-        workSpacePanel.setBackground(Color.GRAY);
-        workSpacePanel.setBorder(BorderFactory.createEmptyBorder());
+        workSpacePanel = new JPanel();
+        workSpacePanel.add(new PartsGraph());
         // </editor-fold>
         // <editor-fold desc="console">
         consoleArea = new JTextArea();
@@ -462,69 +461,7 @@ public class GUI extends JFrame {
         // </editor-fold>
     }
 
-    void disposeAllIFrames() {
-        for (JInternalFrame iframe : workSpacePanel.getAllFrames()) {
-            iframe.dispose();
-        }
-    }
 
-    public static void tile(JDesktopPane desktopPane) {
-        JInternalFrame[] frames = desktopPane.getAllFrames();
-        if (frames.length == 0) {
-            return;
-        }
-        tile(frames, desktopPane.getBounds());
-    }
-
-    private static void tile(JInternalFrame[] frames, Rectangle dBounds) {
-        int cols = (int) Math.sqrt(frames.length);
-        int rows = (int) (Math.ceil(((double) frames.length) / cols));
-        int lastRow = frames.length - cols * (rows - 1);
-        int width, height;
-
-        if (lastRow == 0) {
-            rows--;
-            height = dBounds.height / rows;
-        } else {
-            height = dBounds.height / rows;
-            if (lastRow < cols) {
-                rows--;
-                width = dBounds.width / lastRow;
-                for (int i = 0; i < lastRow; i++) {
-                    frames[cols * rows + i].setBounds(i * width, rows * height,
-                            width, height);
-                }
-            }
-        }
-
-        width = dBounds.width / cols;
-        for (int j = 0; j < rows; j++) {
-            for (int i = 0; i < cols; i++) {
-                frames[i + j * cols].setBounds(i * width, j * height,
-                        width, height);
-            }
-        }
-    }
-
-    public static void cascade(JDesktopPane desktopPane) {
-        JInternalFrame[] frames = desktopPane.getAllFrames();
-        if (frames.length == 0) {
-            return;
-        }
-
-        cascade(frames, desktopPane.getBounds(), 24);
-    }
-
-    private static void cascade(JInternalFrame[] frames, Rectangle dBounds, int separation) {
-        int margin = frames.length * separation + separation;
-        int width = dBounds.width - margin;
-        int height = dBounds.height - margin;
-        for (int i = 0; i < frames.length; i++) {
-            frames[i].setBounds(separation + dBounds.x + i * separation,
-                    separation + dBounds.y + i * separation,
-                    width, height);
-        }
-    }
 
 
 
@@ -532,110 +469,6 @@ public class GUI extends JFrame {
         consoleArea.append(text);
     }
 
-    void createFrame(String title, final JComponent c) {
-        JScrollPane sp = new JScrollPane(c);
-        sp.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                c.dispatchEvent(e);
 
-            }
-
-            public void mousePressed(MouseEvent e) {
-            }
-
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            public void mouseExited(MouseEvent e) {
-            }
-        });
-        MyInternalFrame frame = new MyInternalFrame(title, sp);
-        frame.setVisible(true);
-        frame.addInternalFrameListener(new InternalFrameListener() {
-            public void internalFrameOpened(InternalFrameEvent e) {
-            }
-
-            public void internalFrameClosing(InternalFrameEvent e) {
-            }
-
-            public void internalFrameClosed(InternalFrameEvent e) {
-                Main.removeFromComponentList(c);
-            }
-
-            public void internalFrameIconified(InternalFrameEvent e) {
-            }
-
-            public void internalFrameDeiconified(InternalFrameEvent e) {
-            }
-
-            public void internalFrameActivated(InternalFrameEvent e) {
-                Main.setSelectedComponent(c);
-            }
-
-            public void internalFrameDeactivated(InternalFrameEvent e) {
-            }
-        });
-        workSpacePanel.add(frame);
-        try {
-            frame.setSelected(true);
-        } catch (PropertyVetoException e) {
-        }
-    }
-
-    void createFrame(String title, final Canvas c) {
-        JScrollPane sp = new JScrollPane(c);
-        sp.addMouseListener(new MouseListener() {
-            public void mouseClicked(MouseEvent e) {
-                c.dispatchEvent(e);
-
-            }
-
-            public void mousePressed(MouseEvent e) {
-            }
-
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            public void mouseExited(MouseEvent e) {
-            }
-        });
-        MyInternalFrame frame = new MyInternalFrame(title, sp);
-        frame.setVisible(true);
-        frame.addInternalFrameListener(new InternalFrameListener() {
-            public void internalFrameOpened(InternalFrameEvent e) {
-            }
-
-            public void internalFrameClosing(InternalFrameEvent e) {
-            }
-
-            public void internalFrameClosed(InternalFrameEvent e) {
-                Main.removeFromComponentList(c);
-            }
-
-            public void internalFrameIconified(InternalFrameEvent e) {
-            }
-
-            public void internalFrameDeiconified(InternalFrameEvent e) {
-            }
-
-            public void internalFrameActivated(InternalFrameEvent e) {
-                Main.setSelectedComponent(c);
-            }
-
-            public void internalFrameDeactivated(InternalFrameEvent e) {
-            }
-        });
-        workSpacePanel.add(frame);
-        try {
-            frame.setSelected(true);
-        } catch (PropertyVetoException e) {
-        }
-    }
 
 }
