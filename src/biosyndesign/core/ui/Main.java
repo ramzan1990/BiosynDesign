@@ -1,7 +1,10 @@
 package biosyndesign.core.ui;
 
 
+import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
+import biosyndesign.core.sbol.SBOLInterface;
+import com.mxgraph.view.mxGraph;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,9 +12,15 @@ import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+
+import static org.openscience.cdk.smiles.smarts.parser.SMARTSParserConstants.p;
 
 public class Main {
 
@@ -22,8 +31,9 @@ public class Main {
     public static File fcDir;
     public static Project s;
     private static boolean isSaved;
+    private static SBOLInterface sInt;
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         s = new Project();
         s.projectName = "DefaultProject";
         s.projectPath = "DefaultProject/";
@@ -38,6 +48,8 @@ public class Main {
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
         mainWindow.setVisible(true);
         fc = new JFileChooser();
+
+        sInt = new SBOLInterface();
     }
 
     static void newProject() {
@@ -125,19 +137,77 @@ public class Main {
     }
 
     public static void addParts(Part[] p) {
-        if(!isSaved){
+        if (!isSaved) {
             saveProjectAs();
         }
-        for(int i =0; i<p.length;i++){
+        for (int i = 0; i < p.length; i++) {
             try {
-                s.parts.add(p[i]);
-                URL website = new URL("http://www.cbrc.kaust.edu.sa/sbolme/"+p[i].url);
-                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + "/parts/" + p[i].id  + ".xml");
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            }catch(Exception ex){
+                saveXML(p[i]);
+                if (p[i].id.contains("R")) {
+                    s.reactions.add(p[i]);
+                    String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + "/parts/" + p[i].id + ".xml")));
+                    String pattern1 = "<sbol:definition rdf:resource=\"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/";
+                    String pattern2 = "\"/>";
+
+                    Pattern pat = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
+                    Matcher m = pat.matcher(xml);
+                    while (m.find()) {
+                        String id = m.group(1);
+                        Part cp = sInt.findCompound(0, 0, id)[0];
+                        p[i].compounds.add(cp);
+                        s.parts.add(cp);
+                        saveXML(cp);
+                    }
+
+                } else {
+                    s.parts.add(p[i]);
+                }
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
+        updateGraph();
+
+    }
+
+    private static void updateGraph() {
+        mxGraph graph = mainWindow.workSpacePanel.graph;
+        graph.getModel().beginUpdate();
+        Object parent = graph.getDefaultParent();
+        try {
+            ArrayList<String> usedParts = new ArrayList<>();
+            ArrayList<Object> objects = new ArrayList<>();
+            for (int i = 0; i < s.reactions.size(); i++) {
+                int rx = 50+i*150;
+                int ry = 50+i*150;
+                Object v1 = graph.insertVertex(parent, null, s.reactions.get(i).id, rx, ry, 80, 30);
+                int jj = 0;
+                for(int j = 0; j<s.reactions.get(i).compounds.size(); j++){
+                    Part c = s.reactions.get(i).compounds.get(j);
+                    if(usedParts.contains(c.id)){
+                        graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(c.id)));
+                    }else {
+                        Object v2 = graph.insertVertex(parent, null, c.id, rx - 40 + jj++ * 90, ry + 40, 80, 30);
+                        graph.insertEdge(parent, null, "", v1, v2);
+                        usedParts.add(c.id);
+                        objects.add(v2);
+                    }
+
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally
+        {
+            graph.getModel().endUpdate();
+        }
+        mainWindow.workSpacePanel.repaint();
+    }
+
+    private static void saveXML(Part p) throws IOException {
+        URL website = new URL("http://www.cbrc.kaust.edu.sa/sbolme/" + p.url);
+        ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+        FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + "/parts/" + p.id + ".xml");
+        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
     }
 }

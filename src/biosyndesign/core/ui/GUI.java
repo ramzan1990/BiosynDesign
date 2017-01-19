@@ -27,7 +27,6 @@ public class GUI extends JFrame {
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
-    private JPanel workSpacePanel;
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
@@ -37,6 +36,7 @@ public class GUI extends JFrame {
     JTextField qValueTF;
     Part[] parts;
     JList partsList;
+    PartsGraph2 workSpacePanel;
 
     public GUI() {
         // <editor-fold defaultstate="collapsed" desc="menu">

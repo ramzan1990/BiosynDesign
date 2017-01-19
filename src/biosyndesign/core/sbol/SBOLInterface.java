@@ -95,7 +95,13 @@ public class SBOLInterface {
         Part[] parts = new Part[a.size()];
         for(int i =0;i<a.size(); i++){
             JsonObject o = a.get(i).getAsJsonObject();
-            parts[i] = new Part(o.get("ID").getAsString(), o.get("Names").getAsString(), o.get("URL").getAsString());
+            String name = "";
+            if(o.has("Names")){
+                name =  o.get("Names").getAsString();
+            }else{
+                name =  o.get("Name").getAsString();
+            }
+            parts[i] = new Part(o.get("ID").getAsString(), name, o.get("URL").getAsString());
         }
         return parts;
     }

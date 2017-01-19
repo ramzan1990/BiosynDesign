@@ -12,8 +12,10 @@ public class Project implements Serializable {
     public String projectName;
     public String projectPath;
     public ArrayList<Part> parts;
+    public ArrayList<Part> reactions;
 
     public Project(){
         parts = new ArrayList<>();
+        reactions = new ArrayList<>();
     }
 }
