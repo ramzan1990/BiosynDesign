@@ -1,9 +1,13 @@
 package biosyndesign.core.graphics;
 
 import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
 
 import javax.swing.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Umarov on 1/19/2017.
@@ -21,15 +25,10 @@ public class PartsGraph2 extends JPanel{
         };
         Object parent = graph.getDefaultParent();
 
-        graph.getModel().beginUpdate();
-        try
-        {
-            //graph.insertEdge(parent, null, "Edge", v1, v2);
-        }
-        finally
-        {
-            graph.getModel().endUpdate();
-        }
+        mxConstants.STYLE_ENDARROW = "none";
+
+
+
 
         graphComponent = new mxGraphComponent(graph);
         graph.setAllowDanglingEdges(false);

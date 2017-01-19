@@ -5,6 +5,7 @@ import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
 import biosyndesign.core.utils.Common;
+import biosyndesign.core.utils.Mover;
 import com.mxgraph.view.mxGraph;
 
 import javax.swing.*;
@@ -16,6 +17,9 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -164,10 +168,19 @@ public class Main {
                     Matcher m = pat.matcher(xml);
                     while (m.find()) {
                         String id = m.group(1);
-                        Part cp = sInt.findCompound(0, 0, id)[0];
-                        p[i].compounds.add(cp);
-                        s.parts.add(cp);
-                        saveXML(cp);
+                        Part op = null;
+                        for(Part c:s.parts){
+                            if(c.id.equals(id)){
+                                op = c;
+                                break;
+                            }
+                        }
+                        if(op==null) {
+                            op = sInt.findCompound(0, 0, id)[0];
+                            s.parts.add(op);
+                            saveXML(op);
+                        }
+                        p[i].compounds.add(op);
                     }
 
                 } else {
@@ -182,29 +195,55 @@ public class Main {
     }
 
     private static void updateGraph() {
+        int[] nb = new int[s.reactions.size()];
+        for(int i =0; i<nb.length;i++){
+            Part r1 = s.reactions.get(i);
+            int sum = 0;
+            for(int j =0;j<nb.length;j++){
+                Part r2 = s.reactions.get(j);
+                if(r1==r2){
+                    continue;
+                }
+                ArrayList<Part> common = new ArrayList<>(r1.compounds);
+                common.retainAll(r2.compounds);
+                sum+=common.size();
+            }
+            nb[i] = sum;
+        }
+
+        Collections.sort(s.reactions, new Comparator<Part>() {
+            public int compare(Part left, Part right) {
+                return Integer.compare(nb[s.reactions.indexOf(left)], nb[s.reactions.indexOf(right)]);
+            }
+        });
+        Collections.reverse(s.reactions);
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
         Object parent = graph.getDefaultParent();
         try {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
+            Mover m = new Mover(300);
             for (int i = 0; i < s.reactions.size(); i++) {
-                int rx = 50 + i * 150;
-                int ry = 50 + i * 150;
-                Object v1 = graph.insertVertex(parent, null, s.reactions.get(i).id, rx, ry, 80, 30);
-                int jj = 0;
+                System.out.println(s.reactions.get(i).id);
+                int rx =  m.x()+390;
+                int ry =  m.y()+390;
+                Object v1 = graph.insertVertex(parent, null, s.reactions.get(i).id,  rx,  ry, 80, 30);
+                Mover ms = new Mover(90);
                 for (int j = 0; j < s.reactions.get(i).compounds.size(); j++) {
                     Part c = s.reactions.get(i).compounds.get(j);
                     if (usedParts.contains(c.id)) {
                         graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(c.id)));
                     } else {
-                        Object v2 = graph.insertVertex(parent, null, c.id, rx - 40 + jj++ * 90, ry + 40, 80, 30);
+                        ms.move();
+                        Object v2 = graph.insertVertex(parent, null, c.id,  rx + ms.x(), ry + ms.y(), 80, 30);
                         graph.insertEdge(parent, null, "", v1, v2);
                         usedParts.add(c.id);
                         objects.add(v2);
                     }
 
                 }
+                m.move();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
