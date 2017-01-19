@@ -1,6 +1,6 @@
 package biosyndesign.core.ui;
 
-import biosyndesign.core.graphics.PartsGraph;
+import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
 import com.google.gson.JsonArray;
@@ -437,7 +437,7 @@ Main.newProject();
             }
         });
 
-        workSpacePanel = new PartsGraph();
+        workSpacePanel = new PartsGraph2();
         // </editor-fold>
         // <editor-fold desc="console">
         consoleArea = new JTextArea();
@@ -454,7 +454,6 @@ Main.newProject();
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
         consolePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));// </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="prepairing frame">
-        setTitle("VISAN");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setJMenuBar(menu);
