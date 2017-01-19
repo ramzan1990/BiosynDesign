@@ -4,6 +4,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
+import biosyndesign.core.utils.Common;
 import com.mxgraph.view.mxGraph;
 
 import javax.swing.*;
@@ -20,7 +21,6 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static org.openscience.cdk.smiles.smarts.parser.SMARTSParserConstants.p;
 
 public class Main {
 
@@ -69,7 +69,7 @@ public class Main {
                 ois = new ObjectInputStream(gis);
                 s = (Project) ois.readObject();
                 mainWindow.setTitle("BiosynDesign - " + s.projectName);
-                s.projectPath = f.getParentFile().toString() + "/";
+                s.projectPath = f.getParentFile().toString() + "\\";
                 isSaved = true;
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Cannot open the project!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -82,6 +82,7 @@ public class Main {
                 }
             }
         }
+        updateGraph();
     }
 
     static boolean saveProjectAs() {
@@ -91,15 +92,25 @@ public class Main {
 
         if (fd.getFiles().length > 0) {
             File f = fd.getFiles()[0];
+            String oldPath = s.projectPath + s.projectName;
             s.projectName = f.getName();
             s.projectPath = f.getAbsolutePath();
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
-            isSaved = true;
             new File(s.projectPath).mkdir();
-            s.projectPath += "/";
+            s.projectPath += "\\";
             new File(s.projectPath + s.projectName).mkdir();
-            new File(s.projectPath + s.projectName + "/images").mkdir();
-            new File(s.projectPath + s.projectName + "/parts").mkdir();
+            if(isSaved) {
+                try {
+                    Common.copy(oldPath + "\\images\\", s.projectPath + s.projectName + "\\images\\");
+                    Common.copy(oldPath + "\\parts\\", s.projectPath + s.projectName + "\\parts\\");
+                } catch (Exception e) {
+                    new File(s.projectPath + s.projectName + "\\images").mkdir();
+                    new File(s.projectPath + s.projectName + "\\parts").mkdir();
+                }
+            }else {
+                new File(s.projectPath + s.projectName + "\\images").mkdir();
+                new File(s.projectPath + s.projectName + "\\parts").mkdir();
+            }
             isSaved = true;
             saveProject();
             return true;
@@ -178,15 +189,15 @@ public class Main {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
             for (int i = 0; i < s.reactions.size(); i++) {
-                int rx = 50+i*150;
-                int ry = 50+i*150;
+                int rx = 50 + i * 150;
+                int ry = 50 + i * 150;
                 Object v1 = graph.insertVertex(parent, null, s.reactions.get(i).id, rx, ry, 80, 30);
                 int jj = 0;
-                for(int j = 0; j<s.reactions.get(i).compounds.size(); j++){
+                for (int j = 0; j < s.reactions.get(i).compounds.size(); j++) {
                     Part c = s.reactions.get(i).compounds.get(j);
-                    if(usedParts.contains(c.id)){
+                    if (usedParts.contains(c.id)) {
                         graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(c.id)));
-                    }else {
+                    } else {
                         Object v2 = graph.insertVertex(parent, null, c.id, rx - 40 + jj++ * 90, ry + 40, 80, 30);
                         graph.insertEdge(parent, null, "", v1, v2);
                         usedParts.add(c.id);
@@ -197,8 +208,7 @@ public class Main {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-        } finally
-        {
+        } finally {
             graph.getModel().endUpdate();
         }
         mainWindow.workSpacePanel.repaint();
