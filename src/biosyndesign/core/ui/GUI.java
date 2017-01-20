@@ -389,7 +389,7 @@ Main.newProject();
         dataPanel.add(cmb2);
         cmb1.setSelectedIndex(0);
         addTo(dataPanel, l3);
-        qValueTF = new JTextField();
+        qValueTF = new JTextField("Pyruvate");
         qValueTF.setPreferredSize(new Dimension(250, 20));
         qValueTF.setMaximumSize(new Dimension(500, 20));
         dataPanel.add(qValueTF);

@@ -222,6 +222,7 @@ public class Main {
         Collections.reverse(s.reactions);
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
+        graph.removeCells();
         Object parent = graph.getDefaultParent();
         try {
             ArrayList<String> usedParts = new ArrayList<>();
@@ -251,9 +252,10 @@ public class Main {
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
+            graph.refresh();
             graph.getModel().endUpdate();
+            graph.refresh();
         }
-        mainWindow.workSpacePanel.graphComponent.refresh();
     }
 
     private static void saveXML(Part p) throws IOException {
