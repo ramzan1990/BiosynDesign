@@ -1,6 +1,7 @@
 package biosyndesign.core.ui;
 
 
+import biosyndesign.core.graphics.FileUtils;
 import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
@@ -52,7 +53,6 @@ public class Main {
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
         mainWindow.setVisible(true);
         fc = new JFileChooser();
-
         sInt = new SBOLInterface();
     }
 
@@ -74,6 +74,7 @@ public class Main {
                 s = (Project) ois.readObject();
                 mainWindow.setTitle("BiosynDesign - " + s.projectName);
                 s.projectPath = f.getParentFile().toString() + "\\";
+                FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + "\\graph.xml");
                 isSaved = true;
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Cannot open the project!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -86,7 +87,8 @@ public class Main {
                 }
             }
         }
-        updateGraph();
+        mainWindow.workSpacePanel.graph.refresh();
+        mainWindow.workSpacePanel.repaint();
     }
 
     static boolean saveProjectAs() {
@@ -133,6 +135,7 @@ public class Main {
             ObjectOutputStream oos = new ObjectOutputStream(gz);
             oos.writeObject(s);
             oos.close();
+            FileUtils.saveGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + "\\graph.xml");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error While Saving!", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -250,7 +253,7 @@ public class Main {
         } finally {
             graph.getModel().endUpdate();
         }
-        mainWindow.workSpacePanel.repaint();
+        mainWindow.workSpacePanel.graphComponent.refresh();
     }
 
     private static void saveXML(Part p) throws IOException {

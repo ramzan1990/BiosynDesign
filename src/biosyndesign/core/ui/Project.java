@@ -1,5 +1,6 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 
 import java.io.Serializable;

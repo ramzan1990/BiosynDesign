@@ -6,15 +6,17 @@ import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
 import javax.swing.*;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by Umarov on 1/19/2017.
  */
-public class PartsGraph2 extends JPanel{
+public class PartsGraph2 extends JPanel implements Serializable {
     public mxGraph graph;
     public mxGraphComponent graphComponent;
+
     public PartsGraph2(){
         super();
         graph = new mxGraph() {
