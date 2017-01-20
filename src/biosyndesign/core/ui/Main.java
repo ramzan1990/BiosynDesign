@@ -7,10 +7,13 @@ import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;
+import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -263,5 +266,19 @@ public class Main {
         ReadableByteChannel rbc = Channels.newChannel(website.openStream());
         FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + "/parts/" + p.id + ".xml");
         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+    }
+    public static void saveImage(){
+        try {
+            BufferedImage image = mxCellRenderer.createBufferedImage(mainWindow.workSpacePanel.graph, null, 1, Color.WHITE, true, null);
+            String name = "graph";
+            File f = new File(s.projectPath + s.projectName + "\\images\\" + name + ".png");
+            for (int i = 0; f.exists(); i++) {
+                f = new File(s.projectPath + s.projectName + "\\images\\" + name + i + ".png");
+            }
+            ImageIO.write(image, "PNG", f);
+            JOptionPane.showMessageDialog(null, "Done");
+        }catch (Exception e){
+
+        }
     }
 }

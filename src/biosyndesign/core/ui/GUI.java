@@ -30,7 +30,7 @@ public class GUI extends JFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject;
+    private JLabel newProject, openProject, saveProject, snapShotLabel;
     JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
@@ -306,6 +306,28 @@ Main.newProject();
             }
         });
 
+        snapShotLabel = new JLabel();
+        snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera.png")));
+        snapShotLabel.setToolTipText("Take Snapshot");
+        snapShotLabel.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.saveImage();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/cameraRollover.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera.png")));
+            }
+        });
 
         toolsPanel = new JToolBar();
 
@@ -319,6 +341,7 @@ Main.newProject();
         toolsPanel.add(saveProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         toolsPanel.addSeparator();
+        toolsPanel.add(snapShotLabel);
         //</editor-fold>
 
         dataPanel = new JToolBar();
