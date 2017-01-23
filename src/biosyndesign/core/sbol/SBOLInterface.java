@@ -59,7 +59,7 @@ public class SBOLInterface {
         StringBuffer result = new StringBuffer();
         try {
             URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
-            Map<String,Object> params = new LinkedHashMap<>();
+            Map<String,Object> params = new LinkedHashMap<String,Object>();
             params.put("type", type);
             params.put("data1", data1);
             params.put("data2", data2);

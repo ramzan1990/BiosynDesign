@@ -76,8 +76,8 @@ public class Main {
                 ois = new ObjectInputStream(gis);
                 s = (Project) ois.readObject();
                 mainWindow.setTitle("BiosynDesign - " + s.projectName);
-                s.projectPath = f.getParentFile().toString() + "\\";
-                FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + "\\graph.xml");
+                s.projectPath = f.getParentFile().toString() + File.separator;
+                FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
                 isSaved = true;
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Cannot open the project!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -106,19 +106,19 @@ public class Main {
             s.projectPath = f.getAbsolutePath();
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             new File(s.projectPath).mkdir();
-            s.projectPath += "\\";
+            s.projectPath += File.separator;
             new File(s.projectPath + s.projectName).mkdir();
             if(isSaved) {
                 try {
-                    Common.copy(oldPath + "\\images\\", s.projectPath + s.projectName + "\\images\\");
-                    Common.copy(oldPath + "\\parts\\", s.projectPath + s.projectName + "\\parts\\");
+                    Common.copy(oldPath + File.separator + "images" + File.separator, s.projectPath + s.projectName +File.separator+ "images" + File.separator);
+                    Common.copy(oldPath + File.separator + "parts" + File.separator, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
                 } catch (Exception e) {
-                    new File(s.projectPath + s.projectName + "\\images").mkdir();
-                    new File(s.projectPath + s.projectName + "\\parts").mkdir();
+                    new File(s.projectPath + s.projectName +File.separator+  "images").mkdir();
+                    new File(s.projectPath + s.projectName + File.separator + "parts").mkdir();
                 }
             }else {
-                new File(s.projectPath + s.projectName + "\\images").mkdir();
-                new File(s.projectPath + s.projectName + "\\parts").mkdir();
+                new File(s.projectPath + s.projectName + File.separator + "images").mkdir();
+                new File(s.projectPath + s.projectName + File.separator + "parts").mkdir();
             }
             isSaved = true;
             saveProject();
@@ -138,7 +138,7 @@ public class Main {
             ObjectOutputStream oos = new ObjectOutputStream(gz);
             oos.writeObject(s);
             oos.close();
-            FileUtils.saveGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + "\\graph.xml");
+            FileUtils.saveGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error While Saving!", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -271,9 +271,9 @@ public class Main {
         try {
             BufferedImage image = mxCellRenderer.createBufferedImage(mainWindow.workSpacePanel.graph, null, 1, Color.WHITE, true, null);
             String name = "graph";
-            File f = new File(s.projectPath + s.projectName + "\\images\\" + name + ".png");
+            File f = new File(s.projectPath + s.projectName + File.separator + "images" + File.separator+ name + ".png");
             for (int i = 0; f.exists(); i++) {
-                f = new File(s.projectPath + s.projectName + "\\images\\" + name + i + ".png");
+                f = new File(s.projectPath + s.projectName + File.separator + "images" + File.separator+ name + i + ".png");
             }
             ImageIO.write(image, "PNG", f);
             JOptionPane.showMessageDialog(null, "Done");

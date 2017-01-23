@@ -16,7 +16,7 @@ public class Project implements Serializable {
     public ArrayList<Part> reactions;
 
     public Project(){
-        parts = new ArrayList<>();
-        reactions = new ArrayList<>();
+        parts = new ArrayList<Part>();
+        reactions = new ArrayList<Part>();
     }
 }
