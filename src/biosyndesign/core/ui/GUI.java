@@ -351,10 +351,8 @@ Main.newProject();
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         tf = new JTextField();
-        tf.setPreferredSize(new Dimension(250, 20));
-        tf.setMaximumSize(new Dimension(500, 20));
         tf.setText("c1cc(CC=CC#N)ccn1");
-        dataPanel.add(tf);
+        addTo(dataPanel, tf);
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         JButton b1 = new JButton("Render");
         addTo(dataPanel, b1);
@@ -413,8 +411,7 @@ Main.newProject();
         cmb1.setSelectedIndex(0);
         addTo(dataPanel, l3);
         qValueTF = new JTextField("Pyruvate");
-        qValueTF.setPreferredSize(new Dimension(250, 20));
-        qValueTF.setMaximumSize(new Dimension(500, 20));
+        addTo(dataPanel, qValueTF);
         dataPanel.add(qValueTF);
 
         JButton b2 = new JButton("Search");
