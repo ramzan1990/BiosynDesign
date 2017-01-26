@@ -11,5 +11,6 @@
     <orderEntry type="library" name="guhautils" level="project" />
     <orderEntry type="library" name="gson-2.8.0" level="project" />
     <orderEntry type="library" name="jgraphx" level="project" />
+    <orderEntry type="library" name="swingx-all-1.6.4" level="project" />
   </component>
 </module>

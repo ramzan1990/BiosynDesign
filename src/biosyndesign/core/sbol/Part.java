@@ -10,12 +10,23 @@ public class Part implements Serializable {
     public String url;
     public String name;
     public String id;
-    public ArrayList<Part> compounds;
 
     public Part(String id, String name, String url) {
         this.id = id;
         this.name = name;
         this.url = url;
-        compounds = new ArrayList();
+    }
+
+    public Part(String id) {
+        this.id = id;
+    }
+
+    public boolean equals(Object obj) {
+        if (obj instanceof Part) {
+            Part otherPart = (Part) obj;
+            return otherPart.id.equals(this.id);
+        } else {
+            return false;
+        }
     }
 }

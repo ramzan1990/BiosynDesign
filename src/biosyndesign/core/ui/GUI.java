@@ -3,11 +3,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
-import com.google.gson.JsonArray;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
-import org.openscience.cdk.silent.SilentChemObjectBuilder;
-import org.openscience.cdk.smiles.SmilesParser;
+import biosyndesign.core.utils.UI;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -19,7 +15,7 @@ import javax.swing.event.HyperlinkListener;
 
 public class GUI extends JFrame {
 
-    private static final int panelMargin = 6;
+    private static final int panelMargin = 0;
     private JMenu File, HelpM, Options, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
@@ -37,8 +33,9 @@ public class GUI extends JFrame {
     Part[] parts;
     JList partsList;
     PartsGraph2 workSpacePanel;
+    private JLabel statusLabel, infoLabel;
 
-    public GUI() {
+    public GUI(ProjectIO io) {
         // <editor-fold defaultstate="collapsed" desc="menu">
         ClearConsole = new JMenuItem("Clear console");
         HideDataPanel = new JCheckBoxMenuItem("Data Panel");
@@ -59,7 +56,7 @@ public class GUI extends JFrame {
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.newProject();
+                io.newProject();
             }
         });
 
@@ -72,12 +69,12 @@ public class GUI extends JFrame {
         File.add(Exit);
         OpenProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.openProject();
+                io.openProject();
             }
         });
         SaveAs.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.saveProjectAs();
+                io.saveProjectAs();
             }
         });
         Exit.addActionListener(new ActionListener() {
@@ -88,7 +85,7 @@ public class GUI extends JFrame {
 
         Save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.saveProject();
+                io.saveProject();
             }
         });
 
@@ -242,7 +239,7 @@ public class GUI extends JFrame {
         newProject.setToolTipText("New Project");
         newProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-Main.newProject();
+io.newProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -265,7 +262,7 @@ Main.newProject();
         openProject.setToolTipText("Open Project");
         openProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.openProject();
+                io.openProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -288,7 +285,7 @@ Main.newProject();
         saveProject.setToolTipText("Save Project");
         saveProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.saveProject();
+                io.saveProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -339,8 +336,9 @@ Main.newProject();
         toolsPanel.add(openProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         toolsPanel.add(saveProject);
-        toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(snapShotLabel);
         //</editor-fold>
 
@@ -349,41 +347,20 @@ Main.newProject();
         dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.PAGE_AXIS));
         dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-        tf = new JTextField();
-        tf.setText("c1cc(CC=CC#N)ccn1");
-        addTo(dataPanel, tf);
-        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        JButton b1 = new JButton("Render");
-        addTo(dataPanel, b1);
-        b1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String smiles = tf.getText();
-                try {
-                    IChemObjectBuilder bldr
-                            = SilentChemObjectBuilder.getInstance();
-                    SmilesParser smipar = new SmilesParser(bldr);
-                    IAtomContainer mol = smipar.parseSmiles(smiles);
-
-                    //createFrame("Test", new ImageComponent(mol));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-
-            }
-        });
-        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        int dpcw = dataPanel.getPreferredSize().width - 15;
 
         JLabel l1 = new JLabel("Search for");
+        l1.setMaximumSize(new Dimension(Integer.MAX_VALUE, l1.getPreferredSize().height) );
         JLabel l2 = new JLabel("Filter By");
+        l2.setMaximumSize(new Dimension(Integer.MAX_VALUE, l2.getPreferredSize().height) );
         JLabel l3 = new JLabel("Value");
-        addTo(dataPanel, l1);
+        l3.setMaximumSize(new Dimension(Integer.MAX_VALUE, l3.getPreferredSize().height) );
+        UI.addTo(dataPanel, l1);
         cmb1 = new JComboBox();
-        cmb1.setPreferredSize(new Dimension(250, 20));
+        cmb1.setPreferredSize(new Dimension(dpcw, 20));
         cmb1.setMaximumSize(new Dimension(500, 20));
         cmb2 = new JComboBox();
-        cmb2.setPreferredSize(new Dimension(250, 20));
+        cmb2.setPreferredSize(new Dimension(dpcw, 20));
         cmb2.setMaximumSize(new Dimension(500, 20));
         cmb1.addItem("Compound");
         cmb1.addItem("Reaction");
@@ -405,18 +382,20 @@ Main.newProject();
                 }
             }
         });
-        dataPanel.add(cmb1);
-        addTo(dataPanel, l2);
-        dataPanel.add(cmb2);
+        UI.addTo(dataPanel, cmb1);
+        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        UI.addTo(dataPanel, l2);
+        UI.addTo(dataPanel, cmb2);
+        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         cmb1.setSelectedIndex(0);
-        addTo(dataPanel, l3);
+        UI.addTo(dataPanel, l3);
         qValueTF = new JTextField("Pyruvate");
-        addTo(dataPanel, qValueTF);
-        dataPanel.add(qValueTF);
-
+        qValueTF.setPreferredSize(new Dimension(dpcw, qValueTF.getPreferredSize().height) );
+        UI.addTo(dataPanel, qValueTF);
+        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        //dataPanel.setBackground(Color.RED);
         JButton b2 = new JButton("Search");
-        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        addTo(dataPanel, b2);
+        UI.addToRight(dataPanel, b2);
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -438,14 +417,12 @@ Main.newProject();
         partsList = new JList();
         JScrollPane partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
-        partsPane.setPreferredSize(new Dimension(240, 400));
-        partsPane.setMaximumSize(new Dimension(240, 400));
+        partsPane.setPreferredSize(new Dimension(dpcw, 200));
+        partsPane.setMaximumSize(new Dimension(dpcw, 200));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
-        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        dataPanel.add(partsPane);
-        dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        UI.addTo(dataPanel, partsPane);
+        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         JButton b3 = new JButton("Add");
-        addTo(dataPanel, b3);
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -456,6 +433,7 @@ Main.newProject();
                 Main.addParts(p);
             }
         });
+        UI.addToRight(dataPanel, b3);
 
         workSpacePanel = new PartsGraph2();
         // </editor-fold>
@@ -463,7 +441,7 @@ Main.newProject();
         consoleArea = new JTextArea();
         consoleArea.setEditable(false);
         consoleArea.setLineWrap(true);
-        consoleArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        consoleArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         consoleScroll = new JScrollPane();
         consoleScroll.setPreferredSize(new Dimension(250, 110));
         consoleScroll.setViewportView(consoleArea);
@@ -472,7 +450,16 @@ Main.newProject();
         consolePanel = new JPanel();
         consolePanel.setLayout(new BorderLayout());
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
-        consolePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));// </editor-fold>
+        //consolePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel statusPanel = new JPanel(new BorderLayout());
+        statusPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
+        statusLabel = new JLabel("  Ready");
+        statusPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, statusLabel.getPreferredSize().height + 10));
+        statusPanel.add(statusLabel, BorderLayout.WEST);
+        infoLabel = new JLabel("Compounds: 0   Reactions: 0  ");
+        statusPanel.add(infoLabel, BorderLayout.EAST);
+        consolePanel.add(statusPanel, BorderLayout.SOUTH);
+        // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="prepairing frame">
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -481,24 +468,23 @@ Main.newProject();
         add(dataPanel, BorderLayout.EAST);
         add(consolePanel, BorderLayout.SOUTH);
         add(workSpacePanel, BorderLayout.CENTER);
+        this.pack();
+        this.setLocationRelativeTo(null);
         // </editor-fold>
     }
 
-    private void addTo(JToolBar dataPanel, Component b1) {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panel.add(b1);
-
-        panel.setPreferredSize(new Dimension(250, 30));
-        panel.setMaximumSize(new Dimension(250, 30));
-
-        dataPanel.add(panel);
-    }
 
 
-    void writeToConsole(String text) {
+
+    public void writeToConsole(String text) {
         consoleArea.append(text);
     }
 
 
-
+    public void setStatusLabel(String status) {
+        statusLabel.setText("  "+status);
+    }
+    public void setInfoLabel(int i1, int i2) {
+        infoLabel.setText("Compounds: "+i1+"   Reactions: "+i2+"  ");
+    }
 }
