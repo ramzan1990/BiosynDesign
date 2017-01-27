@@ -16,8 +16,8 @@ import javax.swing.event.HyperlinkListener;
 public class GUI extends JFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, HelpM, Options, Window;
-    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject;
+    private JMenu File, Parts, HelpM, Options, Window;
+    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
     ButtonGroup transformGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
@@ -35,14 +35,17 @@ public class GUI extends JFrame {
     PartsGraph2 workSpacePanel;
     private JLabel statusLabel, infoLabel;
 
+
     public GUI(ProjectIO io) {
         // <editor-fold defaultstate="collapsed" desc="menu">
+        GUI ref = this;
         ClearConsole = new JMenuItem("Clear console");
         HideDataPanel = new JCheckBoxMenuItem("Data Panel");
         HideTools = new JCheckBoxMenuItem("Tools Panel");
         HideConsole = new JCheckBoxMenuItem("Console");
         menu = new JMenuBar();
         File = new JMenu("File");
+        Parts = new JMenu("Parts");
         HelpM = new JMenu("Help");
         Options = new JMenu("Options");
         Window = new JMenu("Window");
@@ -53,6 +56,10 @@ public class GUI extends JFrame {
         NewProject = new JMenuItem("New Project");
         SaveAs = new JMenuItem("Save As");
         OpenProject = new JMenuItem("Open Project");
+        addCompound= new JMenuItem("Add Compound");
+        addReaction= new JMenuItem("Add Reaction");
+        addECNumber= new JMenuItem("Add EC Number");
+        addEnzyme= new JMenuItem("Add Enzyme");
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -67,6 +74,12 @@ public class GUI extends JFrame {
         File.add(SaveAs);
         File.addSeparator();
         File.add(Exit);
+
+        Parts.add(addCompound);
+        Parts.add(addReaction);
+        Parts.add(addECNumber);
+        Parts.add(addEnzyme);
+
         OpenProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 io.openProject();
@@ -121,6 +134,27 @@ public class GUI extends JFrame {
                     dataPanel.setVisible(false);
                 }
                 repaint();
+            }
+        });
+
+        addCompound.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                NewParts.addCompound(ref);
+            }
+        });
+        addReaction.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                NewParts.addReaction(ref);
+            }
+        });
+        addECNumber.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                NewParts.addECNumber(ref);
+            }
+        });
+        addEnzyme.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                NewParts.addEnzyme(ref);
             }
         });
         Window.add(HideDataPanel);
@@ -213,6 +247,7 @@ public class GUI extends JFrame {
 
 
         menu.add(File);
+        menu.add(Parts);
         menu.add(Options);
         menu.add(Window);
         menu.add(HelpM);
@@ -350,18 +385,18 @@ io.newProject();
         int dpcw = dataPanel.getPreferredSize().width - 15;
 
         JLabel l1 = new JLabel("Search for");
-        l1.setMaximumSize(new Dimension(Integer.MAX_VALUE, l1.getPreferredSize().height) );
+        l1.setMaximumSize(new Dimension(dpcw, l1.getPreferredSize().height) );
         JLabel l2 = new JLabel("Filter By");
-        l2.setMaximumSize(new Dimension(Integer.MAX_VALUE, l2.getPreferredSize().height) );
+        l2.setMaximumSize(new Dimension(dpcw, l2.getPreferredSize().height) );
         JLabel l3 = new JLabel("Value");
-        l3.setMaximumSize(new Dimension(Integer.MAX_VALUE, l3.getPreferredSize().height) );
+        l3.setMaximumSize(new Dimension(dpcw, l3.getPreferredSize().height) );
         UI.addTo(dataPanel, l1);
         cmb1 = new JComboBox();
-        cmb1.setPreferredSize(new Dimension(dpcw, 20));
-        cmb1.setMaximumSize(new Dimension(500, 20));
+        cmb1.setPreferredSize(new Dimension(dpcw, cmb1.getPreferredSize().height));
+        cmb1.setMaximumSize(new Dimension(500, cmb1.getPreferredSize().height));
         cmb2 = new JComboBox();
-        cmb2.setPreferredSize(new Dimension(dpcw, 20));
-        cmb2.setMaximumSize(new Dimension(500, 20));
+        cmb2.setPreferredSize(new Dimension(dpcw, cmb2.getPreferredSize().height));
+        cmb2.setMaximumSize(new Dimension(500, cmb2.getPreferredSize().height));
         cmb1.addItem("Compound");
         cmb1.addItem("Reaction");
         cmb1.addActionListener(new ActionListener() {

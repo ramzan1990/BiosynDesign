@@ -1,4 +1,4 @@
-package biosyndesign.core.utils;
+package biosyndesign.core.ui;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

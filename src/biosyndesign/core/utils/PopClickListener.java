@@ -1,8 +1,7 @@
 package biosyndesign.core.utils;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import biosyndesign.core.ui.repoPopUp;
+
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 

@@ -1,9 +1,6 @@
 package biosyndesign.core.ui;
 
-import biosyndesign.core.sbol.Compound;
-import biosyndesign.core.sbol.ECNumber;
-import biosyndesign.core.sbol.Part;
-import biosyndesign.core.sbol.Reaction;
+import biosyndesign.core.sbol.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,12 +16,15 @@ public class ProjectState implements Serializable {
     public ArrayList<Compound> compounds;
     public ArrayList<Reaction> reactions;
     public ArrayList<ECNumber> ecNumbers;
+    public ArrayList<Protein> proteins;
     public Hashtable<Object, Part> graphNodes;
+    public String organism;
 
     public ProjectState(){
         compounds = new ArrayList<>();
         reactions = new ArrayList<>();
         ecNumbers = new ArrayList<>();
+        proteins = new ArrayList<>();
         graphNodes = new Hashtable<Object, Part>();
     }
 }

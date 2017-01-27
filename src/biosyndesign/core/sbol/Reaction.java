@@ -9,6 +9,8 @@ public class Reaction extends Part{
 
     public ArrayList<Part> compounds;
     public ArrayList<ECNumber> ec;
+    public int pickedEC;
+    public Protein enzyme;
 
     public Reaction(String id, String name, String url) {
         super(id, name, url);

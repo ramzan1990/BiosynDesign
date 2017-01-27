@@ -2,7 +2,6 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.utils.PopClickListener;
 import biosyndesign.core.utils.UI;
-import biosyndesign.core.utils.repoPopUp;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
@@ -112,7 +111,7 @@ public class FirstFrame extends JFrame {
         JLabel picLabel = new JLabel(new ImageIcon(Main.class.getResource("images/logo.png")));
         UI.addTo(topPanel, picLabel);
         topPanel.add(browsePanel);
-        String options[] = {"                                                                                                                  ", "eco1", "oko2", "boko3", "bokokoko3"};
+        String options[] = {"Photorhabdus luminescens"};
         JList<String> list = new JList<String>(options);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
@@ -150,7 +149,7 @@ public class FirstFrame extends JFrame {
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (locationTF.getText().trim().length() != 0){
-                    io.newProjectSelected();
+                    io.newProjectSelected(textField.getText());
                 }
             }
         });

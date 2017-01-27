@@ -4,6 +4,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.sbol.*;
 import biosyndesign.core.utils.Mover;
 import biosyndesign.core.utils.UI;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.view.mxGraph;
 
@@ -70,7 +71,7 @@ public class Main {
                     Reaction r = (Reaction) p[i];
                     s.reactions.add(r);
                     //adding reactions compounds
-                    String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator +"parts"+ File.separator + p[i].id + ".xml")));
+                    String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id + ".xml")));
                     String pattern1 = "<sbol:definition rdf:resource=\"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/";
                     String pattern2 = "\"/>";
 
@@ -162,12 +163,7 @@ public class Main {
                 System.out.println(s.reactions.get(i).id);
                 int rx = m.x() + 390;
                 int ry = m.y() + 390;
-                String rt = "";
-                String sep = "";
-                for (ECNumber ec : s.reactions.get(i).ec) {
-                    rt += sep + ec.ecNumber;
-                    sep = "\n";
-                }
+                String rt = s.reactions.get(i).ec.get(s.reactions.get(i).pickedEC).ecNumber + " [" + s.reactions.get(i).ec.size() + "]";
                 Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 80, 30, "REACTION");
                 s.graphNodes.put(v1, s.reactions.get(i));
                 Mover ms = new Mover(90);
@@ -203,7 +199,7 @@ public class Main {
         try {
             URL website = new URL("http://www.cbrc.kaust.edu.sa/sbolme/" + p.url);
             ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName +  File.separator +"parts"+ File.separator  + p.id + ".xml");
+            FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id + ".xml");
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
         } catch (Exception e) {
 
@@ -226,53 +222,100 @@ public class Main {
     }
 
 
-    public static void setEC(Object o) {
-        Part p = s.graphNodes.get(o);
-        if(p instanceof Reaction){
-            Reaction r = (Reaction) p;
-            final JDialog frame = new JDialog(mainWindow, "Choose EC number", true);
-            JPanel jp = new JPanel();
-            jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-            JLabel l1 = new JLabel("Choose EC number for reaction:");
-            UI.addTo(jp, l1);
-            JTextField tf = new JTextField();
-            tf.setPreferredSize(new Dimension(l1.getPreferredSize().width, tf.getPreferredSize().height));
-            String c = "";
-            for(ECNumber e:r.ec){
-                c+=e.ecNumber + "\n";
+    public static void setEC(Reaction r) {
+        final JDialog frame = new JDialog(mainWindow, "Choose EC number", true);
+        JPanel jp = new JPanel();
+        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        JLabel l1 = new JLabel("Choose EC number for reaction:");
+        UI.addTo(jp, l1);
+        String[] lm = new String[r.ec.size()];
+        for (int i = 0; i < lm.length; i++) {
+            lm[i] = r.ec.get(i).ecNumber;
+        }
+        JList ecList = new JList(lm);
+        JScrollPane ecPane = new JScrollPane();
+        ecPane.setMaximumSize(new Dimension(300, 150));
+        ecPane.setPreferredSize(new Dimension(200, 150));
+        ecPane.setViewportView(ecList);
+        ecList.setSelectedIndex(r.pickedEC);
+        ecPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        UI.addTo(jp, ecPane);
+        JButton b1 = new JButton("Done");
+        UI.addToRight(jp, b1, false);
+        b1.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                r.pickedEC = ecList.getSelectedIndex();
+                frame.setVisible(false);
+                frame.dispose();
+                updateGraph();
             }
-            tf.setText(c);
-            UI.addTo(jp, tf);
-            JButton b1 = new JButton("Done");
-            UI.addToRight(jp, b1, false);
-            b1.addActionListener(new ActionListener() {
+        });
+        frame.getContentPane().add(jp);
+        frame.pack();
+        frame.setLocationRelativeTo(mainWindow);
+        frame.setVisible(true);
+    }
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    //addECNumber(RIF, tf.getText());
-                    frame.setVisible(false);
-                    frame.dispose();
+    public static void cellClicked(mxCell cell, int x, int y) {
+        Part p = s.graphNodes.get(cell);
+        if (p instanceof Reaction) {
+            cellPopUp pop = new cellPopUp((Reaction) p);
+            pop.show(mainWindow, x, y+100);
+        }
+    }
 
+    public static void chooseEnzyme(Reaction r) {
+        final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        JPanel jp = new JPanel();
+        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        JLabel l1 = new JLabel("Choose enzyme for reaction:");
+        UI.addTo(jp, l1);
+        Protein[] p = sInt.getProteins(s.organism, r.ec.get(r.pickedEC).ecNumber);
+        String[] lm = new String[p.length];
+        int pick=-1;
+        for (int i = 0; i < lm.length; i++) {
+            lm[i] = p[i].id;
+            if(r.enzyme!= null && r.enzyme.id.equals(p[i].id)){
+                pick=i;
+            }
+        }
+        JList ecList = new JList(lm);
+        JScrollPane ecPane = new JScrollPane();
+        ecPane.setMaximumSize(new Dimension(300, 150));
+        ecPane.setPreferredSize(new Dimension(200, 150));
+        ecPane.setViewportView(ecList);
+        if(pick!=-1) {
+            ecList.setSelectedIndex(pick);
+        }
+        ecPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        UI.addTo(jp, ecPane);
+        JButton b1 = new JButton("Done");
+        UI.addToRight(jp, b1, false);
+        b1.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Protein ps = p[ecList.getSelectedIndex()];
+                if(!s.proteins.contains(ps)){
+                    s.proteins.add(ps);
+                    saveXML(ps);
                 }
-            });
-            //frame.setPreferredSize(new Dimension(640, 480));
-            frame.getContentPane().add(jp);
-            frame.pack();
-            frame.setLocationRelativeTo(mainWindow);
-            frame.setVisible(true);
-        }
+                r.enzyme = ps;
+                frame.setVisible(false);
+                frame.dispose();
+                updateGraph();
+            }
+        });
+        frame.getContentPane().add(jp);
+        frame.pack();
+        frame.setLocationRelativeTo(mainWindow);
+        frame.setVisible(true);
     }
 
-    public static void addECNumber(String RIF, String ecn) {
-        ECNumber ec;
-        if (s.ecNumbers.contains(new ECNumber(ecn))) {
-            ec = s.ecNumbers.get(s.ecNumbers.indexOf(new ECNumber(ecn)));
-        } else {
-            ec = sInt.findECNumber(ecn);
-        }
-        saveXML(ec);
-        s.ecNumbers.add(ec);
-        s.reactions.get(s.reactions.indexOf(new Part(RIF))).ec.add(ec);
-        updateGraph();
-    }
+
+
+
+
 }

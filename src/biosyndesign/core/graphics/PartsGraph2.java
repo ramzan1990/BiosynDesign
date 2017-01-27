@@ -23,7 +23,7 @@ public class PartsGraph2 extends JPanel implements Serializable {
     public mxGraph graph;
     public mxGraphComponent graphComponent;
 
-    public PartsGraph2(){
+    public PartsGraph2() {
         super();
         this.setLayout(new BorderLayout());
         graph = new mxGraph() {
@@ -65,15 +65,12 @@ public class PartsGraph2 extends JPanel implements Serializable {
         graphComponent = new mxGraphComponent(graph);
         graphComponent.getViewport().setOpaque(true);
         //graphComponent.getViewport().setBackground(new Color(172, 172, 172));
-        graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
-        {
+        graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e)
-            {
-                mxCell cell =(mxCell) graphComponent.getCellAt(e.getX(), e.getY());
-                if(cell != null)
-                {
-                        Main.setEC(cell);
+            public void mouseReleased(MouseEvent e) {
+                mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
+                if (cell != null) {
+                    Main.cellClicked(cell, e.getX(), e.getY());
                 }
             }
         });
@@ -81,7 +78,6 @@ public class PartsGraph2 extends JPanel implements Serializable {
 
         this.add(graphComponent, BorderLayout.CENTER);
     }
-
 
 
 }
