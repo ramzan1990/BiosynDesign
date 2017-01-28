@@ -181,6 +181,6 @@ public class FirstFrame extends JFrame {
         this.setTitle("Welcome to BiosynDesign");
         this.pack();
         this.setLocationRelativeTo(null);
-
+        this.setResizable(false);
     }
 }
