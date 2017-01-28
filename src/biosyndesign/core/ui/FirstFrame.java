@@ -9,6 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by Umarov on 1/23/2017.
@@ -104,7 +106,11 @@ public class FirstFrame extends JFrame {
             }
         });
         JLabel l1 = new JLabel("Location:");
-        l1.setPreferredSize(new Dimension(50, 25));
+        int m = l1.getPreferredSize().width;
+        if(m<50){
+            m = 50;
+        }
+        l1.setPreferredSize(new Dimension(m, 25));
         browsePanel.add(l1);
         browsePanel.add(locationTF);
         browsePanel.add(browse);
@@ -112,6 +118,16 @@ public class FirstFrame extends JFrame {
         UI.addTo(topPanel, picLabel);
         topPanel.add(browsePanel);
         String options[] = {"Photorhabdus luminescens"};
+        try {
+            Scanner scan = new Scanner(new File("names.txt"));
+            ArrayList<String> names = new ArrayList<>();
+            while(scan.hasNextLine()){
+                names.add(scan.nextLine().trim());
+            }
+            options = names.toArray(new String[0]);
+        }catch(Exception e){
+
+        }
         JList<String> list = new JList<String>(options);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
@@ -120,7 +136,7 @@ public class FirstFrame extends JFrame {
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
         JLabel l2 = new JLabel("Organism:");
-        l2.setPreferredSize(new Dimension(50, 25));
+        l2.setPreferredSize(new Dimension(m, 25));
         organismPanel.add(l2);
         organismPanel.add(textField);
         topPanel.add(organismPanel);

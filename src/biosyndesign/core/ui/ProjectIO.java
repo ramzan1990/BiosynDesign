@@ -193,7 +193,6 @@ public class ProjectIO {
             scan.close();
             return projects.toArray(new String[0]);
         } catch (IOException e) {
-            e.printStackTrace();
         }
         return null;
     }
