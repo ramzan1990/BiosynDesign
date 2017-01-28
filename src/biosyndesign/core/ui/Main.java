@@ -20,10 +20,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,6 +65,9 @@ public class Main {
             try {
                 saveXML(p[i]);
                 if (p[i] instanceof Reaction) {
+                    if (s.reactions.contains(p[i])) {
+                        continue;
+                    }
                     Reaction r = (Reaction) p[i];
                     s.reactions.add(r);
                     //adding reactions compounds
@@ -116,6 +116,9 @@ public class Main {
                         r.ec.add(op);
                     }
                 } else {
+                    if (s.compounds.contains(p[i])) {
+                        continue;
+                    }
                     s.compounds.add((Compound) p[i]);
                 }
             } catch (Exception ex) {
@@ -123,11 +126,21 @@ public class Main {
             }
         }
         updateGraph();
-
+        mainWindow.setStatusLabel("Parts Added");
     }
 
     static void updateGraph() {
         s.graphNodes = new Hashtable<>();
+        Collections.sort(s.reactions, new Comparator<Part>() {
+            public int compare(Part left, Part right) {
+                return left.id.compareTo(right.id);
+            }
+        });
+        Collections.sort(s.compounds, new Comparator<Part>() {
+            public int compare(Part left, Part right) {
+                return left.id.compareTo(right.id);
+            }
+        });
         int cc = 0;
         int[] nb = new int[s.reactions.size()];
         for (int i = 0; i < nb.length; i++) {
@@ -147,7 +160,15 @@ public class Main {
 
         Collections.sort(s.reactions, new Comparator<Part>() {
             public int compare(Part left, Part right) {
-                return Integer.compare(nb[s.reactions.indexOf(left)], nb[s.reactions.indexOf(right)]);
+                int i1 = nb[s.reactions.indexOf(left)];
+                int i2 = nb[s.reactions.indexOf(right)];
+                if (i1 > i2) {
+                    return 1;
+                } else if (i1 < i2) {
+                    return -1;
+                } else {
+                    return left.id.compareTo(right.id);
+                }
             }
         });
         Collections.reverse(s.reactions);
@@ -163,7 +184,12 @@ public class Main {
                 System.out.println(s.reactions.get(i).id);
                 int rx = m.x() + 390;
                 int ry = m.y() + 390;
-                String rt = s.reactions.get(i).ec.get(s.reactions.get(i).pickedEC).ecNumber + " [" + s.reactions.get(i).ec.size() + "]";
+                String rt;
+                if (s.reactions.get(i).ec.size() == 0) {
+                    rt = "No EC Number!";
+                } else {
+                    rt = s.reactions.get(i).ec.get(s.reactions.get(i).pickedEC).ecNumber + " [" + s.reactions.get(i).ec.size() + "]";
+                }
                 Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 80, 30, "REACTION");
                 s.graphNodes.put(v1, s.reactions.get(i));
                 Mover ms = new Mover(90);
@@ -262,7 +288,7 @@ public class Main {
         Part p = s.graphNodes.get(cell);
         if (p instanceof Reaction) {
             cellPopUp pop = new cellPopUp((Reaction) p);
-            pop.show(mainWindow, x, y+100);
+            pop.show(mainWindow, x, y + 100);
         }
     }
 
@@ -274,11 +300,11 @@ public class Main {
         UI.addTo(jp, l1);
         Protein[] p = sInt.getProteins(s.organism, r.ec.get(r.pickedEC).ecNumber);
         String[] lm = new String[p.length];
-        int pick=-1;
+        int pick = -1;
         for (int i = 0; i < lm.length; i++) {
             lm[i] = p[i].id;
-            if(r.enzyme!= null && r.enzyme.id.equals(p[i].id)){
-                pick=i;
+            if (r.enzyme != null && r.enzyme.id.equals(p[i].id)) {
+                pick = i;
             }
         }
         JList ecList = new JList(lm);
@@ -286,7 +312,7 @@ public class Main {
         ecPane.setMaximumSize(new Dimension(300, 150));
         ecPane.setPreferredSize(new Dimension(200, 150));
         ecPane.setViewportView(ecList);
-        if(pick!=-1) {
+        if (pick != -1) {
             ecList.setSelectedIndex(pick);
         }
         ecPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -298,7 +324,7 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Protein ps = p[ecList.getSelectedIndex()];
-                if(!s.proteins.contains(ps)){
+                if (!s.proteins.contains(ps)) {
                     s.proteins.add(ps);
                     saveXML(ps);
                 }
@@ -315,7 +341,11 @@ public class Main {
     }
 
 
-
-
-
+    public static void competingReactions() {
+        for (Compound c : s.compounds) {
+            Reaction[] reactions = sInt.findCompetingReactions(s.organism, c.id);
+            addParts(reactions);
+        }
+        mainWindow.setStatusLabel("Competing reactions added.");
+    }
 }

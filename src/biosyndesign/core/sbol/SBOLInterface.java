@@ -153,4 +153,49 @@ public class SBOLInterface {
         }
         return p;
     }
+
+    public Reaction[] findCompetingReactions(String organism, String compound) {
+        StringBuffer result = new StringBuffer();
+        try {
+            URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/competing.php");
+            Map<String, Object> params = new LinkedHashMap<String, Object>();
+            params.put("compound", compound);
+            params.put("organism", organism);
+
+            StringBuilder postData = new StringBuilder();
+            for (Map.Entry<String, Object> param : params.entrySet()) {
+                if (postData.length() != 0) postData.append('&');
+                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
+                postData.append('=');
+                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            }
+            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
+            conn.setDoOutput(true);
+            conn.getOutputStream().write(postDataBytes);
+
+            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+
+            for (int c; (c = in.read()) >= 0; )
+                result.append((char) c);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+        JsonArray a = jsonObject.getAsJsonArray("rows");
+        int max = 10;
+        if(a.size() < max){
+            max = a.size();
+        }
+        Reaction[] p = new Reaction[max];
+        for (int i = 0; i < p.length; i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString());
+        }
+        return p;
+    }
 }

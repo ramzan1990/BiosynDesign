@@ -17,7 +17,7 @@ public class GUI extends JFrame {
 
     private static final int panelMargin = 0;
     private JMenu File, Parts, HelpM, Options, Window;
-    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme;
+    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
     ButtonGroup transformGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
@@ -60,6 +60,7 @@ public class GUI extends JFrame {
         addReaction= new JMenuItem("Add Reaction");
         addECNumber= new JMenuItem("Add EC Number");
         addEnzyme= new JMenuItem("Add Enzyme");
+        competingReactions =  new JMenuItem("Find Competing Native Reactions");
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -79,6 +80,8 @@ public class GUI extends JFrame {
         Parts.add(addReaction);
         Parts.add(addECNumber);
         Parts.add(addEnzyme);
+        Parts.addSeparator();
+        Parts.add(competingReactions);
 
         OpenProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -155,6 +158,11 @@ public class GUI extends JFrame {
         addEnzyme.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 NewParts.addEnzyme(ref);
+            }
+        });
+        competingReactions.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.competingReactions();
             }
         });
         Window.add(HideDataPanel);
