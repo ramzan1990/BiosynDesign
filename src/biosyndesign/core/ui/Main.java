@@ -342,10 +342,12 @@ public class Main {
 
 
     public static void competingReactions() {
+        ArrayList<Reaction> reactions = new ArrayList<>();
         for (Compound c : s.compounds) {
-            Reaction[] reactions = sInt.findCompetingReactions(s.organism, c.id);
-            addParts(reactions);
+            Reaction[] r = sInt.findCompetingReactions(s.organism, c.id);
+            reactions.addAll(Arrays.asList(r));
         }
+        addParts(reactions.toArray(new Reaction [0]));
         mainWindow.setStatusLabel("Competing reactions added.");
     }
 }
