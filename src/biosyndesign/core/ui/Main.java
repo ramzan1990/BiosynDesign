@@ -110,10 +110,16 @@ public class Main {
                         }
                         if (op == null) {
                             op = sInt.findECNumber(id);
-                            s.ecNumbers.add(op);
-                            saveXML(op);
+                            if(op!=null) {
+                                s.ecNumbers.add(op);
+                                saveXML(op);
+                            }
                         }
-                        r.ec.add(op);
+                        if(op!=null) {
+                            r.ec.add(op);
+                        }else{
+                            r.partialEC = id;
+                        }
                     }
                 } else {
                     if (s.compounds.contains(p[i])) {
@@ -186,7 +192,7 @@ public class Main {
                 int ry = m.y() + 390;
                 String rt;
                 if (s.reactions.get(i).ec.size() == 0) {
-                    rt = "No EC Number!";
+                    rt = s.reactions.get(i).partialEC;
                 } else {
                     rt = s.reactions.get(i).ec.get(s.reactions.get(i).pickedEC).ecNumber + " [" + s.reactions.get(i).ec.size() + "]";
                 }

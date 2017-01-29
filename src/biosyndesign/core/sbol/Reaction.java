@@ -11,10 +11,12 @@ public class Reaction extends Part{
     public ArrayList<ECNumber> ec;
     public int pickedEC;
     public Protein enzyme;
+    public String partialEC;
 
     public Reaction(String id, String name, String url) {
         super(id, name, url);
         compounds = new ArrayList();
         ec = new ArrayList();
+        partialEC="";
     }
 }

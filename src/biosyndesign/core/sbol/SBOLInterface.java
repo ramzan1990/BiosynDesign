@@ -103,10 +103,14 @@ public class SBOLInterface {
         }
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
-        ECNumber ec;
-        JsonObject o = a.get(0).getAsJsonObject();
-        ec = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
-        return ec;
+        if(a.size()>0) {
+            ECNumber ec;
+            JsonObject o = a.get(0).getAsJsonObject();
+            ec = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
+            return ec;
+        }else{
+            return null;
+        }
     }
 
     public Protein[] getProteins(String organism, String ecNumber) {
