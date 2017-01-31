@@ -57,7 +57,7 @@ public class SBOLInterface {
                 name = o.get("Name").getAsString();
             }
             if(o.get("ID").getAsString().contains("R")){
-                parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString());
+                parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString(), o.get("Energy").getAsDouble());
 
             }else{
                 parts[i] = new Compound(o.get("ID").getAsString(), name, o.get("URL").getAsString());
@@ -198,7 +198,7 @@ public class SBOLInterface {
         Reaction[] p = new Reaction[max];
         for (int i = 0; i < p.length; i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString());
+            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("Energy").getAsDouble());
         }
         return p;
     }

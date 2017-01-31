@@ -12,11 +12,13 @@ public class Reaction extends Part{
     public int pickedEC;
     public Protein enzyme;
     public String partialEC;
+    public double energy;
 
-    public Reaction(String id, String name, String url) {
+    public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);
         compounds = new ArrayList();
         ec = new ArrayList();
         partialEC="";
+        this.energy=energy;
     }
 }

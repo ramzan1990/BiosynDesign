@@ -41,7 +41,7 @@ public class FirstFrame extends JFrame {
         } else {
             poList = new String[po.length];
             for (int i = 0; i < po.length; i++) {
-                int p1 = po[i].lastIndexOf("\\");
+                int p1 = po[i].lastIndexOf(File.separator);
                 String sv = po[i].substring(0, p1);
                 if(sv.length()>30){
                     sv = sv.substring(0, 12)+ "..."+sv.substring(sv.length() - 12, sv.length());
@@ -106,11 +106,7 @@ public class FirstFrame extends JFrame {
             }
         });
         JLabel l1 = new JLabel("Location:");
-        int m = l1.getPreferredSize().width;
-        if(m<50){
-            m = 50;
-        }
-        l1.setPreferredSize(new Dimension(m, 25));
+
         browsePanel.add(l1);
         browsePanel.add(locationTF);
         browsePanel.add(browse);
@@ -136,6 +132,11 @@ public class FirstFrame extends JFrame {
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
         JLabel l2 = new JLabel("Organism:");
+        int m = l2.getPreferredSize().width;
+        if(m<50){
+            m = 50;
+        }
+        l1.setPreferredSize(new Dimension(m, 25));
         l2.setPreferredSize(new Dimension(m, 25));
         organismPanel.add(l2);
         organismPanel.add(textField);
