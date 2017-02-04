@@ -3,9 +3,17 @@ package biosyndesign.core.sbol;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import java.io.*;
-import java.net.*;
 import java.util.*;
 
 public class SBOLInterface {
@@ -13,35 +21,29 @@ public class SBOLInterface {
     public Part[] findCompound(int type, int data1, String data2) {
         StringBuffer result = new StringBuffer();
         try {
-            URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("type", type);
-            params.put("data1", data1);
-            params.put("data2", data2);
-            params.put("seq", "");
-            params.put("page", "1");
-            params.put("max", "25");
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                postData.append('=');
-                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("type", "" + type));
+            nvps.add(new BasicNameValuePair("data1", "" + data1));
+            nvps.add(new BasicNameValuePair("data2", data2));
+            nvps.add(new BasicNameValuePair("seq", ""));
+            nvps.add(new BasicNameValuePair("page", "1"));
+            nvps.add(new BasicNameValuePair("max", "25"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                System.out.println(response.getStatusLine());
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
             }
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            httpclient.close();
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(postDataBytes);
-
-            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
-            for (int c; (c = in.read()) >= 0; )
-                result.append((char) c);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -56,14 +58,14 @@ public class SBOLInterface {
             } else {
                 name = o.get("Name").getAsString();
             }
-            if(o.get("ID").getAsString().contains("R")){
-                double energy=1000;
-                if(o.has("Energy") && !o.get("Energy").isJsonNull()){
+            if (o.get("ID").getAsString().contains("R")) {
+                double energy = 1000;
+                if (o.has("Energy") && !o.get("Energy").isJsonNull()) {
                     energy = o.get("Energy").getAsDouble();
                 }
                 parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString(), energy);
 
-            }else{
+            } else {
                 parts[i] = new Compound(o.get("ID").getAsString(), name, o.get("URL").getAsString());
             }
         }
@@ -73,46 +75,40 @@ public class SBOLInterface {
     public ECNumber findECNumber(String ECNumber) {
         StringBuffer result = new StringBuffer();
         try {
-            URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("type", 2);
-            params.put("data1", 0);
-            params.put("data2", ECNumber);
-            params.put("seq", "");
-            params.put("page", "1");
-            params.put("max", "25");
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                postData.append('=');
-                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("type", "2"));
+            nvps.add(new BasicNameValuePair("data1", "0"));
+            nvps.add(new BasicNameValuePair("data2", ECNumber));
+            nvps.add(new BasicNameValuePair("seq", ""));
+            nvps.add(new BasicNameValuePair("page", "1"));
+            nvps.add(new BasicNameValuePair("max", "25"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                System.out.println(response.getStatusLine());
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
             }
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            httpclient.close();
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(postDataBytes);
-
-            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
-            for (int c; (c = in.read()) >= 0; )
-                result.append((char) c);
         } catch (Exception e) {
             e.printStackTrace();
         }
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
-        if(a.size()>0) {
+        if (a.size() > 0) {
             ECNumber ec;
             JsonObject o = a.get(0).getAsJsonObject();
             ec = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
             return ec;
-        }else{
+        } else {
             return null;
         }
     }
@@ -120,35 +116,29 @@ public class SBOLInterface {
     public Protein[] getProteins(String organism, String ecNumber) {
         StringBuffer result = new StringBuffer();
         try {
-            URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("type", "3");
-            params.put("data1", organism);
-            params.put("data2", ecNumber);
-            params.put("seq", "");
-            params.put("page", "1");
-            params.put("max", "25");
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                postData.append('=');
-                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("type", "3"));
+            nvps.add(new BasicNameValuePair("data1", organism));
+            nvps.add(new BasicNameValuePair("data2", ecNumber));
+            nvps.add(new BasicNameValuePair("seq", ""));
+            nvps.add(new BasicNameValuePair("page", "1"));
+            nvps.add(new BasicNameValuePair("max", "25"));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                System.out.println(response.getStatusLine());
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
             }
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            httpclient.close();
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(postDataBytes);
-
-            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
-            for (int c; (c = in.read()) >= 0; )
-                result.append((char) c);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,38 +155,33 @@ public class SBOLInterface {
     public Reaction[] findCompetingReactions(String organism, String compound) {
         StringBuffer result = new StringBuffer();
         try {
-            URL url = new URL("http://www.cbrc.kaust.edu.sa/sbolme/php/competing.php");
-            Map<String, Object> params = new LinkedHashMap<String, Object>();
-            params.put("compound", compound);
-            params.put("organism", organism);
-
-            StringBuilder postData = new StringBuilder();
-            for (Map.Entry<String, Object> param : params.entrySet()) {
-                if (postData.length() != 0) postData.append('&');
-                postData.append(URLEncoder.encode(param.getKey(), "UTF-8"));
-                postData.append('=');
-                postData.append(URLEncoder.encode(String.valueOf(param.getValue()), "UTF-8"));
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/competing.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("compound", compound));
+            nvps.add(new BasicNameValuePair("organism", organism));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                System.out.println(response.getStatusLine());
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
             }
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            httpclient.close();
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-            conn.setDoOutput(true);
-            conn.getOutputStream().write(postDataBytes);
-
-            Reader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
-
-            for (int c; (c = in.read()) >= 0; )
-                result.append((char) c);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
         int max = 10;
-        if(a.size() < max){
+        if (a.size() < max) {
             max = a.size();
         }
         Reaction[] p = new Reaction[max];
