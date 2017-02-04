@@ -8,6 +8,8 @@ import java.util.ArrayList;
 public class Reaction extends Part{
 
     public ArrayList<Part> compounds;
+    public ArrayList<Part> reactants;
+    public ArrayList<Part> products;
     public ArrayList<ECNumber> ec;
     public int pickedEC;
     public Protein enzyme;
@@ -18,6 +20,8 @@ public class Reaction extends Part{
         super(id, name, url);
         compounds = new ArrayList();
         ec = new ArrayList();
+        reactants=new ArrayList();
+        products=new ArrayList();
         partialEC="";
         this.energy=energy;
     }

@@ -10,6 +10,7 @@ public class Part implements Serializable {
     public String url;
     public String name;
     public String id;
+    public boolean local;
 
     public Part(String id, String name, String url) {
         this.id = id;
@@ -28,5 +29,10 @@ public class Part implements Serializable {
         } else {
             return false;
         }
+    }
+
+    public Part setLocal(boolean b) {
+        this.local = b;
+        return this;
     }
 }

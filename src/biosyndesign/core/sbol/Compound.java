@@ -8,4 +8,6 @@ public class Compound extends Part{
     public Compound(String id, String name, String url) {
         super(id, name, url);
     }
+
+
 }

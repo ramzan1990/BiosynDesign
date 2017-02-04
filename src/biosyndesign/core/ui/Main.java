@@ -63,7 +63,9 @@ public class Main {
         projectIO.checkSaved();
         for (int i = 0; i < p.length; i++) {
             try {
-                saveXML(p[i]);
+                if(!p[i].local) {
+                    saveXML(p[i]);
+                }
                 if (p[i] instanceof Reaction) {
                     if (s.reactions.contains(p[i])) {
                         continue;
@@ -92,6 +94,11 @@ public class Main {
                             saveXML(op);
                         }
                         r.compounds.add(op);
+                        if(xml.contains(op.id+"_product")){
+                            r.products.add(op);
+                        }else{
+                            r.reactants.add(op);
+                        }
                     }
                     //adding reactions ec numbers
                     pattern1 = "<ecnum:id>";

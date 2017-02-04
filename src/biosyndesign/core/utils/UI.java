@@ -56,4 +56,12 @@ public class UI {
 
         dataPanel.add(panel);
     }
+
+    public static void addTFTo(JPanel jp, JTextField c, int i, int m) {
+        c.setPreferredSize(new Dimension(i, m));
+        c.setMaximumSize(new Dimension(i, m));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(c);
+        jp.add(panel);
+    }
 }
