@@ -444,7 +444,7 @@ io.newProject();
             public void actionPerformed(ActionEvent e) {
                 try {
                     SBOLInterface sInt = new SBOLInterface();
-                    parts = sInt.findCompound(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                    parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
                     String[] names = new String[parts.length];
                     for(int i=0; i<names.length;i++){
                         names[i] = parts[i].name;

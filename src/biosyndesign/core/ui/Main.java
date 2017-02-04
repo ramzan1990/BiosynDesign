@@ -46,7 +46,7 @@ public class Main {
         } catch (Exception e) {
         }
         fc = new JFileChooser();
-        sInt = new SBOLInterface();
+        sInt = new SBOLme();
 
         projectIO = new ProjectIO(s);
         mainWindow = new GUI(projectIO);
@@ -89,7 +89,7 @@ public class Main {
                             }
                         }
                         if (op == null) {
-                            op = (Compound) sInt.findCompound(0, 0, id)[0];
+                            op = (Compound) sInt.findParts(0, 0, id)[0];
                             s.compounds.add(op);
                             saveXML(op);
                         }
