@@ -36,6 +36,8 @@ public class Main {
 
 
     public static void main(String[] args) {
+            System.setProperty("org.apache.commons.logging.Log",
+                    "org.apache.commons.logging.impl.NoOpLog");
         s = new ProjectState();
         s.projectName = "DefaultProject";
         s.projectPath = "DefaultProject/";

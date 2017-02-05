@@ -36,7 +36,6 @@ public class SBOLme implements SBOLInterface{
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
-                System.out.println(response.getStatusLine());
                 HttpEntity entity = response.getEntity();
                 Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
                 for (int c; (c = in.read()) >= 0; )
@@ -90,7 +89,6 @@ public class SBOLme implements SBOLInterface{
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
-                System.out.println(response.getStatusLine());
                 HttpEntity entity = response.getEntity();
                 Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
                 for (int c; (c = in.read()) >= 0; )
@@ -131,7 +129,6 @@ public class SBOLme implements SBOLInterface{
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
-                System.out.println(response.getStatusLine());
                 HttpEntity entity = response.getEntity();
                 Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
                 for (int c; (c = in.read()) >= 0; )
@@ -166,7 +163,6 @@ public class SBOLme implements SBOLInterface{
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
-                System.out.println(response.getStatusLine());
                 HttpEntity entity = response.getEntity();
                 Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
                 for (int c; (c = in.read()) >= 0; )
