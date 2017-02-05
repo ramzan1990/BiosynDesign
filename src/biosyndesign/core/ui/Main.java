@@ -31,7 +31,7 @@ public class Main {
     private static JFileChooser fc;
     public static File fcDir;
     public static ProjectState s;
-    private static SBOLInterface sInt;
+    public static SBOLInterface sInt;
     public static ProjectIO projectIO;
 
 
