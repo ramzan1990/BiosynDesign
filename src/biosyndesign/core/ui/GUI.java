@@ -3,6 +3,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.graphics.PartsGraph2;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
+import biosyndesign.core.sbol.SBOLme;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -443,7 +444,7 @@ io.newProject();
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    SBOLInterface sInt = new SBOLInterface();
+                    SBOLInterface sInt = new SBOLme();
                     parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
                     String[] names = new String[parts.length];
                     for(int i=0; i<names.length;i++){
