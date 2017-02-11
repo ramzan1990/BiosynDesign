@@ -19,6 +19,7 @@ public class ProjectState implements Serializable {
     public ArrayList<Protein> proteins;
     public Hashtable<Object, Part> graphNodes;
     public String organism;
+    public Compound target;
 
     public ProjectState(){
         compounds = new ArrayList<>();

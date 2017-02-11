@@ -34,4 +34,11 @@ public class Common {
             e.printStackTrace();
         }
     }
+
+    public static String restrict(String s, int m){
+        if(s.length()>m){
+            s = s.substring(0, m/2)+ "..."+s.substring(s.length() - (m/2 - 3), s.length());
+        }
+        return s;
+    }
 }

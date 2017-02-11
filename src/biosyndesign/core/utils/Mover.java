@@ -38,6 +38,14 @@ public class Mover {
         }
         cdist++;
     }
+
+    public static int max(int size){
+        Mover m = new Mover(1);
+        for(int i =0; i<size;i++){
+            m.move();
+        }
+        return m.max;
+    }
     public int x(){
         return x;
     }

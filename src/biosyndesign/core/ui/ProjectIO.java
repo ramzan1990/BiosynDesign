@@ -24,6 +24,7 @@ public class ProjectIO {
     public static ProjectState s;
     private static GUI mainWindow;
     private static JFrame ff;
+    private static JFrame npf;
 
     public ProjectIO(ProjectState s) {
         this.s = s;
@@ -135,7 +136,7 @@ public class ProjectIO {
         s.organism = organism;
         saveProjectAs2(null);
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
-        ff.setVisible(false);
+        clear();
         mainWindow.setVisible(true);
         remember();
     }
@@ -144,7 +145,7 @@ public class ProjectIO {
 
 
         if (openProject()) {
-            ff.setVisible(false);
+            clear();
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
@@ -200,7 +201,7 @@ public class ProjectIO {
     public void openRecentSelected(String f) {
         openProject2(new File(f));
         if (isSaved) {
-            ff.setVisible(false);
+            clear();
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
@@ -217,6 +218,27 @@ public class ProjectIO {
     }
 
     public void showWelcome() {
+        ff.setVisible(true);
+    }
+
+    public void newProjectSelected() {
+        ff.setVisible(false);
+        npf = new NewProjectFrame(this);
+        npf.setVisible(true);
+    }
+
+    private void clear() {
+        if (ff != null) {
+            ff.setVisible(false);
+            ff.dispose();
+        }
+        if (npf != null) {
+            npf.setVisible(false);
+            npf.dispose();
+        }
+    }
+
+    public void creationCanceled() {
         ff.setVisible(true);
     }
 }

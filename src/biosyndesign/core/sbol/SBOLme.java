@@ -114,14 +114,14 @@ public class SBOLme implements SBOLInterface{
         }
     }
 
-    public Protein[] getProteins(String organism, String ecNumber) {
+    public Protein[] getProteins(String ecNumber) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
-            nvps.add(new BasicNameValuePair("data1", organism));
+            nvps.add(new BasicNameValuePair("data1", ""));
             nvps.add(new BasicNameValuePair("data2", ecNumber));
             nvps.add(new BasicNameValuePair("seq", ""));
             nvps.add(new BasicNameValuePair("page", "1"));
@@ -147,7 +147,7 @@ public class SBOLme implements SBOLInterface{
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(), organism, o.get("URL").getAsString(), ecNumber);
+            p[i] = new Protein(o.get("ID").getAsString(),  o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ecNumber);
         }
         return p;
     }

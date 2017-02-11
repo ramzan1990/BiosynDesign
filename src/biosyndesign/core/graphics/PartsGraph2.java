@@ -4,6 +4,9 @@ import biosyndesign.core.ui.Main;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxConstants;
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxEventSource;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 
@@ -47,6 +50,14 @@ public class PartsGraph2 extends JPanel implements Serializable {
         style.put(mxConstants.STYLE_EDITABLE, "0");
         stylesheet.putCellStyle("COMPOUND", style);
 
+        Hashtable<String, Object> style1 = new Hashtable<String, Object>();
+        style1.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style1.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style1.put(mxConstants.STYLE_FILLCOLOR, "#36d84e");
+        style1.put(mxConstants.STYLE_ROUNDED, "1");
+        style1.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("COMPOUND_TARGET", style1);
 
         Hashtable<String, Object> style2 = new Hashtable<String, Object>();
         style2.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
@@ -56,6 +67,15 @@ public class PartsGraph2 extends JPanel implements Serializable {
         style2.put(mxConstants.STYLE_ROUNDED, "1");
         style2.put(mxConstants.STYLE_EDITABLE, "0");
         stylesheet.putCellStyle("REACTION", style2);
+
+        Hashtable<String, Object> style3 = new Hashtable<String, Object>();
+        style3.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style3.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style3.put(mxConstants.STYLE_FILLCOLOR, "#ffa500");
+        style3.put(mxConstants.STYLE_ROUNDED, "1");
+        style3.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("ENZYME", style3);
 
         //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
 
@@ -74,7 +94,14 @@ public class PartsGraph2 extends JPanel implements Serializable {
                 }
             }
         });
-
+        graphComponent.getConnectionHandler().addListener(mxEvent.CONNECT, new mxEventSource.mxIEventListener() {
+            public void invoke(Object sender, mxEventObject evt) {
+                mxCell edge = (mxCell)evt.getProperty("cell");
+                mxCell source = (mxCell) edge.getSource();
+                mxCell target = (mxCell) edge.getTarget();
+                Main.edgeAdded(edge, source, target);
+            }
+        });
 
         this.add(graphComponent, BorderLayout.CENTER);
     }

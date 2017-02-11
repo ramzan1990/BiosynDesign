@@ -443,17 +443,23 @@ io.newProject();
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    SBOLInterface sInt = Main.sInt;
-                    parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
-                    String[] names = new String[parts.length];
-                    for(int i=0; i<names.length;i++){
-                        names[i] = parts[i].name;
+                new Thread()
+                {
+                    public void run() {
+                        try {
+                            SBOLInterface sInt = Main.sInt;
+                            parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                            String[] names = new String[parts.length];
+                            for(int i=0; i<names.length;i++){
+                                names[i] = parts[i].name;
+                            }
+                            partsList.setModel(new DefaultComboBoxModel(names));
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                    partsList.setModel(new DefaultComboBoxModel(names));
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                }.start();
+
 
             }
         });

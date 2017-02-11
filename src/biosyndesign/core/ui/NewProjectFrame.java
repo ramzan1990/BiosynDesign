@@ -15,66 +15,18 @@ import java.util.Scanner;
 /**
  * Created by Umarov on 1/23/2017.
  */
-public class FirstFrame extends JFrame {
+public class NewProjectFrame extends JFrame {
     boolean empty;
     String po[];
 
-    public FirstFrame(ProjectIO io) {
+    public NewProjectFrame(ProjectIO io) {
         int w = 600;
         this.setSize(new Dimension(w, 400));
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
         this.setLayout(new BorderLayout());
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.setBackground(Color.WHITE);
-        leftPanel.setSize(new Dimension(200, 300));
-        leftPanel.setMinimumSize(new Dimension(200, 300));
-        //leftPanel.add(new JLabel("Where am I????----------------------"));
-
-        po = io.getRecent();
-        String[] poList;
-        empty = false;
-        if (po == null) {
-            poList = new String[]{"  No recent projects"};
-            empty = true;
-        } else {
-            poList = new String[po.length];
-            for (int i = 0; i < po.length; i++) {
-                int p1 = po[i].lastIndexOf(File.separator);
-                String sv = po[i].substring(0, p1);
-                if(sv.length()>30){
-                    sv = sv.substring(0, 12)+ "..."+sv.substring(sv.length() - 12, sv.length());
-                }
-                poList[i] = "  " + sv;
-            }
-        }
-        JList projectsList = new JList(poList);
-        if (!empty) {
-            projectsList.setSelectedIndex(0);
-        }
-        projectsList.setFixedCellHeight(60);
-        MouseListener mouseListener = new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    String selectedItem = po[projectsList.getSelectedIndex()];
-                    if (!empty) {
-                        io.openRecentSelected(selectedItem.trim());
-                    }
-                }
-            }
-        };
-        projectsList.addMouseListener(mouseListener);
-        JScrollPane partsPane = new JScrollPane();
-        partsPane.setMaximumSize(new Dimension(300, 900));
-        partsPane.setPreferredSize(new Dimension(200, 300));
-        partsPane.setViewportView(projectsList);
-        //projectsList.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        partsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        leftPanel.add(partsPane);
 
 
-        //leftPanel.add(Box.createRigidArea(new Dimension(0, 300)));
         JPanel topPanel = new JPanel();
         //topPanel.setSize(new Dimension(400, 250));
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
@@ -105,44 +57,88 @@ public class FirstFrame extends JFrame {
 
             }
         });
+        JLabel l1 = new JLabel("Location:");
 
+        browsePanel.add(l1);
+        browsePanel.add(locationTF);
+        browsePanel.add(browse);
         JLabel picLabel = new JLabel(new ImageIcon(Main.class.getResource("images/logo.png")));
-        UI.addTo(topPanel, picLabel);
+       // UI.addTo(topPanel, picLabel);
+        topPanel.add(browsePanel);
+        String options[] = {"Photorhabdus luminescens"};
+        try {
+            Scanner scan = new Scanner(new File("names.txt"));
+            ArrayList<String> names = new ArrayList<>();
+            while(scan.hasNextLine()){
+                names.add(scan.nextLine().trim());
+            }
+            options = names.toArray(new String[0]);
+        }catch(Exception e){
 
+        }
+        JList<String> list = new JList<String>(options);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setSelectedIndex(0);
+        JTextField textField = new JTextField("dddddddddddddddddddddd");
+        textField.setPreferredSize(new Dimension(340, 25));
+        JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        organismPanel.setMaximumSize(new Dimension(w, 100));
+        JLabel l2 = new JLabel("Organism:");
+        int m = l2.getPreferredSize().width;
+        if(m<50){
+            m = 50;
+        }
+        l1.setPreferredSize(new Dimension(m, 25));
+        l2.setPreferredSize(new Dimension(m, 25));
+        organismPanel.add(l2);
+        organismPanel.add(textField);
+        topPanel.add(organismPanel);
 
+        AutoCompleteDecorator.decorate(list, textField, ObjectToStringConverter.DEFAULT_IMPLEMENTATION);
 
-        //topPanel.setBackground(Color.BLUE);
+        JPanel prefixPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        prefixPanel.setMaximumSize(new Dimension(w, 100));
+        JLabel l3 = new JLabel("Prefix:");
+        l3.setPreferredSize(new Dimension(m, 25));
+        prefixPanel.add(l3);
+        JTextField prefixField = new JTextField("http://www.cbrc.kaust.edu.sa/dummy");
+        prefixField.setPreferredSize(new Dimension(340, 25));
+        prefixPanel.add(prefixField);
+        topPanel.add(prefixPanel);
 
 
         this.setLayout(new BorderLayout());
         JPanel lowerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-        JButton b1 = new JButton("Open Project");
-        b1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                io.openProjectSelected();
-            }
-        });
-        lowerPanel.add(b1);
+        JLabel lpl1 = new JLabel("cbrc.kaust.edu.sa/sbolme");
+        lpl1.setPreferredSize(new Dimension(320, 20));
+        lpl1.addMouseListener(new PopClickListener(new repoPopUp(lpl1)));
+        lowerPanel.add(lpl1);
 
         JButton b2 = new JButton("Create Project");
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                    io.newProjectSelected();
+                if (locationTF.getText().trim().length() != 0){
+                    io.newProjectSelected(textField.getText());
+                }
             }
         });
         lowerPanel.add(b2);
         lowerPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
-        this.add(leftPanel, BorderLayout.WEST);
-
         this.add(lowerPanel, BorderLayout.SOUTH);
         this.add(topPanel, BorderLayout.CENTER);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        this.setTitle("Welcome to BiosynDesign");
+        this.setTitle("Create New Project");
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                io.creationCanceled();
+            }
+        });
     }
 }
