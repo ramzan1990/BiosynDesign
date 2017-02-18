@@ -2,6 +2,8 @@ package biosyndesign.core.ui;
 
 
 import biosyndesign.core.sbol.*;
+import biosyndesign.core.ui.popups.CompoundCellPopUp;
+import biosyndesign.core.ui.popups.ReactionCellPopUp;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;
 import biosyndesign.core.utils.UI;
@@ -65,14 +67,14 @@ public class Main {
     public static void addParts(Part[] p) {
         System.out.println("Adding Parts");
         projectIO.checkSaved();
-        new Thread()
-        {
+        new Thread() {
             public void run() {
                 for (int i = 0; i < p.length; i++) {
                     try {
                         if (!p[i].local) {
                             saveXML(p[i]);
                         }
+                        String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
                         if (p[i] instanceof Reaction) {
                             if (s.reactions.contains(p[i])) {
                                 continue;
@@ -80,10 +82,9 @@ public class Main {
                             Reaction r = (Reaction) p[i];
                             s.reactions.add(r);
                             //adding reactions compounds
-                            String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
+
                             String pattern1 = "<sbol:definition rdf:resource=\"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/";
                             String pattern2 = "\"/>";
-
                             Pattern pat = Pattern.compile(Pattern.quote(pattern1) + "(.*?)" + Pattern.quote(pattern2));
                             Matcher m = pat.matcher(xml);
                             while (m.find()) {
@@ -139,6 +140,7 @@ public class Main {
                             if (s.compounds.contains(p[i])) {
                                 continue;
                             }
+                            p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
                             s.compounds.add((Compound) p[i]);
                         }
                     } catch (Exception ex) {
@@ -494,6 +496,12 @@ public class Main {
             }
         }
         if (key != null) {
+            for (Reaction r : s.reactions) {
+                if (r.compounds.contains(c) && !r.local) {
+                    JOptionPane.showMessageDialog(null, "Cannot remove compound because it is used in reaction.");
+                    return;
+                }
+            }
             s.compounds.remove(c);
             mxGraph graph = mainWindow.workSpacePanel.graph;
             graph.getModel().beginUpdate();

@@ -1,6 +1,6 @@
 package biosyndesign.core.utils;
 
-import biosyndesign.core.ui.repoPopUp;
+import biosyndesign.core.ui.popups.repoPopUp;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

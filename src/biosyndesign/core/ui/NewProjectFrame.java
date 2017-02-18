@@ -1,7 +1,7 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.ui.popups.repoPopUp;
 import biosyndesign.core.utils.PopClickListener;
-import biosyndesign.core.utils.UI;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
@@ -76,10 +76,7 @@ public class NewProjectFrame extends JFrame {
         }catch(Exception e){
 
         }
-        JList<String> list = new JList<String>(options);
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setSelectedIndex(0);
-        JTextField textField = new JTextField("dddddddddddddddddddddd");
+        JComboBox textField = new JComboBox(options);
         textField.setPreferredSize(new Dimension(340, 25));
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
@@ -94,7 +91,7 @@ public class NewProjectFrame extends JFrame {
         organismPanel.add(textField);
         topPanel.add(organismPanel);
 
-        AutoCompleteDecorator.decorate(list, textField, ObjectToStringConverter.DEFAULT_IMPLEMENTATION);
+        AutoCompleteDecorator.decorate(textField);
 
         JPanel prefixPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         prefixPanel.setMaximumSize(new Dimension(w, 100));
@@ -118,7 +115,7 @@ public class NewProjectFrame extends JFrame {
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (locationTF.getText().trim().length() != 0){
-                    io.newProjectSelected(textField.getText());
+                    io.newProjectSelected(textField.getSelectedItem().toString());
                 }
             }
         });

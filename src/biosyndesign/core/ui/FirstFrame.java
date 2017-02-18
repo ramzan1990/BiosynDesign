@@ -1,5 +1,6 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.ui.popups.RecentProjectPopUp;
 import biosyndesign.core.utils.PopClickListener;
 import biosyndesign.core.utils.UI;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
@@ -20,6 +21,7 @@ public class FirstFrame extends JFrame {
     String po[];
 
     public FirstFrame(ProjectIO io) {
+        final FirstFrame ff = this;
         int w = 600;
         this.setSize(new Dimension(w, 400));
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -49,7 +51,12 @@ public class FirstFrame extends JFrame {
                 poList[i] = "  " + sv;
             }
         }
-        JList projectsList = new JList(poList);
+        JList projectsList = new JList();
+        DefaultListModel<String> model = new DefaultListModel();
+        for(int i =0; i<poList.length; i++){
+            model.add(i, poList[i]);
+        }
+        projectsList.setModel(model);
         if (!empty) {
             projectsList.setSelectedIndex(0);
         }
@@ -61,6 +68,9 @@ public class FirstFrame extends JFrame {
                     if (!empty) {
                         io.openRecentSelected(selectedItem.trim());
                     }
+                }else if(e.getButton() == 3){
+                    RecentProjectPopUp p= new RecentProjectPopUp(projectsList, projectsList.getSelectedIndex(), io);
+                    p.show(ff, e.getX(), e.getY());
                 }
             }
         };

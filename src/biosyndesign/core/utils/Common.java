@@ -41,4 +41,9 @@ public class Common {
         }
         return s;
     }
+
+    public static String between(String fc, String s1, String s2) {
+        String name = fc.substring(fc.indexOf(s1) + s1.length(), fc.indexOf(s2));
+        return name;
+    }
 }

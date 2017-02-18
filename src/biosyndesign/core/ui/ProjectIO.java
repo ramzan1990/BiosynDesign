@@ -184,6 +184,35 @@ public class ProjectIO {
         }
     }
 
+    public void remove(int j) {
+        try {
+            String path = s.projectPath + s.projectName + ".bdp";
+            File f = new File("projects");
+            f.createNewFile();
+            Scanner scan = new Scanner(f);
+            ArrayList<String> projects = new ArrayList<>();
+            while (scan.hasNextLine()) {
+                projects.add(scan.nextLine());
+            }
+            scan.close();
+            String s = "";
+            for (int i =0; i<projects.size(); i++) {
+                if(i==j){
+                    continue;
+                }
+                String p= projects.get(i);
+                s += p;
+            }
+            if(s.endsWith("\n")){
+                s = s.substring(0, s.length()-2);
+            }
+            Files.delete(Paths.get("projects"));
+            Files.write(Paths.get("projects"), s.getBytes(), StandardOpenOption.CREATE);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String[] getRecent() {
         try {
             Scanner scan = new Scanner(new File("projects"));
