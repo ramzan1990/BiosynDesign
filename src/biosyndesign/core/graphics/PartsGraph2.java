@@ -37,7 +37,7 @@ public class PartsGraph2 extends JPanel implements Serializable {
         };
         Object parent = graph.getDefaultParent();
 
-        mxConstants.STYLE_ENDARROW = "none";
+
 
 
         mxStylesheet stylesheet = graph.getStylesheet();
@@ -90,7 +90,7 @@ public class PartsGraph2 extends JPanel implements Serializable {
             public void mouseReleased(MouseEvent e) {
                 mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
                 if (cell != null) {
-                    Main.cellClicked(cell, e.getX(), e.getY());
+                    Main.pm.cellClicked(cell, e.getX(), e.getY());
                 }
             }
         });
@@ -99,11 +99,12 @@ public class PartsGraph2 extends JPanel implements Serializable {
                 mxCell edge = (mxCell)evt.getProperty("cell");
                 mxCell source = (mxCell) edge.getSource();
                 mxCell target = (mxCell) edge.getTarget();
-                Main.edgeAdded(edge, source, target);
+                Main.pm.edgeAdded(edge, source, target);
             }
         });
 
         this.add(graphComponent, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createEmptyBorder(1, 1, 1,1));
     }
 
 

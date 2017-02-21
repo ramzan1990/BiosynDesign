@@ -21,8 +21,8 @@ public class ProjectIO {
 
 
     private static boolean isSaved;
-    public static ProjectState s;
-    private static GUI mainWindow;
+    private ProjectState s;
+    private GUI mainWindow;
     private static JFrame ff;
     private static JFrame npf;
 
@@ -32,7 +32,7 @@ public class ProjectIO {
     }
 
     public void setMainWindow(GUI mainWindow) {
-        ProjectIO.mainWindow = mainWindow;
+        this.mainWindow = mainWindow;
     }
 
     public void newProject() {
@@ -47,7 +47,7 @@ public class ProjectIO {
             File f = fd.getFiles()[0];
             openProject2(f);
         }
-        Main.updateGraph();
+        Main.gm.updateGraph();
         mainWindow.workSpacePanel.graph.refresh();
         mainWindow.workSpacePanel.repaint();
         return isSaved;
@@ -234,7 +234,7 @@ public class ProjectIO {
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
-            Main.updateGraph();
+            Main.gm.updateGraph();
             remember();
         }
 

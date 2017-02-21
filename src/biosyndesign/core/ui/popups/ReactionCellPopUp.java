@@ -14,19 +14,19 @@ public class ReactionCellPopUp extends JPopupMenu {
         item1 = new JMenuItem("Choose EC Number");
         item1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.setEC(cell);
+                Main.pm.setEC(cell);
             }
         });
         item2 = new JMenuItem("Choose Enzyme");
         item2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.chooseEnzyme(cell);
+                Main.pm.chooseEnzyme(cell);
             }
         });
         item3= new JMenuItem("Delete");
         item3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.delete(cell);
+                Main.pm.delete(cell);
             }
         });
         add(item1);

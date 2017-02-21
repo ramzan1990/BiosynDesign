@@ -8,6 +8,7 @@ import biosyndesign.core.utils.UI;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.time.LocalDateTime;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -27,7 +28,7 @@ public class GUI extends JFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update;
     JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
@@ -35,6 +36,8 @@ public class GUI extends JFrame {
     JList partsList;
     PartsGraph2 workSpacePanel;
     private JLabel statusLabel, infoLabel;
+    private JButton b3;
+    private JScrollPane partsPane;
 
 
     public GUI(ProjectIO io) {
@@ -163,13 +166,12 @@ public class GUI extends JFrame {
         });
         competingReactions.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.competingReactions();
+                Main.pm.competingReactions();
             }
         });
         Window.add(HideDataPanel);
         Window.add(HideTools);
         Window.add(HideConsole);
-        Window.addSeparator();
         Window.addSeparator();
         Window.add(ClearConsole);
         ClearConsole.addActionListener(new ActionListener() {
@@ -293,7 +295,7 @@ io.newProject();
             }
 
             public void mouseEntered(MouseEvent e) {
-                newProject.setIcon(new ImageIcon(Main.class.getResource("images/newRollover.png")));
+                newProject.setIcon(new ImageIcon(Main.class.getResource("images/new0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
@@ -316,7 +318,7 @@ io.newProject();
             }
 
             public void mouseEntered(MouseEvent e) {
-                openProject.setIcon(new ImageIcon(Main.class.getResource("images/openRollover.png")));
+                openProject.setIcon(new ImageIcon(Main.class.getResource("images/open0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
@@ -339,7 +341,7 @@ io.newProject();
             }
 
             public void mouseEntered(MouseEvent e) {
-                saveProject.setIcon(new ImageIcon(Main.class.getResource("images/saveRollover.png")));
+                saveProject.setIcon(new ImageIcon(Main.class.getResource("images/save0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
@@ -362,7 +364,7 @@ io.newProject();
             }
 
             public void mouseEntered(MouseEvent e) {
-                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/cameraRollover.png")));
+                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
@@ -370,20 +372,59 @@ io.newProject();
             }
         });
 
+        update = new JLabel();
+        update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+        update.setToolTipText("Take Snapshot");
+        update.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.gm.updateGraph();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                update.setIcon(new ImageIcon(Main.class.getResource("images/update0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+            }
+        });
+
         toolsPanel = new JToolBar();
 
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
-        toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+       // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(newProject);
-        toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(openProject);
-        toolsPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(saveProject);
+        toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        toolsPanel.addSeparator();
+        toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        toolsPanel.add(snapShotLabel);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(update);
+        toolsPanel.add(Box.createHorizontalGlue());
+        JLabel lt = new JLabel("Some interactable info");
+        lt.setIcon(new ImageIcon(Main.class.getResource("images/v1.png")));
+        toolsPanel.add(lt);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        toolsPanel.add(snapShotLabel);
+        toolsPanel.add(new JLabel("Text Button1"));
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.addSeparator();
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(new JLabel("Text Button2"));
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         //</editor-fold>
 
         dataPanel = new JToolBar();
@@ -392,7 +433,11 @@ io.newProject();
         dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         int dpcw = dataPanel.getPreferredSize().width - 15;
-
+        JLabel lp = new JLabel("Parts");
+        Font labelFont = lp.getFont();
+        lp.setFont(new Font(labelFont.getName(), Font.PLAIN, 28));
+        lp.setForeground(new Color(61, 166, 255));
+        UI.addTo(dataPanel, lp);
         JLabel l1 = new JLabel("Search for");
         l1.setMaximumSize(new Dimension(dpcw, l1.getPreferredSize().height) );
         JLabel l2 = new JLabel("Filter By");
@@ -447,13 +492,15 @@ io.newProject();
                 {
                     public void run() {
                         try {
-                            SBOLInterface sInt = Main.sInt;
+                            SBOLInterface sInt = Main.pm.sInt;
                             parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
                             String[] names = new String[parts.length];
                             for(int i=0; i<names.length;i++){
                                 names[i] = parts[i].name;
                             }
                             partsList.setModel(new DefaultComboBoxModel(names));
+                            b3.setVisible(true);
+                            partsPane.setVisible(true);
                         } catch (Exception ex) {
                             ex.printStackTrace();
                         }
@@ -465,14 +512,15 @@ io.newProject();
         });
 
         partsList = new JList();
-        JScrollPane partsPane = new JScrollPane();
+        partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
         partsPane.setPreferredSize(new Dimension(dpcw, 200));
         partsPane.setMaximumSize(new Dimension(dpcw, 200));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         UI.addTo(dataPanel, partsPane);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        JButton b3 = new JButton("Add");
+        b3 = new JButton("Add");
+        b3.setIcon(new ImageIcon(Main.class.getResource("images/load.png")));
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -480,12 +528,15 @@ io.newProject();
                 for(int i =0; i<p.length;i++){
                     p[i] = parts[partsList.getSelectedIndices()[i]];
                 }
-                Main.addParts(p);
+                Main.pm.addParts(p);
             }
         });
         UI.addToRight(dataPanel, b3);
+        b3.setVisible(false);
+        partsPane.setVisible(false);
 
         workSpacePanel = new PartsGraph2();
+
         // </editor-fold>
         // <editor-fold desc="console">
         consoleArea = new JTextArea();
@@ -532,7 +583,9 @@ io.newProject();
 
 
     public void setStatusLabel(String status) {
-        statusLabel.setText("  "+status);
+        LocalDateTime currentTime = LocalDateTime.now();
+        String time =  " ("+currentTime.getHour() + ":"+currentTime.getMinute()+")";
+        statusLabel.setText("  "+status + time);
     }
     public void setInfoLabel(int i1, int i2) {
         infoLabel.setText("Compounds: "+i1+"   Reactions: "+i2+"  ");
