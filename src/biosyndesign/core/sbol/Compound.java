@@ -5,6 +5,7 @@ package biosyndesign.core.sbol;
  */
 public class Compound extends Part{
 
+    public String smiles;
     public Compound(String id, String name, String url) {
         super(id, name, url);
     }

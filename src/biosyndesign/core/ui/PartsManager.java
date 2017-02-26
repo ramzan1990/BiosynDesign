@@ -7,6 +7,10 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
 import javax.xml.transform.*;
@@ -44,7 +48,7 @@ public class PartsManager {
         sInt = new SBOLme();
         this.s = s;
         this.mainWindow = mainWindow;
-        this.gm =gm;
+        this.gm = gm;
     }
 
     private void saveXML(Part p) {
@@ -95,6 +99,10 @@ public class PartsManager {
                                     saveXML(op);
                                     String xmlC = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + op.id)));
                                     op.name = Common.between(xmlC, "<dcterms:title>", "</dcterms:title>");
+                                    try {
+                                        op.smiles = Common.between(xmlC, "<sbol:elements>", "</sbol:elements>");
+                                    } catch (Exception e) {
+                                    }
                                 }
                                 r.compounds.add(op);
                                 if (xml.contains(op.id + "_product")) {
@@ -136,6 +144,10 @@ public class PartsManager {
                                 continue;
                             }
                             p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                            try {
+                                ((Compound) p[i]).smiles = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
+                            } catch (Exception e) {
+                            }
                             s.compounds.add((Compound) p[i]);
                         }
                     } catch (Exception ex) {
@@ -159,13 +171,33 @@ public class PartsManager {
             Result result = new StreamResult(new FileOutputStream("temp.html"));
             xformer.transform(source, result);
             String html = new String(Files.readAllBytes(Paths.get("temp.html")));
-            JEditorPane edit1 = new JEditorPane("text/html",html);
+            JEditorPane edit1 = new JEditorPane("text/html", html);
+
+
+            String smiles = c.smiles;
+            ImageComponent ic = null;
+            if (smiles != null) {
+                try {
+                    IChemObjectBuilder bldr
+                            = SilentChemObjectBuilder.getInstance();
+                    SmilesParser smipar = new SmilesParser(bldr);
+                    IAtomContainer mol = smipar.parseSmiles(smiles);
+                    ic = new ImageComponent(mol);
+                    //createFrame("Test", );
+                } catch (Exception ex) {
+                }
+
+            }
             ScrollPane sp = new ScrollPane();
             sp.add(edit1);
             sp.setMaximumSize(new Dimension(800, 600));
             sp.setPreferredSize(new Dimension(800, 600));
             final JDialog frame = new JDialog(mainWindow, "", true);
-            frame.getContentPane().add(sp);
+            if (ic != null) {
+                ic.setPreferredSize(new Dimension(100, 100));
+                frame.getContentPane().add(ic, BorderLayout.NORTH);
+            }
+            frame.getContentPane().add(sp, BorderLayout.CENTER);
             frame.pack();
             frame.setLocationRelativeTo(mainWindow);
             frame.setVisible(true);
@@ -177,7 +209,7 @@ public class PartsManager {
     public void findReactions(Compound cell) {
         Part[] parts = sInt.findParts(1, 1, cell.id);
         String[] names = new String[parts.length];
-        for(int i=0; i<names.length;i++){
+        for (int i = 0; i < names.length; i++) {
             names[i] = parts[i].name;
         }
 
@@ -203,7 +235,7 @@ public class PartsManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Part[] p = new Part[rList.getSelectedIndices().length];
-                for(int i =0; i<p.length;i++){
+                for (int i = 0; i < p.length; i++) {
                     p[i] = parts[rList.getSelectedIndices()[i]];
                 }
                 addParts(p);
@@ -314,7 +346,7 @@ public class PartsManager {
     }
 
 
-    public  void competingReactions() {
+    public void competingReactions() {
         ArrayList<Reaction> reactions = new ArrayList<>();
         for (Compound c : s.compounds) {
             Reaction[] r = sInt.findCompetingReactions(s.organism, c.id);
@@ -324,12 +356,12 @@ public class PartsManager {
         mainWindow.setStatusLabel("Competing reactions added.");
     }
 
-    public  void setTarget(Compound cell) {
+    public void setTarget(Compound cell) {
         s.target = cell;
         gm.updateGraph();
     }
 
-    public  void edgeAdded(mxCell edge, mxCell source, mxCell target) {
+    public void edgeAdded(mxCell edge, mxCell source, mxCell target) {
         Reaction r = null;
         Compound c = null;
         Part p1 = s.graphNodes.get(source);
@@ -348,9 +380,9 @@ public class PartsManager {
         }
         if (r != null && c != null && r.local) {
             r.compounds.add(c);
-            if(product){
+            if (product) {
                 r.products.add(c);
-            }else{
+            } else {
                 r.reactants.add(c);
             }
         } else {

@@ -400,7 +400,6 @@ io.newProject();
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
        // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 
-        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(newProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(openProject);

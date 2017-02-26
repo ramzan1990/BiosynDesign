@@ -58,10 +58,7 @@
           </xsl:choose>
         </td>
       </tr>
-    </table> 
-    <span style="display:inline-block;vertical-align:top;float:right;">
-      <img style="width: 300px;height=300px" src="file:///C:/Dropbox/BiosynDesign/ME_C00022.png"  onerror="this.style.display='none'"/>
-    </span>
+    </table>
   </div>
     <h3>Data sources</h3>
     <ul>
