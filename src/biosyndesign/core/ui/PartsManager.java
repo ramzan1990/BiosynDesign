@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+
 /**
  * Created by Umarov on 2/21/2017.
  */
@@ -190,8 +192,7 @@ public class PartsManager {
             }
             ScrollPane sp = new ScrollPane();
             sp.add(edit1);
-            sp.setMaximumSize(new Dimension(800, 600));
-            sp.setPreferredSize(new Dimension(800, 600));
+            sp.setPreferredSize(new Dimension(edit1.getPreferredSize().width + 40, 600));
             final JDialog frame = new JDialog(mainWindow, "", true);
             if (ic != null) {
                 ic.setPreferredSize(new Dimension(100, 100));

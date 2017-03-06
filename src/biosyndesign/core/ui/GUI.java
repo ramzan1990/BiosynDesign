@@ -483,6 +483,7 @@ io.newProject();
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         //dataPanel.setBackground(Color.RED);
         JButton b2 = new JButton("Search");
+        //b2.setIcon(new ImageIcon(Main.class.getResource("images/search.png")));
         UI.addToRight(dataPanel, b2);
         b2.addActionListener(new ActionListener() {
             @Override
