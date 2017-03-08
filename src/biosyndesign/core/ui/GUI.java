@@ -482,8 +482,10 @@ io.newProject();
         UI.addTo(dataPanel, qValueTF);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         //dataPanel.setBackground(Color.RED);
-        JButton b2 = new JButton("Search");
-        //b2.setIcon(new ImageIcon(Main.class.getResource("images/search.png")));
+        JButton b2 = new JButton(" Search");
+        b2.setIcon(new ImageIcon(Main.class.getResource("images/search.png")));
+        int bw = b2.getPreferredSize().width;
+        b2.setPreferredSize(new Dimension(bw, b2.getPreferredSize().height));
         UI.addToRight(dataPanel, b2);
         b2.addActionListener(new ActionListener() {
             @Override
@@ -519,8 +521,9 @@ io.newProject();
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         UI.addTo(dataPanel, partsPane);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        b3 = new JButton("Add");
+        b3 = new JButton(" Add");
         b3.setIcon(new ImageIcon(Main.class.getResource("images/load.png")));
+        b3.setPreferredSize(new Dimension(bw, b3.getPreferredSize().height));
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
