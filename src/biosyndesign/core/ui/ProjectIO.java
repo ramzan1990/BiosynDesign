@@ -136,6 +136,7 @@ public class ProjectIO {
         s.organism = organism;
         s.prefix = prefix;
         saveProjectAs2(null);
+        Main.initManagers();
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
         clear();
         mainWindow.setVisible(true);
@@ -147,6 +148,7 @@ public class ProjectIO {
 
         if (openProject()) {
             clear();
+            Main.initManagers();
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
@@ -232,6 +234,7 @@ public class ProjectIO {
         openProject2(new File(f));
         if (isSaved) {
             clear();
+            Main.initManagers();
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");

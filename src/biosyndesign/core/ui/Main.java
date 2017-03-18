@@ -40,10 +40,12 @@ public class Main {
         mainWindow = new GUI(projectIO);
         projectIO.setMainWindow(mainWindow);
         projectIO.showWelcome();
+    }
+
+    public static void initManagers(){
         gm = new GraphManager(s, mainWindow);
         pm = new PartsManager(s, mainWindow, gm);
     }
-
 
     public static void writeToConsole(String text) {
         mainWindow.writeToConsole(text);
