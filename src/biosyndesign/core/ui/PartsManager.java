@@ -55,10 +55,12 @@ public class PartsManager {
 
     private void saveXML(Part p) {
         try {
-            URL website = new URL("http://www.cbrc.kaust.edu.sa/sbolme/" + p.url);
+            System.out.println("saving...");
+            URL website = new URL(s.prefix +"/"+ p.url);
             ReadableByteChannel rbc = Channels.newChannel(website.openStream());
             FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            System.out.println("saving done");
         } catch (Exception e) {
 
         }
@@ -96,7 +98,9 @@ public class PartsManager {
                                     }
                                 }
                                 if (op == null) {
+                                    System.out.println("need to add compound");
                                     op = (Compound) sInt.findParts(0, 0, id)[0];
+                                    System.out.println("compound added");
                                     s.compounds.add(op);
                                     saveXML(op);
                                     String xmlC = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + op.id)));

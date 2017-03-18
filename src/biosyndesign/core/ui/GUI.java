@@ -15,7 +15,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-public class GUI extends JFrame {
+public class GUI extends BDFrame {
 
     private static final int panelMargin = 0;
     private JMenu File, Parts, HelpM, Options, Window;
@@ -41,6 +41,7 @@ public class GUI extends JFrame {
 
 
     public GUI(ProjectIO io) {
+        super();
         // <editor-fold defaultstate="collapsed" desc="menu">
         GUI ref = this;
         ClearConsole = new JMenuItem("Clear console");

@@ -15,11 +15,12 @@ import java.util.Scanner;
 /**
  * Created by Umarov on 1/23/2017.
  */
-public class NewProjectFrame extends JFrame {
+public class NewProjectFrame extends BDFrame {
     boolean empty;
     String po[];
 
     public NewProjectFrame(ProjectIO io) {
+        super();
         int w = 600;
         this.setSize(new Dimension(w, 400));
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -32,13 +33,15 @@ public class NewProjectFrame extends JFrame {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
         JTextField locationTF = new JTextField();
+        int h = locationTF.getPreferredSize().height;
+        h = Math.max(h, 25);
         //locationTF.setPreferredSize(new Dimension(300, 20));
         JPanel browsePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         browsePanel.setMaximumSize(new Dimension(w, 100));
         locationTF.setEditable(false);
-        locationTF.setPreferredSize(new Dimension(340, 25));
+        locationTF.setPreferredSize(new Dimension(340, h));
         JButton browse = new JButton("...");
-        browse.setPreferredSize(new Dimension(30, 25));
+        browse.setPreferredSize(new Dimension(30, h));
         //browse.setBorder(BorderFactory.createEtchedBorder(1));
         browse.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -77,7 +80,7 @@ public class NewProjectFrame extends JFrame {
 
         }
         JComboBox textField = new JComboBox(options);
-        textField.setPreferredSize(new Dimension(340, 25));
+        textField.setPreferredSize(new Dimension(340, h));
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
         JLabel l2 = new JLabel("Organism:");
@@ -85,8 +88,8 @@ public class NewProjectFrame extends JFrame {
         if(m<50){
             m = 50;
         }
-        l1.setPreferredSize(new Dimension(m, 25));
-        l2.setPreferredSize(new Dimension(m, 25));
+        l1.setPreferredSize(new Dimension(m, h));
+        l2.setPreferredSize(new Dimension(m, h));
         organismPanel.add(l2);
         organismPanel.add(textField);
         topPanel.add(organismPanel);
@@ -96,10 +99,10 @@ public class NewProjectFrame extends JFrame {
         JPanel prefixPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         prefixPanel.setMaximumSize(new Dimension(w, 100));
         JLabel l3 = new JLabel("Prefix:");
-        l3.setPreferredSize(new Dimension(m, 25));
+        l3.setPreferredSize(new Dimension(m, h));
         prefixPanel.add(l3);
-        JTextField prefixField = new JTextField("http://www.cbrc.kaust.edu.sa/dummy");
-        prefixField.setPreferredSize(new Dimension(340, 25));
+        JTextField prefixField = new JTextField("http://www.cbrc.kaust.edu.sa/sbolme");
+        prefixField.setPreferredSize(new Dimension(340, h));
         prefixPanel.add(prefixField);
         topPanel.add(prefixPanel);
 
@@ -107,7 +110,7 @@ public class NewProjectFrame extends JFrame {
         this.setLayout(new BorderLayout());
         JPanel lowerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JLabel lpl1 = new JLabel("cbrc.kaust.edu.sa/sbolme");
-        lpl1.setPreferredSize(new Dimension(320, 20));
+        lpl1.setPreferredSize(new Dimension(320, Math.max(20, lpl1.getPreferredSize().height)));
         lpl1.addMouseListener(new PopClickListener(new repoPopUp(lpl1)));
         lowerPanel.add(lpl1);
 
@@ -115,7 +118,7 @@ public class NewProjectFrame extends JFrame {
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (locationTF.getText().trim().length() != 0){
-                    io.newProjectSelected(textField.getSelectedItem().toString());
+                    io.newProjectSelected(textField.getSelectedItem().toString(), prefixField.getText());
                 }
             }
         });

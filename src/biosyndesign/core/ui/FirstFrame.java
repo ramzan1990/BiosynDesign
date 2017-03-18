@@ -16,11 +16,12 @@ import java.util.Scanner;
 /**
  * Created by Umarov on 1/23/2017.
  */
-public class FirstFrame extends JFrame {
+public class FirstFrame extends BDFrame {
     boolean empty;
     String po[];
 
     public FirstFrame(ProjectIO io) {
+        super();
         final FirstFrame ff = this;
         int w = 600;
         this.setSize(new Dimension(w, 400));

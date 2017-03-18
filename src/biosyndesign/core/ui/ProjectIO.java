@@ -132,8 +132,9 @@ public class ProjectIO {
 
     }
 
-    public void newProjectSelected(String organism) {
+    public void newProjectSelected(String organism, String prefix) {
         s.organism = organism;
+        s.prefix = prefix;
         saveProjectAs2(null);
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
         clear();

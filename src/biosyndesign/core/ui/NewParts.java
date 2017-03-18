@@ -58,7 +58,7 @@ public class NewParts {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText());
+                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), Main.s.prefix);
                 Main.pm.addParts(new Part[]{new Compound(id.getText(), split(synonyms)[0], path).setLocal(true)});
                 frame.setVisible(false);
                 frame.dispose();
@@ -126,7 +126,7 @@ public class NewParts {
             public void actionPerformed(ActionEvent e) {
                 String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText() ;
                 PartsCreator.newReaction(path, split(reactants), split(products), splitInt(rStoichiometry),
-                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText());
+                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), Main.s.prefix);
                 Main.pm.addParts(new Part[]{new Reaction(id.getText(), "", path, Integer.parseInt(freeEnergy.getText())).setLocal(true)});
                 frame.setVisible(false);
                 frame.dispose();
@@ -181,7 +181,7 @@ public class NewParts {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors));
+                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), Main.s.prefix);
                 Main.pm.addParts(new Part[]{new ECNumber(id.getText(), split(names)[0], path, id.getText()).setLocal(true)});
                 frame.setVisible(false);
                 frame.dispose();
@@ -238,7 +238,8 @@ public class NewParts {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newProtein(path, id.getText(), split(synonyms), organismID.getText(), organismName.getText(), organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers));
+                PartsCreator.newProtein(path, id.getText(), split(synonyms), organismID.getText(), organismName.getText(),
+                        organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers), Main.s.prefix);
                 Main.pm.addParts(new Part[]{new Protein(id.getText(), split(synonyms)[0], path, split(ECNumbers)[0]).setLocal(true)});
                 frame.setVisible(false);
                 frame.dispose();

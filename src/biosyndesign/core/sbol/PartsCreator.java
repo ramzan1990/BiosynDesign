@@ -20,14 +20,15 @@ import org.sbolstandard.core2.*;
 public class PartsCreator {
 
 
-    public static void newCompound(String f, String COMPOUND_ID, String[] SYNONYMS, String[] EXTERNAL_LINKS, String FORMULA, String SMILES, String CHARGE) {
-        String ANNOTATION_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/dummy/annotation/compound";
+
+    public static void newCompound(String f, String COMPOUND_ID, String[] SYNONYMS, String[] EXTERNAL_LINKS, String FORMULA, String SMILES, String CHARGE, String prefix) {
+        String ANNOTATION_PREFIX_URI = prefix + "/annotation/compound";
         String ANNOTATION_PREFIX = "compound";
         String ANNOTATION_SYNONYM = "synonym";
         String ANNOTATION_LINK = "source";
         String ANNOTATION_FORMULA = "formula";
         String ANNOTATION_CHARGE = "charge";
-        String URI_PREFIX = "http://www.cbrc.kaust.edu.sa/dummy";
+        String URI_PREFIX = prefix;
         URI SMILES_ENCODING = URI.create("http://opensmiles.org/opensmiles.html");
 
         try {
@@ -61,16 +62,16 @@ public class PartsCreator {
 
     public static void newReaction(String f, String[] REACTANTS, String[] PRODUCTS, int[] REACTANTS_STOICHIOMETRY,
                             int[] PRODUCTS_STOICHIOMETRY, String[] EC_NUMBERS,  String KEGG_REACTION, String REACTION_ID,
-                            String FREE_ENERGY_VALUE) {
-        String URI_PREFIX = "http://www.cbrc.kaust.edu.sa/sbolme/reaction";
-        String URI_COMPOUND_PREFIX = "http://www.cbrc.kaust.edu.sa/sbolme/compound/cd/";
-        String URI_ENZYME_PREFIX = "http://www.cbrc.kaust.edu.sa/sbolme/enzyme/cd/";
+                            String FREE_ENERGY_VALUE, String prefix) {
+        String URI_PREFIX =prefix+  "/reaction";
+        String URI_COMPOUND_PREFIX = prefix + "/compound/cd/";
+        String URI_ENZYME_PREFIX = prefix + "/enzyme/cd/";
 
-        String ANNOTATION_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/sbolme/annotation/reaction";
+        String ANNOTATION_PREFIX_URI = prefix + "/annotation/reaction";
         String ANNOTATION_PREFIX = "reaction";
         String ANNOTATION_STOICHIOMETRY = "stoichiometry";
 
-        String ANNOTATION_THERMODYNAMICS_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/sbolme/annotation/thermodynamics";
+        String ANNOTATION_THERMODYNAMICS_PREFIX_URI = prefix + "/annotation/thermodynamics";
         String ANNOTATION_THERMODYNAMICS_PREFIX = "thermodynamics";
         String ANNOTATION_FREE_ENERGY = "standard_Gibbs_free_energy";
         String ANNOTATION_FREE_ENERGY_ESTIMATOR = "estimator";
@@ -146,14 +147,14 @@ public class PartsCreator {
         }
     }
 
-    public static void newECNumber(String f, String EC_NUMBER,String[] NAMES,  String[] SYNONYMS, String EXTERNAL_LINK, String[] FORMULAS, String[] COFACTORS  ) {
-        String ANNOTATION_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/dummy/annotation/enzyme";
+    public static void newECNumber(String f, String EC_NUMBER,String[] NAMES,  String[] SYNONYMS, String EXTERNAL_LINK, String[] FORMULAS, String[] COFACTORS, String prefix ) {
+        String ANNOTATION_PREFIX_URI = prefix + "/annotation/enzyme";
         String ANNOTATION_PREFIX = "enzyme";
         String ANNOTATION_SYNONYM = "synonym";
         String ANNOTATION_LINK = "source";
         String ANNOTATION_FORMULA = "formula";
         String ANNOTATION_COFACTOR = "cofactor";
-        String URI_PREFIX = "http://www.cbrc.kaust.edu.sa/dummy";
+        String URI_PREFIX = prefix;
 
 //        // this one is from ID.  ID is 2.3.1.22 here, and this is changed to EC_2_3_1_22.
 //        String EC_NUMBER = "EC_2_3_1_22";
@@ -205,9 +206,10 @@ public class PartsCreator {
     }
 
 
-    public static void newProtein(String f, String PROTEIN_ID,  String[] PROTEIN_NAMES, String ORGANISM_ID, String ORGANISM_NAME, String ORGANISM_URL, String[] EXTERNAL_LINKS,  String AA_SEQ,  String[] EC_NUMBERS) {
-        String ANNOTATION_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/dummy/annotation/protein";
-        String ANNOTATION_ORGANISM_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/dummy/annotation/kegg/organism";
+    public static void newProtein(String f, String PROTEIN_ID,  String[] PROTEIN_NAMES, String ORGANISM_ID,
+                                  String ORGANISM_NAME, String ORGANISM_URL, String[] EXTERNAL_LINKS,  String AA_SEQ,  String[] EC_NUMBERS, String prefix) {
+        String ANNOTATION_PREFIX_URI = prefix + "/annotation/protein";
+        String ANNOTATION_ORGANISM_PREFIX_URI = prefix +  "/annotation/kegg/organism";
         String ANNOTATION_ORGANISM_URL = "link";
         String ANNOTATION_ORGANISM_ID = "id";
         String ANNOTATION_ORGANISM_NAME = "name";
@@ -216,7 +218,7 @@ public class PartsCreator {
         String ANNOTATION_LINK = "source";
         String ANNOTATION_EC = "ec_number";
         String ANNOTATION_SYNONYM = "synonym";
-        String URI_PREFIX = "http://www.cbrc.kaust.edu.sa/dummy";
+        String URI_PREFIX = prefix;
 //
 //        // this ID is from KEGG ID
 //        String PROTEIN_ID = "Hhal_1820";
