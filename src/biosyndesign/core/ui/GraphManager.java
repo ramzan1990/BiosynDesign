@@ -5,6 +5,7 @@ import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.Reaction;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class GraphManager {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
             Mover m = new Mover(300);
-            int off = m.max(s.reactions.size()) * 170;
+            int off = 170 + m.max(s.reactions.size()) * 170;
             String compoundStyle;
             for (int i = 0; i < s.reactions.size(); i++) {
                 int rx = m.x() + off;
@@ -171,4 +172,9 @@ public class GraphManager {
         }
     }
 
+
+    public Object[] getSelected() {
+        mxGraph graph = mainWindow.workSpacePanel.graph;
+        return graph.getSelectionCells();
+    }
 }

@@ -419,7 +419,16 @@ io.newProject();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        toolsPanel.add(new JLabel("Text Button1"));
+        JLabel tb1 = new JLabel("Common Reaction");
+        tb1.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+               Main.pm.commonReaction();
+            }
+
+        });
+        toolsPanel.add(tb1);
+
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));

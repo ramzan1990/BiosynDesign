@@ -9,4 +9,6 @@ public interface SBOLInterface {
     public Protein[] getProteins(String ecNumber);
 
     public Reaction[] findCompetingReactions(String organism, String compound);
+
+    public Reaction[] commonReactions(String id, String id1);
 }

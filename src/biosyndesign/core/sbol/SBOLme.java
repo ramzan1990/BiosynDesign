@@ -19,20 +19,30 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SBOLme implements SBOLInterface{
+public class SBOLme implements SBOLInterface {
+    String prefix;
+    public SBOLme(String prefix) {
+        this.prefix = prefix;
+    }
 
     public Part[] findParts(int type, int data1, String data2) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            HttpPost httpPost;
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("type", "0" + type));
-            nvps.add(new BasicNameValuePair("data1", "" + data1));
-            nvps.add(new BasicNameValuePair("data2", data2));
-            nvps.add(new BasicNameValuePair("seq", ""));
-            nvps.add(new BasicNameValuePair("page", "1"));
-            nvps.add(new BasicNameValuePair("max", "25"));
+            if(type==0 && data1 == 5){
+                httpPost = new HttpPost(prefix + "/php/Bd/exact.php");
+                nvps.add(new BasicNameValuePair("smiles", data2));
+            }else {
+                httpPost = new HttpPost(prefix + "/php/query.php");
+                nvps.add(new BasicNameValuePair("type", "0" + type));
+                nvps.add(new BasicNameValuePair("data1", "" + data1));
+                nvps.add(new BasicNameValuePair("data2", data2));
+                nvps.add(new BasicNameValuePair("seq", ""));
+                nvps.add(new BasicNameValuePair("page", "1"));
+                nvps.add(new BasicNameValuePair("max", "25"));
+            }
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
@@ -78,7 +88,7 @@ public class SBOLme implements SBOLInterface{
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            HttpPost httpPost = new HttpPost(prefix +"/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "2"));
             nvps.add(new BasicNameValuePair("data1", "0"));
@@ -118,7 +128,7 @@ public class SBOLme implements SBOLInterface{
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/query.php");
+            HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
             nvps.add(new BasicNameValuePair("data1", ""));
@@ -147,7 +157,7 @@ public class SBOLme implements SBOLInterface{
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(),  o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ecNumber);
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ecNumber);
         }
         return p;
     }
@@ -156,10 +166,50 @@ public class SBOLme implements SBOLInterface{
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("http://www.cbrc.kaust.edu.sa/sbolme/php/competing.php");
+            HttpPost httpPost = new HttpPost(prefix +"/php/Bd/competing.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("compound", compound));
             nvps.add(new BasicNameValuePair("organism", organism));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
+            }
+            httpclient.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+        JsonArray a = jsonObject.getAsJsonArray("rows");
+        int max = 10;
+        if (a.size() < max) {
+            max = a.size();
+        }
+        Reaction[] p = new Reaction[max];
+        for (int i = 0; i < p.length; i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("FreeEnergy").getAsDouble());
+        }
+        return p;
+    }
+
+    @Override
+    public Reaction[] commonReactions(String id1, String id2) {
+        StringBuffer result = new StringBuffer();
+        try {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(prefix +"/php/Bd/common_reaction.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("compound1", id1));
+            nvps.add(new BasicNameValuePair("compound2", id2));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {

@@ -10,6 +10,7 @@ import com.mxgraph.view.mxGraph;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
@@ -47,7 +48,7 @@ public class PartsManager {
 
 
     public PartsManager(ProjectState s, GUI mainWindow, GraphManager gm) {
-        sInt = new SBOLme();
+        sInt = new SBOLme(s.prefix);
         this.s = s;
         this.mainWindow = mainWindow;
         this.gm = gm;
@@ -456,5 +457,48 @@ public class PartsManager {
             graph.getModel().endUpdate();
             graph.refresh();
         }
+    }
+
+    public void commonReaction() {
+        Part c1 =  s.graphNodes.get(gm.getSelected()[0]);
+        Part c2 =  s.graphNodes.get(gm.getSelected()[1]);
+        if(c1 instanceof Compound && c2 instanceof Compound){
+            final JDialog frame = new JDialog(mainWindow, "Common Reactions", true);
+            JPanel jp = new JPanel();
+            jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+            JLabel l1 = new JLabel("Common Reactions");
+            UI.addTo(jp, l1);
+            Reaction[] p = sInt.commonReactions(c1.id, c2.id);
+            String[] lm = new String[p.length];
+            for (int i = 0; i < lm.length; i++) {
+                lm[i] = p[i].name;
+            }
+            JList rList = new JList(lm);
+            JScrollPane rPane = new JScrollPane();
+            rPane.setMaximumSize(new Dimension(300, 150));
+            rPane.setPreferredSize(new Dimension(200, 150));
+            rPane.setViewportView(rList);
+
+            rPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+            UI.addTo(jp, rPane);
+            JButton b1 = new JButton("Done");
+            UI.addToRight(jp, b1, false);
+            b1.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Reaction r = p[rList.getSelectedIndex()];
+                    addParts(new Part[]{r});
+                    frame.setVisible(false);
+                    frame.dispose();
+                    gm.updateGraph();
+                }
+            });
+            frame.getContentPane().add(jp);
+            frame.pack();
+            frame.setLocationRelativeTo(mainWindow);
+            frame.setVisible(true);
+        }
+
     }
 }
