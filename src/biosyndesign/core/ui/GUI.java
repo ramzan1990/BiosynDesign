@@ -472,7 +472,7 @@ io.newProject();
                     cmb2.addItem("Reaction participation");
                     cmb2.addItem("Associated compound");
                     cmb2.addItem("Transforming enzyme");
-                    cmb2.addItem("Compound substructure");
+                    cmb2.addItem("SMILES");
                 } else if (cmb1.getSelectedIndex() == 1) {
                     cmb2.addItem("Reaction ID");
                     cmb2.addItem("Participating compound");

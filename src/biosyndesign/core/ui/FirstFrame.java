@@ -128,7 +128,7 @@ public class FirstFrame extends BDFrame {
         this.setLayout(new BorderLayout());
         JPanel lowerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton b1 = new JButton("Open Project");
+        JButton b1 = new JButton("Existing Project");
         b1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 io.openProjectSelected();
