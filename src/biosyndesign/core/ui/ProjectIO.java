@@ -46,9 +46,6 @@ public class ProjectIO {
         if (fd.getFiles().length > 0) {
             File f = fd.getFiles()[0];
             openProject2(f);
-            Main.gm.updateGraph();
-            mainWindow.workSpacePanel.graph.refresh();
-            mainWindow.workSpacePanel.repaint();
         }
         return isSaved;
     }
@@ -144,8 +141,6 @@ public class ProjectIO {
     }
 
     public void openProjectSelected() {
-
-
         if (openProject()) {
             clear();
             Main.initManagers();

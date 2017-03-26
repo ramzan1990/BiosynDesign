@@ -177,4 +177,7 @@ public class GraphManager {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         return graph.getSelectionCells();
     }
+
+    public void deleteCells() {
+    }
 }

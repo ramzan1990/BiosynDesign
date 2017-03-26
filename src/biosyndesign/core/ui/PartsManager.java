@@ -296,10 +296,10 @@ public class PartsManager {
         Part p = s.graphNodes.get(cell);
         if (p instanceof Reaction) {
             ReactionCellPopUp pop = new ReactionCellPopUp((Reaction) p);
-            pop.show(mainWindow, x, y + 100);
+            pop.show(mainWindow, x, y);
         } else if (p instanceof Compound) {
             CompoundCellPopUp pop = new CompoundCellPopUp((Compound) p);
-            pop.show(mainWindow, x, y + 100);
+            pop.show(mainWindow, x, y);
         }
     }
 

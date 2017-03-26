@@ -28,7 +28,7 @@ public class GUI extends BDFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete;
     JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
@@ -396,24 +396,49 @@ io.newProject();
             }
         });
 
+        delete = new JLabel();
+        delete.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+        delete.setToolTipText("Delete cells");
+        delete.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.gm.deleteCells();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+            }
+        });
+
         toolsPanel = new JToolBar();
 
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
        // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-
+        toolsPanel.add(Box.createRigidArea(new Dimension(8, 0)));
         toolsPanel.add(newProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(openProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(saveProject);
-        toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        //toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
         toolsPanel.addSeparator();
-        toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
+        //toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
         toolsPanel.add(snapShotLabel);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(delete);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(update);
         toolsPanel.add(Box.createHorizontalGlue());
-        JLabel lt = new JLabel("Some interactable info");
+        JLabel lt = new JLabel("Info");
         lt.setIcon(new ImageIcon(Main.class.getResource("images/v1.png")));
         toolsPanel.add(lt);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -431,8 +456,6 @@ io.newProject();
 
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
-        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        toolsPanel.add(new JLabel("Text Button2"));
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         //</editor-fold>
 
@@ -582,6 +605,7 @@ io.newProject();
         add(dataPanel, BorderLayout.EAST);
         add(consolePanel, BorderLayout.SOUTH);
         add(workSpacePanel, BorderLayout.CENTER);
+        this.setMinimumSize(new Dimension(800, 600));
         this.pack();
         this.setLocationRelativeTo(null);
         // </editor-fold>
@@ -597,7 +621,11 @@ io.newProject();
 
     public void setStatusLabel(String status) {
         LocalDateTime currentTime = LocalDateTime.now();
-        String time =  " ("+currentTime.getHour() + ":"+currentTime.getMinute()+")";
+        String m = ""+currentTime.getMinute();
+        if(m.length()==1){
+            m = "0"+m;
+        }
+        String time =  " ("+currentTime.getHour() + ":"+m+")";
         statusLabel.setText("  "+status + time);
     }
     public void setInfoLabel(int i1, int i2) {
