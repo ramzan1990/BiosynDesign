@@ -178,6 +178,5 @@ public class GraphManager {
         return graph.getSelectionCells();
     }
 
-    public void deleteCells() {
-    }
+
 }

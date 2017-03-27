@@ -57,7 +57,7 @@ public class PartsManager {
     private void saveXML(Part p) {
         try {
             System.out.println("saving...");
-            URL website = new URL(s.prefix +"/"+ p.url);
+            URL website = new URL(s.prefix + "/" + p.url);
             ReadableByteChannel rbc = Channels.newChannel(website.openStream());
             FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -460,9 +460,9 @@ public class PartsManager {
     }
 
     public void commonReaction() {
-        Part c1 =  s.graphNodes.get(gm.getSelected()[0]);
-        Part c2 =  s.graphNodes.get(gm.getSelected()[1]);
-        if(c1 instanceof Compound && c2 instanceof Compound){
+        Part c1 = s.graphNodes.get(gm.getSelected()[0]);
+        Part c2 = s.graphNodes.get(gm.getSelected()[1]);
+        if (c1 instanceof Compound && c2 instanceof Compound) {
             final JDialog frame = new JDialog(mainWindow, "Common Reactions", true);
             JPanel jp = new JPanel();
             jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -500,5 +500,46 @@ public class PartsManager {
             frame.setVisible(true);
         }
 
+    }
+
+    public void deleteSelected() {
+        mxCell[] cells = (mxCell[]) gm.getSelected();
+        mxGraph graph = mainWindow.workSpacePanel.graph;
+        graph.getModel().beginUpdate();
+        //remove reactions
+        for (mxCell cell : cells) {
+            if (s.graphNodes.get(cell) instanceof Reaction) {
+                Reaction r = (Reaction) s.graphNodes.get(cell);
+                s.reactions.remove(r);
+                for (Part c : r.compounds) {
+                    boolean remove = true;
+                    for (Reaction or : s.reactions) {
+                        if (or.compounds.contains(c)) {
+                            remove = false;
+                            break;
+                        }
+                    }
+                    if (remove) {
+                        delete((Compound) c);
+                    }
+                }
+
+                graph.removeCells(new Object[]{cell});
+            }
+        }
+        //remove compounds
+        cells = (mxCell[]) gm.getSelected();
+        for (mxCell cell : cells) {
+            delete((Compound) s.graphNodes.get(cell));
+        }
+        graph.refresh();
+        graph.getModel().endUpdate();
+        graph.refresh();
+    }
+
+    public void viewSelected() {
+        if(gm.getSelected().length>0){
+            showInfo((Compound)s.graphNodes.get(gm.getSelected()[0]));
+        }
     }
 }

@@ -28,7 +28,7 @@ public class GUI extends BDFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit;
     JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
@@ -397,11 +397,11 @@ io.newProject();
         });
 
         delete = new JLabel();
-        delete.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+        delete.setIcon(new ImageIcon(Main.class.getResource("images/delete.png")));
         delete.setToolTipText("Delete cells");
         delete.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.gm.deleteCells();
+                Main.pm.deleteSelected();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -411,13 +411,60 @@ io.newProject();
             }
 
             public void mouseEntered(MouseEvent e) {
-                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+                delete.setIcon(new ImageIcon(Main.class.getResource("images/delete0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+                delete.setIcon(new ImageIcon(Main.class.getResource("images/delete.png")));
             }
         });
+
+        view = new JLabel();
+        view.setIcon(new ImageIcon(Main.class.getResource("images/view.png")));
+        view.setToolTipText("View cells");
+        view.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.viewSelected();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                view.setIcon(new ImageIcon(Main.class.getResource("images/view0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                view.setIcon(new ImageIcon(Main.class.getResource("images/view.png")));
+            }
+        });
+
+        edit = new JLabel();
+        edit.setIcon(new ImageIcon(Main.class.getResource("images/edit.png")));
+        edit.setToolTipText("Edit cells");
+        edit.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                edit.setIcon(new ImageIcon(Main.class.getResource("images/edit0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                edit.setIcon(new ImageIcon(Main.class.getResource("images/edit.png")));
+            }
+        });
+
 
         toolsPanel = new JToolBar();
 
@@ -433,6 +480,10 @@ io.newProject();
         toolsPanel.addSeparator();
         //toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
         toolsPanel.add(snapShotLabel);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(view);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(edit);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(delete);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
