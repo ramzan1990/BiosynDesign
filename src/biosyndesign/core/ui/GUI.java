@@ -61,11 +61,11 @@ public class GUI extends BDFrame {
         NewProject = new JMenuItem("New Project");
         SaveAs = new JMenuItem("Save As");
         OpenProject = new JMenuItem("Open Project");
-        addCompound= new JMenuItem("Add Compound");
-        addReaction= new JMenuItem("Add Reaction");
-        addECNumber= new JMenuItem("Add EC Number");
-        addEnzyme= new JMenuItem("Add Enzyme");
-        competingReactions =  new JMenuItem("Find Competing Native Reactions");
+        addCompound = new JMenuItem("Add Compound");
+        addReaction = new JMenuItem("Add Reaction");
+        addECNumber = new JMenuItem("Add EC Number");
+        addEnzyme = new JMenuItem("Add Enzyme");
+        competingReactions = new JMenuItem("Find Competing Native Reactions");
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -286,7 +286,7 @@ public class GUI extends BDFrame {
         newProject.setToolTipText("New Project");
         newProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-io.newProject();
+                io.newProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -447,7 +447,7 @@ io.newProject();
         edit.setToolTipText("Edit cells");
         edit.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-
+                Main.pm.editSelected();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -469,7 +469,7 @@ io.newProject();
         toolsPanel = new JToolBar();
 
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
-       // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         toolsPanel.add(Box.createRigidArea(new Dimension(8, 0)));
         toolsPanel.add(newProject);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
@@ -499,7 +499,7 @@ io.newProject();
         tb1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-               Main.pm.commonReaction();
+                Main.pm.commonReaction();
             }
 
         });
@@ -522,11 +522,11 @@ io.newProject();
         lp.setForeground(new Color(61, 166, 255));
         UI.addTo(dataPanel, lp);
         JLabel l1 = new JLabel("Search for");
-        l1.setMaximumSize(new Dimension(dpcw, l1.getPreferredSize().height) );
+        l1.setMaximumSize(new Dimension(dpcw, l1.getPreferredSize().height));
         JLabel l2 = new JLabel("Filter By");
-        l2.setMaximumSize(new Dimension(dpcw, l2.getPreferredSize().height) );
+        l2.setMaximumSize(new Dimension(dpcw, l2.getPreferredSize().height));
         JLabel l3 = new JLabel("Value");
-        l3.setMaximumSize(new Dimension(dpcw, l3.getPreferredSize().height) );
+        l3.setMaximumSize(new Dimension(dpcw, l3.getPreferredSize().height));
         UI.addTo(dataPanel, l1);
         cmb1 = new JComboBox();
         cmb1.setPreferredSize(new Dimension(dpcw, cmb1.getPreferredSize().height));
@@ -562,7 +562,7 @@ io.newProject();
         cmb1.setSelectedIndex(0);
         UI.addTo(dataPanel, l3);
         qValueTF = new JTextField("Pyruvate");
-        qValueTF.setPreferredSize(new Dimension(dpcw, qValueTF.getPreferredSize().height) );
+        qValueTF.setPreferredSize(new Dimension(dpcw, qValueTF.getPreferredSize().height));
         UI.addTo(dataPanel, qValueTF);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         //dataPanel.setBackground(Color.RED);
@@ -574,14 +574,13 @@ io.newProject();
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new Thread()
-                {
+                new Thread() {
                     public void run() {
                         try {
                             SBOLInterface sInt = Main.pm.sInt;
                             parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
                             String[] names = new String[parts.length];
-                            for(int i=0; i<names.length;i++){
+                            for (int i = 0; i < names.length; i++) {
                                 names[i] = parts[i].name;
                             }
                             partsList.setModel(new DefaultComboBoxModel(names));
@@ -612,7 +611,7 @@ io.newProject();
             @Override
             public void actionPerformed(ActionEvent e) {
                 Part[] p = new Part[partsList.getSelectedIndices().length];
-                for(int i =0; i<p.length;i++){
+                for (int i = 0; i < p.length; i++) {
                     p[i] = parts[partsList.getSelectedIndices()[i]];
                 }
                 Main.pm.addParts(p);
@@ -663,8 +662,6 @@ io.newProject();
     }
 
 
-
-
     public void writeToConsole(String text) {
         consoleArea.append(text);
     }
@@ -672,14 +669,15 @@ io.newProject();
 
     public void setStatusLabel(String status) {
         LocalDateTime currentTime = LocalDateTime.now();
-        String m = ""+currentTime.getMinute();
-        if(m.length()==1){
-            m = "0"+m;
+        String m = "" + currentTime.getMinute();
+        if (m.length() == 1) {
+            m = "0" + m;
         }
-        String time =  " ("+currentTime.getHour() + ":"+m+")";
-        statusLabel.setText("  "+status + time);
+        String time = " (" + currentTime.getHour() + ":" + m + ")";
+        statusLabel.setText("  " + status + time);
     }
+
     public void setInfoLabel(int i1, int i2) {
-        infoLabel.setText("Compounds: "+i1+"   Reactions: "+i2+"  ");
+        infoLabel.setText("Compounds: " + i1 + "   Reactions: " + i2 + "  ");
     }
 }

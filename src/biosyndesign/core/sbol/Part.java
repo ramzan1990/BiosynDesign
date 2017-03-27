@@ -1,6 +1,7 @@
 package biosyndesign.core.sbol;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -11,11 +12,13 @@ public class Part implements Serializable {
     public String name;
     public String id;
     public boolean local;
+    public ArrayList<String> info;
 
     public Part(String id, String name, String url) {
         this.id = id;
         this.name = name;
         this.url = url;
+        info = new ArrayList<>();
     }
 
     public Part(String id) {

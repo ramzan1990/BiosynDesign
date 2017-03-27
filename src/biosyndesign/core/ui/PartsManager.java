@@ -503,11 +503,11 @@ public class PartsManager {
     }
 
     public void deleteSelected() {
-        mxCell[] cells = (mxCell[]) gm.getSelected();
+        Object[] cells =  gm.getSelected();
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
         //remove reactions
-        for (mxCell cell : cells) {
+        for (Object cell : cells) {
             if (s.graphNodes.get(cell) instanceof Reaction) {
                 Reaction r = (Reaction) s.graphNodes.get(cell);
                 s.reactions.remove(r);
@@ -528,8 +528,8 @@ public class PartsManager {
             }
         }
         //remove compounds
-        cells = (mxCell[]) gm.getSelected();
-        for (mxCell cell : cells) {
+        cells =  gm.getSelected();
+        for (Object cell : cells) {
             delete((Compound) s.graphNodes.get(cell));
         }
         graph.refresh();
@@ -538,8 +538,25 @@ public class PartsManager {
     }
 
     public void viewSelected() {
-        if(gm.getSelected().length>0){
-            showInfo((Compound)s.graphNodes.get(gm.getSelected()[0]));
+        if (gm.getSelected().length > 0) {
+            showInfo((Compound) s.graphNodes.get(gm.getSelected()[0]));
         }
+    }
+
+    public void editSelected() {
+        mxCell cell = (mxCell) gm.getSelected()[0];
+        Part p = (Part) s.graphNodes.get(cell);
+        if (p.local) {
+            if (p instanceof Compound) {
+                NewParts.editCompound(mainWindow, (Compound) p);
+            } else if (p instanceof Reaction) {
+                NewParts.editReaction(mainWindow, (Reaction) p);
+            } else if (p instanceof ECNumber) {
+                NewParts.editECNumber(mainWindow, (ECNumber) p);
+            } else if (p instanceof Protein) {
+                NewParts.editEnzyme(mainWindow, (Protein) p);
+            }
+        }
+
     }
 }
