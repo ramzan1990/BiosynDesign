@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ReactionCellPopUp extends JPopupMenu {
-    JMenuItem item1, item2, item3;
+    JMenuItem item1, item2, item3, item4;
 
     public ReactionCellPopUp(Reaction cell){
         item1 = new JMenuItem("Choose EC Number");
@@ -23,8 +23,14 @@ public class ReactionCellPopUp extends JPopupMenu {
                 Main.pm.chooseEnzyme(cell);
             }
         });
-        item3= new JMenuItem("Delete");
+        item3= new JMenuItem("Structural Similarity");
         item3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.pm.structSimilarity(cell);
+            }
+        });
+        item4= new JMenuItem("Delete");
+        item4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Main.pm.delete(cell);
             }
@@ -32,5 +38,6 @@ public class ReactionCellPopUp extends JPopupMenu {
         add(item1);
         add(item2);
         add(item3);
+        add(item4);
     }
 }

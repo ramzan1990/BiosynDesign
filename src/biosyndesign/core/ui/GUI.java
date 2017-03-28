@@ -375,7 +375,7 @@ public class GUI extends BDFrame {
 
         update = new JLabel();
         update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
-        update.setToolTipText("Take Snapshot");
+        update.setToolTipText("Update Graph");
         update.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
                 Main.gm.updateGraph();

@@ -7,9 +7,9 @@ import java.util.ArrayList;
  */
 public class Reaction extends Part{
 
-    public ArrayList<Part> compounds;
-    public ArrayList<Part> reactants;
-    public ArrayList<Part> products;
+    public ArrayList<Compound> compounds;
+    public ArrayList<Compound> reactants;
+    public ArrayList<Compound> products;
     public ArrayList<ECNumber> ec;
     public int pickedEC;
     public Protein enzyme;

@@ -7,9 +7,12 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import org.openscience.cdk.fingerprint.HybridizationFingerprinter;
+import org.openscience.cdk.fingerprint.IBitFingerprint;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.similarity.Tanimoto;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 
@@ -502,8 +505,50 @@ public class PartsManager {
 
     }
 
+    public void structSimilarity(Reaction r) {
+        try {
+            final JDialog frame = new JDialog(mainWindow, "Structural Similarity", true);
+            Object columnNames[] = {"Reactant", "Product", "Tanimoto"};
+            ArrayList<String[]> rows = new ArrayList<>();
+            for (Compound reactant : r.reactants) {
+                for (Compound product : r.products) {
+                    if(reactant.smiles==null || product.smiles == null){
+                        continue;
+                    }
+                    String[] row = new String[3];
+                    row[0] = reactant.name;
+                    row[1] = product.name;
+                    IChemObjectBuilder bldr
+                            = SilentChemObjectBuilder.getInstance();
+                    SmilesParser smilesParser = new SmilesParser(bldr);
+                    IAtomContainer mol1 = smilesParser.parseSmiles(reactant.smiles);
+                    IAtomContainer mol2 = smilesParser.parseSmiles(product.smiles);
+                    HybridizationFingerprinter fingerprinter = new HybridizationFingerprinter();
+                    IBitFingerprint bitset1 = fingerprinter.getBitFingerprint(mol1);
+                    IBitFingerprint bitset2 = fingerprinter.getBitFingerprint(mol2);
+                    row[2] = Double.toString(Tanimoto.calculate(bitset1, bitset2));
+                    rows.add(row);
+                }
+            }
+            Object rowData[][] = new Object[rows.size()][3];
+            for(int i =0; i<rows.size(); i++){
+                rowData[i] = rows.get(i);
+            }
+            JTable table = new JTable(rowData, columnNames);
+            //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            //new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+            frame.setMinimumSize(new Dimension(640, 360));
+            frame.getContentPane().add(table);
+            frame.pack();
+            frame.setLocationRelativeTo(mainWindow);
+            frame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void deleteSelected() {
-        Object[] cells =  gm.getSelected();
+        Object[] cells = gm.getSelected();
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
         //remove reactions
@@ -528,9 +573,11 @@ public class PartsManager {
             }
         }
         //remove compounds
-        cells =  gm.getSelected();
+        cells = gm.getSelected();
         for (Object cell : cells) {
-            delete((Compound) s.graphNodes.get(cell));
+            if (s.graphNodes.get(cell) instanceof Compound) {
+                delete((Compound) s.graphNodes.get(cell));
+            }
         }
         graph.refresh();
         graph.getModel().endUpdate();
@@ -557,6 +604,6 @@ public class PartsManager {
                 NewParts.editEnzyme(mainWindow, (Protein) p);
             }
         }
-
+        gm.updateGraph();
     }
 }
