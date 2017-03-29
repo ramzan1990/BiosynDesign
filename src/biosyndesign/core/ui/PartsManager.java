@@ -535,10 +535,11 @@ public class PartsManager {
                 rowData[i] = rows.get(i);
             }
             JTable table = new JTable(rowData, columnNames);
+            JScrollPane scrollPane= new  JScrollPane(table);
             //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
             frame.setMinimumSize(new Dimension(640, 360));
-            frame.getContentPane().add(table);
+            frame.getContentPane().add(scrollPane);
             frame.pack();
             frame.setLocationRelativeTo(mainWindow);
             frame.setVisible(true);
