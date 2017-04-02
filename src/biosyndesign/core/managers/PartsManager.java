@@ -1,6 +1,9 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.managers;
 
+import biosyndesign.core.Main;
 import biosyndesign.core.sbol.*;
+import biosyndesign.core.ui.MainWindow;
+import biosyndesign.core.ui.ImageComponent;
 import biosyndesign.core.ui.popups.CompoundCellPopUp;
 import biosyndesign.core.ui.popups.ReactionCellPopUp;
 import biosyndesign.core.utils.Common;
@@ -13,7 +16,6 @@ import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.similarity.Tanimoto;
-import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
@@ -37,20 +39,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
-
 /**
  * Created by Umarov on 2/21/2017.
  */
 public class PartsManager {
-    private GUI mainWindow;
+    private MainWindow mainWindow;
     private ProjectState s;
     private GraphManager gm;
-
+    Part[] searchParts;
     public static SBOLInterface sInt;
 
 
-    public PartsManager(ProjectState s, GUI mainWindow, GraphManager gm) {
+    public PartsManager(ProjectState s, MainWindow mainWindow, GraphManager gm) {
         sInt = new SBOLme(s.prefix);
         this.s = s;
         this.mainWindow = mainWindow;
@@ -171,33 +171,41 @@ public class PartsManager {
         }.start();
     }
 
-    public void showInfo(Compound c) {
+    public void showInfo(Part c) {
         try {
+            ImageComponent ic = null;
             TransformerFactory factory = TransformerFactory.newInstance();
-            Templates template = factory.newTemplates(new StreamSource(
-                    new FileInputStream("xsl" + File.separator + "compound.xsl")));
+            Templates template = null;
+            if (c instanceof Compound) {
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "compound.xsl")));
+                String smiles = ((Compound) c).smiles;
+                if (smiles != null) {
+                    try {
+                        IChemObjectBuilder bldr
+                                = SilentChemObjectBuilder.getInstance();
+                        SmilesParser smipar = new SmilesParser(bldr);
+                        IAtomContainer mol = smipar.parseSmiles(smiles);
+                        ic = new ImageComponent(mol);
+                    } catch (Exception ex) {
+                    }
+                }
+            }else if(c instanceof Reaction){
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "reaction.xsl")));
+            }else if(c instanceof ECNumber){
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "enzyme.xsl")));
+            }else if(c instanceof Protein){
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "protein.xsl")));
+            }
             Transformer xformer = template.newTransformer();
             Source source = new StreamSource(new FileInputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id));
             Result result = new StreamResult(new FileOutputStream("temp.html"));
             xformer.transform(source, result);
             String html = new String(Files.readAllBytes(Paths.get("temp.html")));
             JEditorPane edit1 = new JEditorPane("text/html", html);
-
-
-            String smiles = c.smiles;
-            ImageComponent ic = null;
-            if (smiles != null) {
-                try {
-                    IChemObjectBuilder bldr
-                            = SilentChemObjectBuilder.getInstance();
-                    SmilesParser smipar = new SmilesParser(bldr);
-                    IAtomContainer mol = smipar.parseSmiles(smiles);
-                    ic = new ImageComponent(mol);
-                    //createFrame("Test", );
-                } catch (Exception ex) {
-                }
-
-            }
             ScrollPane sp = new ScrollPane();
             sp.add(edit1);
             sp.setPreferredSize(new Dimension(edit1.getPreferredSize().width + 40, 600));
@@ -208,6 +216,7 @@ public class PartsManager {
             }
             frame.getContentPane().add(sp, BorderLayout.CENTER);
             frame.pack();
+            frame.setSize(new Dimension(1024, 768));
             frame.setLocationRelativeTo(mainWindow);
             frame.setVisible(true);
         } catch (Exception e) {
@@ -312,7 +321,7 @@ public class PartsManager {
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         JLabel l1 = new JLabel("Choose enzyme for reaction:");
         UI.addTo(jp, l1);
-        Protein[] p = sInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
+        Protein[] p = sInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
         String[] lm = new String[p.length];
         int pick = -1;
         for (int i = 0; i < lm.length; i++) {
@@ -512,7 +521,7 @@ public class PartsManager {
             ArrayList<String[]> rows = new ArrayList<>();
             for (Compound reactant : r.reactants) {
                 for (Compound product : r.products) {
-                    if(reactant.smiles==null || product.smiles == null){
+                    if (reactant.smiles == null || product.smiles == null) {
                         continue;
                     }
                     String[] row = new String[3];
@@ -531,11 +540,11 @@ public class PartsManager {
                 }
             }
             Object rowData[][] = new Object[rows.size()][3];
-            for(int i =0; i<rows.size(); i++){
+            for (int i = 0; i < rows.size(); i++) {
                 rowData[i] = rows.get(i);
             }
             JTable table = new JTable(rowData, columnNames);
-            JScrollPane scrollPane= new  JScrollPane(table);
+            JScrollPane scrollPane = new JScrollPane(table);
             //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             //new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
             frame.setMinimumSize(new Dimension(640, 360));
@@ -587,7 +596,7 @@ public class PartsManager {
 
     public void viewSelected() {
         if (gm.getSelected().length > 0) {
-            showInfo((Compound) s.graphNodes.get(gm.getSelected()[0]));
+            showInfo(s.graphNodes.get(gm.getSelected()[0]));
         }
     }
 
@@ -596,15 +605,41 @@ public class PartsManager {
         Part p = (Part) s.graphNodes.get(cell);
         if (p.local) {
             if (p instanceof Compound) {
-                NewParts.editCompound(mainWindow, (Compound) p);
+                Main.lpm.editCompound((Compound) p);
             } else if (p instanceof Reaction) {
-                NewParts.editReaction(mainWindow, (Reaction) p);
+                Main.lpm.editReaction((Reaction) p);
             } else if (p instanceof ECNumber) {
-                NewParts.editECNumber(mainWindow, (ECNumber) p);
+                Main.lpm.editECNumber((ECNumber) p);
             } else if (p instanceof Protein) {
-                NewParts.editEnzyme(mainWindow, (Protein) p);
+                Main.lpm.editEnzyme((Protein) p);
             }
         }
         gm.updateGraph();
+    }
+
+    public void search(int c1, int c2, String value) {
+        new Thread() {
+            public void run() {
+                try {
+                    SBOLInterface sInt = Main.pm.sInt;
+                    searchParts = sInt.findParts(c1, c2, value);
+                    String[] names = new String[searchParts.length];
+                    for (int i = 0; i < names.length; i++) {
+                        names[i] = searchParts[i].name;
+                    }
+                    mainWindow.setResults(names);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }.start();
+    }
+
+    public void addPartsSelected(int[] selectedIndices) {
+        Part[] p = new Part[selectedIndices.length];
+        for (int i = 0; i < p.length; i++) {
+            p[i] = searchParts[selectedIndices[i]];
+        }
+        addParts(p);
     }
 }

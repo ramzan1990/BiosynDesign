@@ -1,9 +1,10 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.Main;
+import biosyndesign.core.managers.ProjectIO;
 import biosyndesign.core.ui.popups.repoPopUp;
 import biosyndesign.core.utils.PopClickListener;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
-import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,8 +17,8 @@ import java.util.Scanner;
  * Created by Umarov on 1/23/2017.
  */
 public class NewProjectFrame extends BDFrame {
-    boolean empty;
-    String po[];
+
+    File f;
 
     public NewProjectFrame(ProjectIO io) {
         super();
@@ -50,11 +51,8 @@ public class NewProjectFrame extends BDFrame {
                 fd.setFilenameFilter(new FileFilter());
 
                 if (fd.getFiles().length > 0) {
-                    File f = fd.getFiles()[0];
-                    Main.s.projectName = f.getName();
-                    Main.s.projectPath = f.getAbsolutePath();
-                    String path = Main.s.projectPath;
-                    locationTF.setText(path);
+                    f = fd.getFiles()[0];
+                    locationTF.setText(f.getAbsolutePath());
                 }
 
 
@@ -65,7 +63,6 @@ public class NewProjectFrame extends BDFrame {
         browsePanel.add(l1);
         browsePanel.add(locationTF);
         browsePanel.add(browse);
-        JLabel picLabel = new JLabel(new ImageIcon(Main.class.getResource("images/logo.png")));
        // UI.addTo(topPanel, picLabel);
         topPanel.add(browsePanel);
         String options[] = {"Photorhabdus luminescens"};
@@ -118,7 +115,7 @@ public class NewProjectFrame extends BDFrame {
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (locationTF.getText().trim().length() != 0){
-                    io.newProjectSelected(textField.getSelectedItem().toString(), prefixField.getText());
+                    io.newProjectSelected(textField.getSelectedItem().toString(), prefixField.getText(), f);
                 }
             }
         });

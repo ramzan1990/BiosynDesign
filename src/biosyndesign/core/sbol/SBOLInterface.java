@@ -6,7 +6,7 @@ public interface SBOLInterface {
 
     public ECNumber findECNumber(String ECNumber);
 
-    public Protein[] getProteins(String ecNumber);
+    public Protein[] getProteins(String ecNumber, String organism);
 
     public Reaction[] findCompetingReactions(String organism, String compound);
 

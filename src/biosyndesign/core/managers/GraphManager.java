@@ -1,11 +1,11 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.managers;
 
 import biosyndesign.core.sbol.Compound;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.Reaction;
+import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;
-import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 
 import java.util.ArrayList;
@@ -18,9 +18,9 @@ import java.util.Hashtable;
  */
 public class GraphManager {
     private ProjectState s;
-    private GUI mainWindow;
+    private MainWindow mainWindow;
 
-    public GraphManager(ProjectState s, GUI mainWindow) {
+    public GraphManager(ProjectState s, MainWindow mainWindow) {
         this.s = s;
         this.mainWindow = mainWindow;
     }

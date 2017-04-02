@@ -1,134 +1,111 @@
 package biosyndesign.core.graphics;
 
+import biosyndesign.core.Main;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.swing.mxGraphComponent;
+import com.mxgraph.util.mxConstants;
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxEventSource;
+import com.mxgraph.view.mxGraph;
+import com.mxgraph.view.mxStylesheet;
+
 import javax.swing.*;
-import java.applet.Applet;
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Label;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.io.Serializable;
+import java.util.Hashtable;
 
-public class PartsGraph extends JPanel implements MouseListener, MouseMotionListener {
-    Rectangle rect = new Rectangle(0, 0, 100, 50);
-
-    Graphics2D g2;
-
-    int preX, preY;
-
-    boolean isFirstTime = true;
-
-    Rectangle area;
-
-    boolean pressOut = false;
+/**
+ * Created by Umarov on 1/19/2017.
+ */
+public class PartsGraph extends JPanel implements Serializable {
+    public mxGraph graph;
+    public mxGraphComponent graphComponent;
 
     public PartsGraph() {
-        setBackground(Color.white);
-        addMouseMotionListener(this);
-        addMouseListener(this);
+        super();
+        this.setLayout(new BorderLayout());
+        graph = new mxGraph() {
+            // Overrides method to disallow edge label editing
+            public boolean isCellEditable(Object cell) {
+                return !getModel().isEdge(cell);
+            }
+        };
+        Object parent = graph.getDefaultParent();
+
+
+
+
+        mxStylesheet stylesheet = graph.getStylesheet();
+        Hashtable<String, Object> style = new Hashtable<String, Object>();
+        style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style.put(mxConstants.STYLE_FILLCOLOR, "#addeed");
+        style.put(mxConstants.STYLE_ROUNDED, "1");
+        style.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("COMPOUND", style);
+
+        Hashtable<String, Object> style1 = new Hashtable<String, Object>();
+        style1.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style1.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style1.put(mxConstants.STYLE_FILLCOLOR, "#36d84e");
+        style1.put(mxConstants.STYLE_ROUNDED, "1");
+        style1.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("COMPOUND_TARGET", style1);
+
+        Hashtable<String, Object> style2 = new Hashtable<String, Object>();
+        style2.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style2.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style2.put(mxConstants.STYLE_FILLCOLOR, "#ed9393");
+        style2.put(mxConstants.STYLE_ROUNDED, "1");
+        style2.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("REACTION", style2);
+
+        Hashtable<String, Object> style3 = new Hashtable<String, Object>();
+        style3.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        //style.put(mxConstants.STYLE_OPACITY, 50);
+        style3.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style3.put(mxConstants.STYLE_FILLCOLOR, "#ffa500");
+        style3.put(mxConstants.STYLE_ROUNDED, "1");
+        style3.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("ENZYME", style3);
+
+        //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
+
+
+        graph.setAllowDanglingEdges(false);
+        //graph.setCellsEditable(false);
+        graphComponent = new mxGraphComponent(graph);
+        graphComponent.getViewport().setOpaque(true);
+        //graphComponent.getViewport().setBackground(new Color(172, 172, 172));
+        graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if(SwingUtilities.isRightMouseButton(e)){
+                    mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
+                    if (cell != null) {
+                        Main.pm.cellClicked(cell, e.getX(), e.getY());
+                    }
+                }
+            }
+        });
+        graphComponent.getConnectionHandler().addListener(mxEvent.CONNECT, new mxEventSource.mxIEventListener() {
+            public void invoke(Object sender, mxEventObject evt) {
+                mxCell edge = (mxCell)evt.getProperty("cell");
+                mxCell source = (mxCell) edge.getSource();
+                mxCell target = (mxCell) edge.getTarget();
+                Main.pm.edgeAdded(edge, source, target);
+            }
+        });
+
+        this.add(graphComponent, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createEmptyBorder(1, 1, 1,1));
     }
 
-    public void mousePressed(MouseEvent e) {
-        preX = rect.x - e.getX();
-        preY = rect.y - e.getY();
 
-        if (rect.contains(e.getX(), e.getY()))
-            updateLocation(e);
-        else {
-            pressOut = true;
-        }
-    }
-
-    public void mouseDragged(MouseEvent e) {
-        if (!pressOut)
-            updateLocation(e);
-    }
-
-    public void mouseReleased(MouseEvent e) {
-        if (rect.contains(e.getX(), e.getY()))
-            updateLocation(e);
-        else {
-            pressOut = false;
-        }
-    }
-
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    public void mouseClicked(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void updateLocation(MouseEvent e) {
-        rect.setLocation(preX + e.getX(), preY + e.getY());
-        repaint();
-    }
-
-    public void paint(Graphics g) {
-        update(g);
-    }
-
-    public void update(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g;
-        Dimension dim = getSize();
-        int w = (int) dim.getWidth();
-        int h = (int) dim.getHeight();
-        g2.setStroke(new BasicStroke(8.0f));
-
-        if (isFirstTime) {
-            area = new Rectangle(dim);
-            rect.setLocation(w / 2 - 50, h / 2 - 25);
-            isFirstTime = false;
-        }
-
-        // Clears the rectangle that was previously drawn.
-        g2.setPaint(Color.white);
-        g2.fillRect(0, 0, w, h);
-
-        g2.setColor(Color.red);
-        g2.draw(rect);
-        g2.setColor(Color.black);
-        g2.fill(rect);
-    }
-
-    boolean checkRect() {
-        if (area == null) {
-            return false;
-        }
-
-        if (area.contains(rect.x, rect.y, 100, 50)) {
-            return true;
-        }
-        int new_x = rect.x;
-        int new_y = rect.y;
-
-        if ((rect.x + 100) > area.getWidth()) {
-            new_x = (int) area.getWidth() - 99;
-        }
-        if (rect.x < 0) {
-            new_x = -1;
-        }
-        if ((rect.y + 50) > area.getHeight()) {
-            new_y = (int) area.getHeight() - 49;
-        }
-        if (rect.y < 0) {
-            new_y = -1;
-        }
-        rect.setLocation(new_x, new_y);
-        return false;
-    }
 }

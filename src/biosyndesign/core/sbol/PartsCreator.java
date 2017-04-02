@@ -238,15 +238,15 @@ public class PartsCreator {
 //        String[] EC_NUMBERS = {"4.3.1.23", "4.3.1.24"};
 
 
-        String ANNOTATION_STRUCTURE_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/sbolme/annotation/protein/structure#";
+        String ANNOTATION_STRUCTURE_PREFIX_URI = prefix + "/annotation/protein/structure#";
         String ANNOTATION_CATALYTIC_SITE_PREFIX = "catalytic_site";
-        String ANNOTATION_CATALYTIC_SITE_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/sbolme/annotation/enzyme/structure/catalytic_site#";
+        String ANNOTATION_CATALYTIC_SITE_PREFIX_URI = prefix + "/annotation/enzyme/structure/catalytic_site#";
         String ANNOTATION_STRUCTURE_PREFIX = "structure";
         String ANNOTATION_CATALYTIC_SITES = "catalytic_sites";
         String ANNOTATION_CATALYTIC_SITE = "catalytic_site";
         String ANNOTATION_CATALYTIC_SITE_RESIDUE = "residue";
         String ANNOTATION_CATALYTIC_SITE_EVIDENCE = "evidence";
-        String ANNOTATION_RESIDUE_PREFIX_URI = "http://www.cbrc.kaust.edu.sa/sbolme/annotation/protein/structure/residue#";
+        String ANNOTATION_RESIDUE_PREFIX_URI = prefix + "/annotation/protein/structure/residue#";
         String ANNOTATION_RESIDUE_PREFIX = "residue";
         String ANNOTATION_RESIDUE_TYPE = "type";
         String ANNOTATION_RESIDUE_CHAIN = "chain";

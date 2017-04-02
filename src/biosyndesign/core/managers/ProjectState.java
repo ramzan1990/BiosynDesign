@@ -1,4 +1,4 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.managers;
 
 import biosyndesign.core.sbol.*;
 

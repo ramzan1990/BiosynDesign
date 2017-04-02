@@ -1,6 +1,8 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.managers;
 
+import biosyndesign.core.Main;
 import biosyndesign.core.sbol.*;
+import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.utils.UI;
 
 import javax.swing.*;
@@ -12,9 +14,16 @@ import java.io.File;
 /**
  * Created by Umarov on 1/27/2017.
  */
-public class NewParts {
+public class LocalPartsManager {
+    private ProjectState s;
+    private MainWindow mainWindow;
 
-    public static void addCompound(GUI mainWindow) {
+    public LocalPartsManager(ProjectState s, MainWindow mainWindow) {
+        this.mainWindow = mainWindow;
+        this.s = s;
+    }
+
+    public  void addCompound() {
         final JDialog frame = new JDialog(mainWindow, "New Compound", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -57,8 +66,8 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), Main.s.prefix);
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), s.prefix);
                 Compound c = new Compound(id.getText(), split(synonyms)[0], path);
                 c.setLocal(true);
                 Main.pm.addParts(new Part[]{c});
@@ -77,7 +86,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void editCompound(GUI mainWindow, Compound c) {
+    public  void editCompound(Compound c) {
         final JDialog frame = new JDialog(mainWindow, "Edit Compound", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -126,11 +135,11 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), Main.s.prefix);
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), s.prefix);
 
-                if(!c.id.equals(id.getText())) {
-                    File file = new File(Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + c.id);
+                if (!c.id.equals(id.getText())) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id);
                     file.delete();
                 }
                 c.id = id.getText();
@@ -152,7 +161,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void addReaction(GUI mainWindow) {
+    public  void addReaction() {
         final JDialog frame = new JDialog(mainWindow, "New Reaction", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -204,9 +213,9 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
                 PartsCreator.newReaction(path, split(reactants), split(products), splitInt(rStoichiometry),
-                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), Main.s.prefix);
+                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), s.prefix);
                 Reaction r = new Reaction(id.getText(), "", path, Integer.parseInt(freeEnergy.getText()));
                 r.setLocal(true);
                 Main.pm.addParts(new Part[]{r});
@@ -227,7 +236,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void editReaction(GUI mainWindow, Reaction r) {
+    public void editReaction(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Edit Reaction", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -287,15 +296,15 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
                 PartsCreator.newReaction(path, split(reactants), split(products), splitInt(rStoichiometry),
-                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), Main.s.prefix);
-                if(!r.id.equals(id.getText())) {
-                    File file = new File(Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + r.id);
+                        splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), s.prefix);
+                if (!r.id.equals(id.getText())) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + r.id);
                     file.delete();
                 }
                 r.url = path;
-                r.id =id.getText();
+                r.id = id.getText();
                 r.energy = Integer.parseInt(freeEnergy.getText());
                 r.info.clear();
                 r.info.add(reactants.getText());
@@ -316,7 +325,7 @@ public class NewParts {
     }
 
 
-    public static void addECNumber(GUI mainWindow) {
+    public  void addECNumber() {
         final JDialog frame = new JDialog(mainWindow, "New EC Number", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -354,8 +363,8 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent ee) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), Main.s.prefix);
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), s.prefix);
                 ECNumber e = new ECNumber(id.getText(), split(names)[0], path, id.getText());
                 e.setLocal(true);
                 Main.pm.addParts(new Part[]{e});
@@ -374,7 +383,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void editECNumber(GUI mainWindow, ECNumber e) {
+    public  void editECNumber(ECNumber e) {
         final JDialog frame = new JDialog(mainWindow, "Edit EC Number", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -418,10 +427,10 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent ee) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
-                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), Main.s.prefix);
-                if(!e.id.equals(id.getText())) {
-                    File file = new File(Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + e.id);
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), s.prefix);
+                if (!e.id.equals(id.getText())) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + e.id);
                     file.delete();
                 }
                 e.id = id.getText();
@@ -444,7 +453,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void addEnzyme(GUI mainWindow) {
+    public  void addEnzyme() {
         final JDialog frame = new JDialog(mainWindow, "New Compound", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -488,9 +497,9 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
                 PartsCreator.newProtein(path, id.getText(), split(synonyms), organismID.getText(), organismName.getText(),
-                        organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers), Main.s.prefix);
+                        organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers), s.prefix);
                 Protein p = new Protein(id.getText(), split(synonyms)[0], path, split(ECNumbers)[0]);
                 p.setLocal(true);
                 p.info.add(synonyms.getText());
@@ -511,7 +520,7 @@ public class NewParts {
         frame.setVisible(true);
     }
 
-    public static void editEnzyme(GUI mainWindow, Protein p) {
+    public void editEnzyme(Protein p) {
         final JDialog frame = new JDialog(mainWindow, "New Compound", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -563,11 +572,11 @@ public class NewParts {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
                 PartsCreator.newProtein(path, id.getText(), split(synonyms), organismID.getText(), organismName.getText(),
-                        organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers), Main.s.prefix);
-                if(!p.id.equals(id.getText())) {
-                    File file = new File(Main.s.projectPath + Main.s.projectName + File.separator + "parts" + File.separator + p.id);
+                        organismURL.getText(), split(extLinks), aaSeq.getText(), split(ECNumbers), s.prefix);
+                if (!p.id.equals(id.getText())) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
                     file.delete();
                 }
                 p.id = id.getText();

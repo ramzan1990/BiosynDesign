@@ -1,9 +1,11 @@
 package biosyndesign.core.ui;
 
-import biosyndesign.core.graphics.PartsGraph2;
+import biosyndesign.core.Main;
+import biosyndesign.core.graphics.PartsGraph;
+import biosyndesign.core.managers.LocalPartsManager;
+import biosyndesign.core.managers.ProjectIO;
 import biosyndesign.core.sbol.Part;
 import biosyndesign.core.sbol.SBOLInterface;
-import biosyndesign.core.sbol.SBOLme;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -15,7 +17,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
-public class GUI extends BDFrame {
+public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
     private JMenu File, Parts, HelpM, Options, Window;
@@ -29,21 +31,20 @@ public class GUI extends BDFrame {
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
     private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit;
-    JTextField tf, tf2;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
     Part[] parts;
     JList partsList;
-    PartsGraph2 workSpacePanel;
+    public PartsGraph workSpacePanel;
     private JLabel statusLabel, infoLabel;
     private JButton b3;
     private JScrollPane partsPane;
 
 
-    public GUI(ProjectIO io) {
+    public MainWindow() {
         super();
         // <editor-fold defaultstate="collapsed" desc="menu">
-        GUI ref = this;
+        MainWindow ref = this;
         ClearConsole = new JMenuItem("Clear console");
         HideDataPanel = new JCheckBoxMenuItem("Data Panel");
         HideTools = new JCheckBoxMenuItem("Tools Panel");
@@ -69,7 +70,7 @@ public class GUI extends BDFrame {
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                io.newProject();
+                Main.projectIO.newProject();
             }
         });
 
@@ -90,12 +91,12 @@ public class GUI extends BDFrame {
 
         OpenProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                io.openProject();
+                Main.projectIO.openProject();
             }
         });
         SaveAs.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                io.saveProjectAs();
+                Main.projectIO.saveProjectAs();
             }
         });
         Exit.addActionListener(new ActionListener() {
@@ -106,7 +107,7 @@ public class GUI extends BDFrame {
 
         Save.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                io.saveProject();
+                Main.projectIO.saveProject();
             }
         });
 
@@ -147,22 +148,22 @@ public class GUI extends BDFrame {
 
         addCompound.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                NewParts.addCompound(ref);
+                Main.lpm.addCompound();
             }
         });
         addReaction.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                NewParts.addReaction(ref);
+                Main.lpm.addReaction();
             }
         });
         addECNumber.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                NewParts.addECNumber(ref);
+                Main.lpm.addECNumber();
             }
         });
         addEnzyme.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                NewParts.addEnzyme(ref);
+                Main.lpm.addEnzyme();
             }
         });
         competingReactions.addActionListener(new ActionListener() {
@@ -282,11 +283,11 @@ public class GUI extends BDFrame {
 
         // <editor-fold defaultstate="collapsed" desc="labels">
         newProject = new JLabel();
-        newProject.setIcon(new ImageIcon(Main.class.getResource("images/new.png")));
+        newProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/new.png")));
         newProject.setToolTipText("New Project");
         newProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                io.newProject();
+                Main.projectIO.newProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -296,20 +297,20 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                newProject.setIcon(new ImageIcon(Main.class.getResource("images/new0.png")));
+                newProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/new0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                newProject.setIcon(new ImageIcon(Main.class.getResource("images/new.png")));
+                newProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/new.png")));
             }
         });
 
         openProject = new JLabel();
-        openProject.setIcon(new ImageIcon(Main.class.getResource("images/open.png")));
+        openProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/open.png")));
         openProject.setToolTipText("Open Project");
         openProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                io.openProject();
+                Main.projectIO.openProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -319,20 +320,20 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                openProject.setIcon(new ImageIcon(Main.class.getResource("images/open0.png")));
+                openProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/open0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                openProject.setIcon(new ImageIcon(Main.class.getResource("images/open.png")));
+                openProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/open.png")));
             }
         });
 
         saveProject = new JLabel();
-        saveProject.setIcon(new ImageIcon(Main.class.getResource("images/save.png")));
+        saveProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/save.png")));
         saveProject.setToolTipText("Save Project");
         saveProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                io.saveProject();
+                Main.projectIO.saveProject();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -342,20 +343,20 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                saveProject.setIcon(new ImageIcon(Main.class.getResource("images/save0.png")));
+                saveProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/save0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                saveProject.setIcon(new ImageIcon(Main.class.getResource("images/save.png")));
+                saveProject.setIcon(new ImageIcon(Main.class.getResource("ui/images/save.png")));
             }
         });
 
         snapShotLabel = new JLabel();
-        snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera.png")));
+        snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("ui/images/camera.png")));
         snapShotLabel.setToolTipText("Take Snapshot");
         snapShotLabel.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.saveImage();
+                Main.projectIO.saveImage();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -365,16 +366,16 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera0.png")));
+                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("ui/images/camera0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("images/camera.png")));
+                snapShotLabel.setIcon(new ImageIcon(Main.class.getResource("ui/images/camera.png")));
             }
         });
 
         update = new JLabel();
-        update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+        update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
         update.setToolTipText("Update Graph");
         update.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -388,16 +389,16 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                update.setIcon(new ImageIcon(Main.class.getResource("images/update0.png")));
+                update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                update.setIcon(new ImageIcon(Main.class.getResource("images/update.png")));
+                update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
             }
         });
 
         delete = new JLabel();
-        delete.setIcon(new ImageIcon(Main.class.getResource("images/delete.png")));
+        delete.setIcon(new ImageIcon(Main.class.getResource("ui/images/delete.png")));
         delete.setToolTipText("Delete cells");
         delete.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -411,16 +412,16 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                delete.setIcon(new ImageIcon(Main.class.getResource("images/delete0.png")));
+                delete.setIcon(new ImageIcon(Main.class.getResource("ui/images/delete0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                delete.setIcon(new ImageIcon(Main.class.getResource("images/delete.png")));
+                delete.setIcon(new ImageIcon(Main.class.getResource("ui/images/delete.png")));
             }
         });
 
         view = new JLabel();
-        view.setIcon(new ImageIcon(Main.class.getResource("images/view.png")));
+        view.setIcon(new ImageIcon(Main.class.getResource("ui/images/view.png")));
         view.setToolTipText("View cells");
         view.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -434,16 +435,16 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                view.setIcon(new ImageIcon(Main.class.getResource("images/view0.png")));
+                view.setIcon(new ImageIcon(Main.class.getResource("ui/images/view0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                view.setIcon(new ImageIcon(Main.class.getResource("images/view.png")));
+                view.setIcon(new ImageIcon(Main.class.getResource("ui/images/view.png")));
             }
         });
 
         edit = new JLabel();
-        edit.setIcon(new ImageIcon(Main.class.getResource("images/edit.png")));
+        edit.setIcon(new ImageIcon(Main.class.getResource("ui/images/edit.png")));
         edit.setToolTipText("Edit cells");
         edit.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -457,11 +458,11 @@ public class GUI extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                edit.setIcon(new ImageIcon(Main.class.getResource("images/edit0.png")));
+                edit.setIcon(new ImageIcon(Main.class.getResource("ui/images/edit0.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                edit.setIcon(new ImageIcon(Main.class.getResource("images/edit.png")));
+                edit.setIcon(new ImageIcon(Main.class.getResource("ui/images/edit.png")));
             }
         });
 
@@ -490,7 +491,7 @@ public class GUI extends BDFrame {
         toolsPanel.add(update);
         toolsPanel.add(Box.createHorizontalGlue());
         JLabel lt = new JLabel("Info");
-        lt.setIcon(new ImageIcon(Main.class.getResource("images/v1.png")));
+        lt.setIcon(new ImageIcon(Main.class.getResource("ui/images/v1.png")));
         toolsPanel.add(lt);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
@@ -567,32 +568,14 @@ public class GUI extends BDFrame {
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         //dataPanel.setBackground(Color.RED);
         JButton b2 = new JButton(" Search");
-        b2.setIcon(new ImageIcon(Main.class.getResource("images/search.png")));
+        b2.setIcon(new ImageIcon(Main.class.getResource("ui/images/search.png")));
         int bw = b2.getPreferredSize().width;
         b2.setPreferredSize(new Dimension(bw, b2.getPreferredSize().height));
         UI.addToRight(dataPanel, b2);
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new Thread() {
-                    public void run() {
-                        try {
-                            SBOLInterface sInt = Main.pm.sInt;
-                            parts = sInt.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
-                            String[] names = new String[parts.length];
-                            for (int i = 0; i < names.length; i++) {
-                                names[i] = parts[i].name;
-                            }
-                            partsList.setModel(new DefaultComboBoxModel(names));
-                            b3.setVisible(true);
-                            partsPane.setVisible(true);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                }.start();
-
-
+                Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
             }
         });
 
@@ -605,23 +588,19 @@ public class GUI extends BDFrame {
         UI.addTo(dataPanel, partsPane);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         b3 = new JButton(" Add");
-        b3.setIcon(new ImageIcon(Main.class.getResource("images/load.png")));
+        b3.setIcon(new ImageIcon(Main.class.getResource("ui/images/load.png")));
         b3.setPreferredSize(new Dimension(bw, b3.getPreferredSize().height));
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Part[] p = new Part[partsList.getSelectedIndices().length];
-                for (int i = 0; i < p.length; i++) {
-                    p[i] = parts[partsList.getSelectedIndices()[i]];
-                }
-                Main.pm.addParts(p);
+                Main.pm.addPartsSelected(partsList.getSelectedIndices());
             }
         });
         UI.addToRight(dataPanel, b3);
         b3.setVisible(false);
         partsPane.setVisible(false);
 
-        workSpacePanel = new PartsGraph2();
+        workSpacePanel = new PartsGraph();
 
         // </editor-fold>
         // <editor-fold desc="console">
@@ -673,11 +652,21 @@ public class GUI extends BDFrame {
         if (m.length() == 1) {
             m = "0" + m;
         }
-        String time = " (" + currentTime.getHour() + ":" + m + ")";
+        String h = "" + currentTime.getHour();
+        if (h.length() == 1) {
+            h = "0" + h;
+        }
+        String time = " (" + h + ":" + m + ")";
         statusLabel.setText("  " + status + time);
     }
 
     public void setInfoLabel(int i1, int i2) {
         infoLabel.setText("Compounds: " + i1 + "   Reactions: " + i2 + "  ");
+    }
+
+    public void setResults(String[] names) {
+        partsList.setModel(new DefaultComboBoxModel(names));
+        b3.setVisible(true);
+        partsPane.setVisible(true);
     }
 }

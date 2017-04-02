@@ -1,10 +1,15 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.managers;
 
+import biosyndesign.core.Main;
 import biosyndesign.core.graphics.FileUtils;
+import biosyndesign.core.ui.*;
 import biosyndesign.core.utils.Common;
+import com.mxgraph.util.mxCellRenderer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,17 +27,14 @@ public class ProjectIO {
 
     private static boolean isSaved;
     private ProjectState s;
-    private GUI mainWindow;
-    private static JFrame ff;
-    private static JFrame npf;
+    private MainWindow mainWindow;
+    private  JFrame ff;
+    private  JFrame npf;
 
-    public ProjectIO(ProjectState s) {
+    public ProjectIO(ProjectState s, MainWindow mainWindow) {
         this.s = s;
-        ff = new FirstFrame(this);
-    }
-
-    public void setMainWindow(GUI mainWindow) {
         this.mainWindow = mainWindow;
+        ff = new FirstFrame(this);
     }
 
     public void newProject() {
@@ -42,7 +44,7 @@ public class ProjectIO {
     public boolean openProject() {
         FileDialog fd = new FileDialog((Frame) null, "Open Project", FileDialog.LOAD);
         fd.setVisible(true);
-        fd.setFilenameFilter(new FileFilter());
+        fd.setFilenameFilter(new biosyndesign.core.ui.FileFilter());
         if (fd.getFiles().length > 0) {
             File f = fd.getFiles()[0];
             openProject2(f);
@@ -57,7 +59,7 @@ public class ProjectIO {
             GZIPInputStream gis = new GZIPInputStream(fin);
             ois = new ObjectInputStream(gis);
             s = (ProjectState) ois.readObject();
-            Main.s = s;
+            Main.setState(s);
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             s.projectPath = f.getParentFile().toString() + File.separator;
             FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
@@ -77,7 +79,7 @@ public class ProjectIO {
     public boolean saveProjectAs() {
         FileDialog fd = new FileDialog((Frame) null, "Save Project", FileDialog.SAVE);
         fd.setVisible(true);
-        fd.setFilenameFilter(new FileFilter());
+        fd.setFilenameFilter(new biosyndesign.core.ui.FileFilter());
 
         if (fd.getFiles().length > 0) {
             File f = fd.getFiles()[0];
@@ -129,7 +131,9 @@ public class ProjectIO {
 
     }
 
-    public void newProjectSelected(String organism, String prefix) {
+    public void newProjectSelected(String organism, String prefix, File f) {
+        s.projectName = f.getName();
+        s.projectPath = f.getAbsolutePath();
         s.organism = organism;
         s.prefix = prefix;
         saveProjectAs2(null);
@@ -269,4 +273,20 @@ public class ProjectIO {
     public void creationCanceled() {
         ff.setVisible(true);
     }
+
+    public void saveImage() {
+        try {
+            BufferedImage image = mxCellRenderer.createBufferedImage(mainWindow.workSpacePanel.graph, null, 1, Color.WHITE, true, null);
+            String name = "graph";
+            File f = new File(s.projectPath + s.projectName + File.separator + "images" + File.separator + name + ".png");
+            for (int i = 0; f.exists(); i++) {
+                f = new File(s.projectPath + s.projectName + File.separator + "images" + File.separator + name + i + ".png");
+            }
+            ImageIO.write(image, "PNG", f);
+            mainWindow.setStatusLabel("Image saved");
+        } catch (Exception e) {
+
+        }
+    }
+
 }

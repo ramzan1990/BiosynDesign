@@ -1,17 +1,14 @@
 package biosyndesign.core.ui;
 
+import biosyndesign.core.Main;
+import biosyndesign.core.managers.ProjectIO;
 import biosyndesign.core.ui.popups.RecentProjectPopUp;
-import biosyndesign.core.utils.PopClickListener;
 import biosyndesign.core.utils.UI;
-import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
-import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Created by Umarov on 1/23/2017.
@@ -96,28 +93,8 @@ public class FirstFrame extends BDFrame {
         browsePanel.setMaximumSize(new Dimension(w, 100));
         locationTF.setEditable(false);
         locationTF.setPreferredSize(new Dimension(340, 25));
-        JButton browse = new JButton("...");
-        browse.setPreferredSize(new Dimension(30, 25));
-        //browse.setBorder(BorderFactory.createEtchedBorder(1));
-        browse.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                FileDialog fd = new FileDialog((Frame) null, "Save Project", FileDialog.SAVE);
-                fd.setVisible(true);
-                fd.setFilenameFilter(new FileFilter());
 
-                if (fd.getFiles().length > 0) {
-                    File f = fd.getFiles()[0];
-                    Main.s.projectName = f.getName();
-                    Main.s.projectPath = f.getAbsolutePath();
-                    String path = Main.s.projectPath;
-                    locationTF.setText(path);
-                }
-
-
-            }
-        });
-
-        JLabel picLabel = new JLabel(new ImageIcon(Main.class.getResource("images/logo.png")));
+        JLabel picLabel = new JLabel(new ImageIcon(Main.class.getResource("ui/images/logo.png")));
         UI.addTo(topPanel, picLabel);
 
 
