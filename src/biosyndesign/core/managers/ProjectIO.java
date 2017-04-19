@@ -28,8 +28,8 @@ public class ProjectIO {
     private static boolean isSaved;
     private ProjectState s;
     private MainWindow mainWindow;
-    private  JFrame ff;
-    private  JFrame npf;
+    private JFrame ff;
+    private JFrame npf;
 
     public ProjectIO(ProjectState s, MainWindow mainWindow) {
         this.s = s;
@@ -159,7 +159,7 @@ public class ProjectIO {
     public void remember() {
         try {
             String path = s.projectPath + s.projectName + ".bdp";
-            File f = new File("projects");
+            File f = getPFile();
             f.createNewFile();
             Scanner scan = new Scanner(f);
             ArrayList<String> projects = new ArrayList<>();
@@ -180,7 +180,7 @@ public class ProjectIO {
                 if (projects.indexOf(p) != projects.size() - 1)
                     s += "\n";
             }
-            Files.write(Paths.get("projects"), s.getBytes(), StandardOpenOption.WRITE);
+            Files.write(getPFile().toPath(), s.getBytes(), StandardOpenOption.WRITE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -188,9 +188,7 @@ public class ProjectIO {
 
     public void remove(int j) {
         try {
-            String path = s.projectPath + s.projectName + ".bdp";
-            File f = new File("projects");
-            f.createNewFile();
+            File f = getPFile();
             Scanner scan = new Scanner(f);
             ArrayList<String> projects = new ArrayList<>();
             while (scan.hasNextLine()) {
@@ -198,18 +196,18 @@ public class ProjectIO {
             }
             scan.close();
             String s = "";
-            for (int i =0; i<projects.size(); i++) {
-                if(i==j){
+            for (int i = 0; i < projects.size(); i++) {
+                if (i == j) {
                     continue;
                 }
-                String p= projects.get(i);
+                String p = projects.get(i);
                 s += p;
             }
-            if(s.endsWith("\n")){
-                s = s.substring(0, s.length()-2);
+            if (s.endsWith("\n")) {
+                s = s.substring(0, s.length() - 2);
             }
-            Files.delete(Paths.get("projects"));
-            Files.write(Paths.get("projects"), s.getBytes(), StandardOpenOption.CREATE);
+            Files.delete(getPFile().toPath());
+            Files.write(getPFile().toPath(), s.getBytes(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -217,7 +215,7 @@ public class ProjectIO {
 
     public String[] getRecent() {
         try {
-            Scanner scan = new Scanner(new File("projects"));
+            Scanner scan = new Scanner(getPFile());
             ArrayList<String> projects = new ArrayList<>();
             while (scan.hasNextLine()) {
                 projects.add(scan.nextLine());
@@ -229,7 +227,21 @@ public class ProjectIO {
         return null;
     }
 
-    public void openRecentSelected(String f) {
+    private File getPFile() {
+        File f = new File(System.getProperty("user.home") + File.separator + "BiosynDesign" + File.separator + "projects");
+        File theDir = new File(System.getProperty("user.home") + File.separator + "BiosynDesign");
+        if (!theDir.exists()) {
+            theDir.mkdir();
+        }
+        try {
+            f.createNewFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return f;
+    }
+
+    public void openRecentSelected(String f, int selectedIndex) {
         openProject2(new File(f));
         if (isSaved) {
             clear();
@@ -239,6 +251,8 @@ public class ProjectIO {
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
             Main.gm.updateGraph();
             remember();
+        } else {
+            //remove(selectedIndex);
         }
 
     }

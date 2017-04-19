@@ -15,6 +15,7 @@ public class Reaction extends Part{
     public Protein enzyme;
     public String partialEC;
     public double energy;
+    public boolean nat;
 
     public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);

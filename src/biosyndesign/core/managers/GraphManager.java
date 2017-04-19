@@ -78,17 +78,23 @@ public class GraphManager {
             Mover m = new Mover(300);
             int off = 170 + m.max(s.reactions.size()) * 170;
             String compoundStyle;
+            String reactionStyle;
             for (int i = 0; i < s.reactions.size(); i++) {
                 int rx = m.x() + off;
                 int ry = m.y() + off;
                 String rt;
                 Reaction r = s.reactions.get(i);
-                if (s.reactions.get(i).ec.size() == 0) {
-                    rt = s.reactions.get(i).partialEC;
+                if (r.ec.size() == 0) {
+                    rt = r.partialEC;
                 } else {
-                    rt = s.reactions.get(i).ec.get(s.reactions.get(i).pickedEC).ecNumber + " [" + s.reactions.get(i).ec.size() + "]";
+                    rt = r.ec.get(r.pickedEC).ecNumber + " [" + r.ec.size() + "]";
                 }
-                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 80, 30, "REACTION");
+                if (r.nat) {
+                    reactionStyle = "REACTION_NAT";
+                } else {
+                    reactionStyle = "REACTION";
+                }
+                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 80, 30, reactionStyle);
                 s.graphNodes.put(v1, s.reactions.get(i));
                 Mover ms = new Mover(90);
 

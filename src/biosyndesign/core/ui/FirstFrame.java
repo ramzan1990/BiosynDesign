@@ -35,7 +35,7 @@ public class FirstFrame extends BDFrame {
         po = io.getRecent();
         String[] poList;
         empty = false;
-        if (po == null) {
+        if (po == null || po.length==0) {
             poList = new String[]{"  No recent projects"};
             empty = true;
         } else {
@@ -64,7 +64,7 @@ public class FirstFrame extends BDFrame {
                 if (e.getClickCount() == 2) {
                     String selectedItem = po[projectsList.getSelectedIndex()];
                     if (!empty) {
-                        io.openRecentSelected(selectedItem.trim());
+                        io.openRecentSelected(selectedItem.trim(), projectsList.getSelectedIndex());
                     }
                 }else if(e.getButton() == 3){
                     RecentProjectPopUp p= new RecentProjectPopUp(projectsList, projectsList.getSelectedIndex(), io);

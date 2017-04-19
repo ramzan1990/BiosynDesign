@@ -21,6 +21,7 @@ import java.util.List;
 
 public class SBOLme implements SBOLInterface {
     String prefix;
+
     public SBOLme(String prefix) {
         this.prefix = prefix;
     }
@@ -31,10 +32,10 @@ public class SBOLme implements SBOLInterface {
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost;
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            if(type==0 && data1 == 5){
+            if (type == 0 && data1 == 5) {
                 httpPost = new HttpPost(prefix + "/php/Bd/exact.php");
                 nvps.add(new BasicNameValuePair("smiles", data2));
-            }else {
+            } else {
                 httpPost = new HttpPost(prefix + "/php/query.php");
                 nvps.add(new BasicNameValuePair("type", "0" + type));
                 nvps.add(new BasicNameValuePair("data1", "" + data1));
@@ -88,7 +89,7 @@ public class SBOLme implements SBOLInterface {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(prefix +"/php/query.php");
+            HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "2"));
             nvps.add(new BasicNameValuePair("data1", "0"));
@@ -166,7 +167,7 @@ public class SBOLme implements SBOLInterface {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(prefix +"/php/Bd/competing.php");
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/competing.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("compound", compound));
             nvps.add(new BasicNameValuePair("organism", organism));
@@ -187,16 +188,23 @@ public class SBOLme implements SBOLInterface {
             e.printStackTrace();
         }
 
-        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
-        JsonArray a = jsonObject.getAsJsonArray("rows");
-        int max = 10;
-        if (a.size() < max) {
-            max = a.size();
-        }
-        Reaction[] p = new Reaction[max];
-        for (int i = 0; i < p.length; i++) {
-            JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("FreeEnergy").getAsDouble());
+        Reaction[] p = new Reaction[0];
+        try {
+            JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+            JsonArray a = jsonObject.getAsJsonArray("rows");
+            int max = 10;
+            if (a.size() < max) {
+                max = a.size();
+            }
+            p = new Reaction[max];
+            for (int i = 0; i < p.length; i++) {
+                JsonObject o = a.get(i).getAsJsonObject();
+                Reaction r = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("FreeEnergy").getAsDouble());
+                r.nat = true;
+                p[i] = r;
+            }
+        } catch (Exception e) {
+
         }
         return p;
     }
@@ -206,7 +214,7 @@ public class SBOLme implements SBOLInterface {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(prefix +"/php/Bd/common_reaction.php");
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/common_reaction.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("compound1", id1));
             nvps.add(new BasicNameValuePair("compound2", id2));
