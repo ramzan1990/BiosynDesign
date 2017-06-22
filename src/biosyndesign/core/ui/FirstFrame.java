@@ -103,15 +103,15 @@ public class FirstFrame extends BDFrame {
 
 
         this.setLayout(new BorderLayout());
-        JPanel lowerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
+        JPanel lowerPanel = new JPanel(new BorderLayout());
+        JPanel jp1 = new JPanel();
         JButton b1 = new JButton("Existing Project");
         b1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 io.openProjectSelected();
             }
         });
-        lowerPanel.add(b1);
+        jp1.add(b1);
 
         JButton b2 = new JButton("Create Project");
         b2.addActionListener(new ActionListener() {
@@ -119,7 +119,12 @@ public class FirstFrame extends BDFrame {
                     io.newProjectSelected();
             }
         });
-        lowerPanel.add(b2);
+        jp1.add(b2);
+        JPanel jp2 = new JPanel();
+        JButton b3 = new JButton("Parts Manager");
+        jp2.add(b3);
+        lowerPanel.add(jp1, BorderLayout.EAST);
+        lowerPanel.add(jp2, BorderLayout.WEST);
         lowerPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
 
         this.add(leftPanel, BorderLayout.WEST);

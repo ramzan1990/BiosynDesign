@@ -6,6 +6,7 @@ package biosyndesign.core.sbol;
 public class Protein extends Part{
 
     public String ecNumber;
+    public String sequence;
 
     public Protein(String id, String name, String url,String ecNumber) {
         super(id, name, url);

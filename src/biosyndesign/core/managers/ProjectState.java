@@ -21,6 +21,8 @@ public class ProjectState implements Serializable {
     public String organism;
     public String prefix;
     public Compound target;
+    public int fOption;
+    public int maxCompeting = 5;
 
     public ProjectState(){
         compounds = new ArrayList<>();

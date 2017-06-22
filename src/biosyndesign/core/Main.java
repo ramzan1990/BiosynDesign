@@ -43,4 +43,8 @@ public class Main {
     public static void setState(ProjectState s) {
         Main.s = s;
     }
+
+    public static void setFOption(int i) {
+        s.fOption = i;
+    }
 }

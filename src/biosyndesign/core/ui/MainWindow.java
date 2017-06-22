@@ -16,14 +16,17 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 
 public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, Parts, HelpM, Options, Window;
+    private JMenu File, Parts, HelpM, Options, fOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
-    ButtonGroup transformGroup;
+    private JCheckBoxMenuItem fO1, fO2, fO3, fO4, fO5, fO6, fO7, fO8, fO9;
+    public ButtonGroup fOptionsGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
@@ -35,7 +38,9 @@ public class MainWindow extends BDFrame {
     JTextField qValueTF;
     Part[] parts;
     JList partsList;
+    private JTabbedPane tbp;
     public PartsGraph workSpacePanel;
+    public JTable enzymeTable;
     private JLabel statusLabel, infoLabel;
     private JButton b3;
     private JScrollPane partsPane;
@@ -54,6 +59,7 @@ public class MainWindow extends BDFrame {
         Parts = new JMenu("Parts");
         HelpM = new JMenu("Help");
         Options = new JMenu("Options");
+        fOptions = new JMenu("Fingerprinter Options");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -68,6 +74,80 @@ public class MainWindow extends BDFrame {
         addEnzyme = new JMenuItem("Add Enzyme");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
 
+        fO1 = new JCheckBoxMenuItem("PubchemFingerprinter");
+        fO2 = new JCheckBoxMenuItem("EStateFingerprinter");
+        fO3 = new JCheckBoxMenuItem("ExtendedFingerprinter");
+        fO4 = new JCheckBoxMenuItem("GraphOnlyFingerprinter");
+        fO5 = new JCheckBoxMenuItem("HybridizationFingerprinter");
+        fO6 = new JCheckBoxMenuItem("ShortestPathFingerprinter");
+        fO7 = new JCheckBoxMenuItem("KlekotaRothFingerprinter");
+        fO8 = new JCheckBoxMenuItem("MACCSFingerprinter");
+        fO9 = new JCheckBoxMenuItem("SubstructureFingerprinter");
+        fOptionsGroup = new ButtonGroup();
+        fOptionsGroup.add(fO1);
+        fOptionsGroup.add(fO2);
+        fOptionsGroup.add(fO3);
+        fOptionsGroup.add(fO4);
+        fOptionsGroup.add(fO5);
+        fOptionsGroup.add(fO6);
+        fOptionsGroup.add(fO7);
+        fOptionsGroup.add(fO8);
+        fOptionsGroup.add(fO9);
+        fO1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(0);
+            }
+        });
+        fO2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(1);
+            }
+        });
+        fO3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(2);
+            }
+        });
+        fO4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(3);
+            }
+        });
+        fO5.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(4);
+            }
+        });
+        fO6.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(5);
+            }
+        });
+        fO7.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(6);
+            }
+        });
+        fO8.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(7);
+            }
+        });
+        fO9.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.setFOption(8);
+            }
+        });
+        fOptions.add(fO1);
+        fOptions.add(fO2);
+        fOptions.add(fO3);
+        fOptions.add(fO4);
+        fOptions.add(fO5);
+        fOptions.add(fO6);
+        fOptions.add(fO7);
+        fOptions.add(fO8);
+        fOptions.add(fO9);
+        fO1.setSelected(true);
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Main.projectIO.newProject();
@@ -258,6 +338,7 @@ public class MainWindow extends BDFrame {
             }
         });
 
+        Options.add(fOptions);
 
         menu.add(File);
         menu.add(Parts);
@@ -267,6 +348,14 @@ public class MainWindow extends BDFrame {
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="panels">
 
+        tbp = new JTabbedPane();
+        workSpacePanel = new PartsGraph();
+        String[] columnNames = {"Name",
+                "Sequence"};
+        TableModel tableModel = new DefaultTableModel(columnNames, 0);
+        enzymeTable = new JTable(tableModel);
+        tbp.addTab("Graph", workSpacePanel);
+        tbp.addTab("Enzymes", new JScrollPane(enzymeTable));
         dataSelectPanel = new JPanel();
         dataSelectPanel.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         GridLayout blayout = new GridLayout(3, 2);
@@ -468,7 +557,7 @@ public class MainWindow extends BDFrame {
 
 
         toolsPanel = new JToolBar();
-
+        toolsPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
         // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         toolsPanel.add(Box.createRigidArea(new Dimension(8, 0)));
@@ -514,7 +603,7 @@ public class MainWindow extends BDFrame {
         dataPanel = new JToolBar();
         dataPanel.setPreferredSize(new Dimension(250, 500));
         dataPanel.setLayout(new BoxLayout(dataPanel, BoxLayout.PAGE_AXIS));
-        dataPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+        dataPanel.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY));
         dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         int dpcw = dataPanel.getPreferredSize().width - 15;
         JLabel lp = new JLabel("Parts");
@@ -600,7 +689,7 @@ public class MainWindow extends BDFrame {
         b3.setVisible(false);
         partsPane.setVisible(false);
 
-        workSpacePanel = new PartsGraph();
+
 
         // </editor-fold>
         // <editor-fold desc="console">
@@ -614,6 +703,7 @@ public class MainWindow extends BDFrame {
         consoleScroll.setBorder(BorderFactory.createEmptyBorder());
 
         consolePanel = new JPanel();
+        consolePanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
         consolePanel.setLayout(new BorderLayout());
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
         //consolePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -633,7 +723,7 @@ public class MainWindow extends BDFrame {
         add(toolsPanel, BorderLayout.NORTH);
         add(dataPanel, BorderLayout.EAST);
         add(consolePanel, BorderLayout.SOUTH);
-        add(workSpacePanel, BorderLayout.CENTER);
+        add(tbp, BorderLayout.CENTER);
         this.setMinimumSize(new Dimension(800, 600));
         this.pack();
         this.setLocationRelativeTo(null);

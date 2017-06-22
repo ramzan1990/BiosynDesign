@@ -163,7 +163,7 @@ public class SBOLme implements SBOLInterface {
         return p;
     }
 
-    public Reaction[] findCompetingReactions(String organism, String compound) {
+    public Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
@@ -192,7 +192,7 @@ public class SBOLme implements SBOLInterface {
         try {
             JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
             JsonArray a = jsonObject.getAsJsonArray("rows");
-            int max = 10;
+            int max = maxCompeting;
             if (a.size() < max) {
                 max = a.size();
             }

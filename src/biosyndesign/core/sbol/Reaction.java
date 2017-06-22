@@ -8,8 +8,8 @@ import java.util.ArrayList;
 public class Reaction extends Part{
 
     public ArrayList<Compound> compounds;
-    public ArrayList<Compound> reactants;
-    public ArrayList<Compound> products;
+    public ArrayList<CompoundStoichiometry> reactants;
+    public ArrayList<CompoundStoichiometry> products;
     public ArrayList<ECNumber> ec;
     public int pickedEC;
     public Protein enzyme;

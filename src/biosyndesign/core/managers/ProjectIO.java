@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -63,6 +64,8 @@ public class ProjectIO {
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             s.projectPath = f.getParentFile().toString() + File.separator;
             FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
+            mainWindow.fOptionsGroup.clearSelection();
+            mainWindow.fOptionsGroup.setSelected( Collections.list(mainWindow.fOptionsGroup.getElements()).get(s.fOption).getModel(), true);
             isSaved = true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Cannot open the project!", "Error", JOptionPane.ERROR_MESSAGE);

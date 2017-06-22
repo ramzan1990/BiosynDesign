@@ -26,7 +26,7 @@ public class CompoundCellPopUp extends JPopupMenu {
         item2= new JMenuItem("Delete");
         item2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.pm.delete(cell);
+                Main.pm.delete(new Object[]{cell});
             }
         });
         item3= new JMenuItem("Find Reactions");

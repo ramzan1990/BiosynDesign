@@ -38,7 +38,7 @@ public class ReactionCellPopUp extends JPopupMenu {
         item4= new JMenuItem("Delete");
         item4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.pm.delete(cell);
+                Main.pm.delete(new Object[]{cell});
             }
         });
         add(item0);
