@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="libSBOLj-2.1.1-withDependencies">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/libSBOLj-2.1.1-withDependencies.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/libSBOLj-2.1.1-withDependencies.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

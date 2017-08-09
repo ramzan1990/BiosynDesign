@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="guhautils">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/libs/guhautils.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/guhautils.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
