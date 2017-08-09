@@ -26,6 +26,15 @@ public class UI {
 
         dataPanel.add(panel);
     }
+    public static void addToRight(JPanel dataPanel, Component b1) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        panel.add(b1);
+
+        panel.setPreferredSize(new Dimension(250, b1.getPreferredSize().height+10));
+        panel.setMaximumSize(new Dimension(250, b1.getPreferredSize().height+10));
+
+        dataPanel.add(panel);
+    }
     public static void addToRight(JPanel dataPanel, Component b1, boolean s) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panel.add(b1);
@@ -39,7 +48,7 @@ public class UI {
     public static void addTo(JPanel dataPanel, Component b1) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(b1);
-
+        panel.setMaximumSize(new Dimension(panel.getMaximumSize().width, b1.getPreferredSize().height+4));
         //panel.setPreferredSize(new Dimension(250, 30));
         //panel.setMaximumSize(new Dimension(250, 30));
 

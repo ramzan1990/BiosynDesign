@@ -1,0 +1,65 @@
+CREATE TABLE compound_names (
+  Compound varchar(255),
+  Name varchar(300)
+);
+CREATE TABLE compounds (
+  ID varchar(40) CONSTRAINT COMPOUNDS_PK PRIMARY KEY,
+  URL varchar(255),
+  KeggID varchar(40),
+  DrugID varchar(40),
+  SMILES varchar(5000)
+);
+CREATE TABLE compund_enzymes (
+  Compound varchar(40),
+  Enzyme varchar(40)
+);
+CREATE TABLE ecnum (
+  ID varchar(40),
+  ECNumber varchar(40),
+  URL varchar(40),
+  Title varchar(255)
+);
+CREATE INDEX index1 ON ecnum(ECNumber);
+CREATE TABLE oIDs (
+  ID varchar(60)
+);
+CREATE TABLE oNames (
+  name varchar(300)
+);
+CREATE TABLE proteins (
+  ID varchar(80),
+  OrganismID varchar(80),
+  OrganismName varchar(300),
+  ECNumber varchar(80),
+  URL varchar(300),
+  sequence blob
+);
+CREATE INDEX index2 ON proteins(OrganismID,ECNumber);
+CREATE INDEX index3 ON proteins(OrganismName,ECNumber);
+CREATE INDEX index4 ON proteins(OrganismID);
+CREATE INDEX index5 ON proteins(OrganismName);
+CREATE INDEX index6 ON proteins(ECNumber);
+CREATE INDEX index7 ON proteins(ID);
+CREATE TABLE reaction_compounds (
+  Reaction varchar(255),
+  Compound varchar(255)
+);
+CREATE INDEX index8 ON reaction_compounds(Reaction,Compound);
+CREATE TABLE reaction_enzymes (
+  Reaction varchar(255),
+  Enzyme varchar(255)
+);
+CREATE TABLE reaction_products (
+  Reaction varchar(255),
+  Product varchar(255)
+);
+CREATE INDEX index9 ON reaction_products(Product);
+CREATE INDEX index10 ON reaction_products(Reaction,Product);
+CREATE INDEX index11 ON reaction_products(Reaction);
+CREATE TABLE reactions (
+  ID varchar(255) CONSTRAINT REACTIONS_PK PRIMARY KEY,
+  URL varchar(255),
+  KeggID varchar(40),
+  Name varchar(255),
+  Energy double
+);

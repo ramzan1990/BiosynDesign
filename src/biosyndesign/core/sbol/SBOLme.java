@@ -26,21 +26,20 @@ public class SBOLme implements SBOLInterface {
         this.prefix = prefix;
     }
 
-    public Part[] findParts(int type, int data1, String data2) {
+    public Part[] findParts(int type, int filter, String value) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost;
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            if (type == 0 && data1 == 5) {
+            if (type == 0 && filter == 5) {
                 httpPost = new HttpPost(prefix + "/php/Bd/exact.php");
-                nvps.add(new BasicNameValuePair("smiles", data2));
+                nvps.add(new BasicNameValuePair("smiles", value));
             } else {
                 httpPost = new HttpPost(prefix + "/php/query.php");
                 nvps.add(new BasicNameValuePair("type", "0" + type));
-                nvps.add(new BasicNameValuePair("data1", "" + data1));
-                nvps.add(new BasicNameValuePair("data2", data2));
-                nvps.add(new BasicNameValuePair("seq", ""));
+                nvps.add(new BasicNameValuePair("filter", "" + filter));
+                nvps.add(new BasicNameValuePair("value", value));
                 nvps.add(new BasicNameValuePair("page", "1"));
                 nvps.add(new BasicNameValuePair("max", "25"));
             }
@@ -92,9 +91,8 @@ public class SBOLme implements SBOLInterface {
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "2"));
-            nvps.add(new BasicNameValuePair("data1", "0"));
-            nvps.add(new BasicNameValuePair("data2", ECNumber));
-            nvps.add(new BasicNameValuePair("seq", ""));
+            nvps.add(new BasicNameValuePair("filter", "0"));
+            nvps.add(new BasicNameValuePair("value", ECNumber));
             nvps.add(new BasicNameValuePair("page", "1"));
             nvps.add(new BasicNameValuePair("max", "25"));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
@@ -132,9 +130,9 @@ public class SBOLme implements SBOLInterface {
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
-            nvps.add(new BasicNameValuePair("data1", organism));
-            nvps.add(new BasicNameValuePair("data2", ecNumber));
-            nvps.add(new BasicNameValuePair("seq", ""));
+            nvps.add(new BasicNameValuePair("organism", organism));
+            nvps.add(new BasicNameValuePair("ec_number", ecNumber));
+            nvps.add(new BasicNameValuePair("sequence", ""));
             nvps.add(new BasicNameValuePair("page", "1"));
             nvps.add(new BasicNameValuePair("max", "25"));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));

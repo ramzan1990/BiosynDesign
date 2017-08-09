@@ -122,6 +122,11 @@ public class FirstFrame extends BDFrame {
         jp1.add(b2);
         JPanel jp2 = new JPanel();
         JButton b3 = new JButton("Parts Manager");
+        b3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                showPartsManager();
+            }
+        });
         jp2.add(b3);
         lowerPanel.add(jp1, BorderLayout.EAST);
         lowerPanel.add(jp2, BorderLayout.WEST);
@@ -137,5 +142,11 @@ public class FirstFrame extends BDFrame {
         this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+    }
+
+    private void showPartsManager() {
+        this.setVisible(false);
+        PartsManagerFrame pmf = new PartsManagerFrame(this);
+        pmf.setVisible(true);
     }
 }

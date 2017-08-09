@@ -5,7 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="cdk-1.5.13" level="project" />
     <orderEntry type="library" name="guhautils" level="project" />
@@ -16,5 +16,7 @@
     <orderEntry type="library" name="commons-codec-1.9" level="project" />
     <orderEntry type="library" name="org.jdom:jdom2:2.0.6" level="project" />
     <orderEntry type="library" name="jaxen:jaxen:1.1.6" level="project" />
+    <orderEntry type="library" name="org.apache.derby:derbyclient:10.13.1.1" level="project" />
+    <orderEntry type="library" name="org.apache.derby:derby:10.13.1.1" level="project" />
   </component>
 </module>
