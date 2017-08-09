@@ -18,5 +18,21 @@
     <orderEntry type="library" name="jaxen:jaxen:1.1.6" level="project" />
     <orderEntry type="library" name="org.apache.derby:derbyclient:10.13.1.1" level="project" />
     <orderEntry type="library" name="org.apache.derby:derby:10.13.1.1" level="project" />
+    <orderEntry type="library" name="cdk-1.5.13 (2)" level="project" />
+    <orderEntry type="library" name="gson-2.8.0 (2)" level="project" />
+    <orderEntry type="library" name="guhautils (2)" level="project" />
+    <orderEntry type="library" name="jgraphx (2)" level="project" />
+    <orderEntry type="library" name="libSBOLj-2.1.1-withDependencies (2)" level="project" />
+    <orderEntry type="library" name="swingx-all-1.6.4 (2)" level="project" />
+    <orderEntry type="library" name="commons-codec-1.9 (2)" level="project" />
+    <orderEntry type="library" name="commons-logging-1.2" level="project" />
+    <orderEntry type="library" name="fluent-hc-4.5.3" level="project" />
+    <orderEntry type="library" name="httpclient-4.5.3" level="project" />
+    <orderEntry type="library" name="httpclient-cache-4.5.3" level="project" />
+    <orderEntry type="library" name="httpclient-win-4.5.3" level="project" />
+    <orderEntry type="library" name="httpcore-4.4.6" level="project" />
+    <orderEntry type="library" name="httpmime-4.5.3" level="project" />
+    <orderEntry type="library" name="jna-4.1.0" level="project" />
+    <orderEntry type="library" name="jna-platform-4.1.0" level="project" />
   </component>
 </module>
