@@ -64,8 +64,6 @@ public class ProjectIO {
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             s.projectPath = f.getParentFile().toString() + File.separator;
             FileUtils.loadGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
-            mainWindow.fOptionsGroup.clearSelection();
-            mainWindow.fOptionsGroup.setSelected( Collections.list(mainWindow.fOptionsGroup.getElements()).get(s.fOption).getModel(), true);
             isSaved = true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Cannot open the project!", "Error", JOptionPane.ERROR_MESSAGE);

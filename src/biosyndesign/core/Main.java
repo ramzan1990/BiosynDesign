@@ -4,13 +4,8 @@ package biosyndesign.core;
 import biosyndesign.core.managers.*;
 import biosyndesign.core.sbol.LocalRepo;
 import biosyndesign.core.ui.*;
-import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.isomorphism.UniversalIsomorphismTester;
-import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
-import java.io.File;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -23,7 +18,8 @@ public class Main {
     public static ProjectIO projectIO;
     public static GraphManager gm;
     public static PartsManager pm;
-    public static LocalPartsManager lpm;
+    public static GUIManager guim;
+    public static NewPartsManager lpm;
 
     public static void main(String[] args) {
         System.setProperty("org.apache.commons.logging.Log",
@@ -57,7 +53,8 @@ public class Main {
     public static void initManagers(){
         gm = new GraphManager(s, mainWindow);
         pm = new PartsManager(s, mainWindow, gm);
-        lpm = new LocalPartsManager(s, mainWindow);
+        lpm = new NewPartsManager(s, mainWindow);
+        guim = new GUIManager(s);
     }
 
 
@@ -65,7 +62,7 @@ public class Main {
         Main.s = s;
     }
 
-    public static void setFOption(int i) {
-        s.fOption = i;
+    public static LocalRepo getLocalRepo(){
+        return lp;
     }
 }

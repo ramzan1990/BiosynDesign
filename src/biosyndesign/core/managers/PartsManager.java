@@ -17,6 +17,8 @@ import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.openscience.cdk.DefaultChemObjectBuilder;
+import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.*;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.ICDKObject;
@@ -26,6 +28,7 @@ import org.openscience.cdk.similarity.Tanimoto;
 import org.openscience.cdk.smiles.SmilesParser;
 
 
+import javax.imageio.plugins.jpeg.JPEGHuffmanTable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.transform.*;
@@ -107,9 +110,9 @@ public class PartsManager {
 
                             XPathExpression<Element> expr = xFactory.compile("//sbolParticipation", Filters.element());
                             List<Element> links = expr.evaluate(jdomDocument);
-                            for (Element e: links) {
+                            for (Element e : links) {
                                 String id = e.getChildText("sboldisplayId");
-                                if(!(id.contains("product") || id.contains("reactant"))){
+                                if (!(id.contains("product") || id.contains("reactant"))) {
                                     continue;
                                 }
                                 boolean p = id.contains("product");
@@ -145,7 +148,7 @@ public class PartsManager {
                             //adding reactions ec numbers
                             expr = xFactory.compile("//ecnumid", Filters.element());
                             links = expr.evaluate(jdomDocument);
-                            for (Element e: links) {
+                            for (Element e : links) {
                                 String id = e.getText();
                                 ECNumber op = null;
                                 for (ECNumber c : s.ecNumbers) {
@@ -167,7 +170,8 @@ public class PartsManager {
                                     r.partialEC = id;
                                 }
                             }
-                        } else if (p[i] instanceof Compound){
+                            r.nat = sInt.isNative(r.id, s.organism);
+                        } else if (p[i] instanceof Compound) {
                             if (s.compounds.contains(p[i])) {
                                 continue;
                             }
@@ -177,9 +181,11 @@ public class PartsManager {
                             } catch (Exception e) {
                             }
                             s.compounds.add((Compound) p[i]);
-                        }else if(p[i] instanceof Protein){
-                            Protein pr = (Protein)p[i];
+                        } else if (p[i] instanceof Protein) {
+                            Protein pr = (Protein) p[i];
                             pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
+                            pr.name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                            pr.nat = pr.organism.equals(s.organism);
                             s.proteins.add(pr);
                         }
                     } catch (Exception ex) {
@@ -335,7 +341,7 @@ public class PartsManager {
         } else if (p instanceof Compound) {
             CompoundCellPopUp pop = new CompoundCellPopUp((Compound) p);
             pop.show(mainWindow, x, y);
-        }else if (p instanceof Protein) {
+        } else if (p instanceof Protein) {
             EnzymeCellPopUp pop = new EnzymeCellPopUp((Protein) p);
             pop.show(mainWindow, x, y);
         }
@@ -347,7 +353,7 @@ public class PartsManager {
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         JLabel l1 = new JLabel("Choose enzyme for reaction:");
         UI.addTo(jp, l1);
-        Protein[] p = sInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
+        Protein[] p = sInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
         String[] lm = new String[p.length];
         int pick = -1;
         for (int i = 0; i < lm.length; i++) {
@@ -376,7 +382,7 @@ public class PartsManager {
                 if (!s.proteins.contains(ps)) {
                     addParts(new Part[]{ps});
                 }
-                if(r.enzyme!=null){
+                if (r.enzyme != null) {
                     s.proteins.remove(r.enzyme);
                 }
                 r.enzyme = ps;
@@ -393,7 +399,7 @@ public class PartsManager {
     private void updateTable() {
         DefaultTableModel dtm = (DefaultTableModel) (mainWindow.enzymeTable.getModel());
         dtm.setRowCount(0);
-        for(Protein pr:s.proteins) {
+        for (Protein pr : s.proteins) {
             dtm.addRow(new Object[]{pr.name, pr.sequence});
         }
         dtm.fireTableDataChanged();
@@ -407,7 +413,46 @@ public class PartsManager {
             Reaction[] r = sInt.findCompetingReactions(s.organism, c.id, s.maxCompeting);
             reactions.addAll(Arrays.asList(r));
         }
-        addParts(reactions.toArray(new Reaction[0]));
+        final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        JPanel jp = new JPanel();
+        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        JLabel l1 = new JLabel("Choose reactions to add:");
+        UI.addTo(jp, l1);
+        String[] lm = new String[reactions.size()];
+        int pick = -1;
+        for (int i = 0; i < lm.length; i++) {
+            lm[i] =reactions.get(i).name;
+        }
+        JList rList = new JList(lm);
+        rList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        JScrollPane rPane = new JScrollPane();
+        rPane.setMaximumSize(new Dimension(300, 150));
+        rPane.setPreferredSize(new Dimension(200, 150));
+        rPane.setViewportView(rList);
+        if (pick != -1) {
+            rList.setSelectedIndex(pick);
+        }
+        rPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        UI.addTo(jp, rPane);
+        JButton b1 = new JButton("Done");
+        UI.addToRight(jp, b1, false);
+        b1.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Reaction[] selectedReactions = new Reaction[ rList.getSelectedIndices().length];
+                for(int i= 0; i< selectedReactions.length; i++){
+                    selectedReactions[i] = reactions.get(rList.getSelectedIndices()[i]);
+                }
+                addParts(selectedReactions);
+                frame.setVisible(false);
+                frame.dispose();
+            }
+        });
+        frame.getContentPane().add(jp);
+        frame.pack();
+        frame.setLocationRelativeTo(mainWindow);
+        frame.setVisible(true);
         mainWindow.setStatusLabel("Competing reactions added.");
     }
 
@@ -451,75 +496,6 @@ public class PartsManager {
         }
     }
 
-    public void delete(Reaction r) {
-        mxCell key = null;
-        for (Map.Entry entry : s.graphNodes.entrySet()) {
-            if (r == entry.getValue()) {
-                key = (mxCell) entry.getKey();
-                break;
-            }
-        }
-        if (key != null) {
-            s.reactions.remove(r);
-            for (Part c : r.compounds) {
-                boolean remove = true;
-                for (Reaction or : s.reactions) {
-                    if (or.compounds.contains(c)) {
-                        remove = false;
-                        break;
-                    }
-                }
-                if (remove) {
-                    delete((Compound) c);
-                }
-            }
-            mxGraph graph = mainWindow.workSpacePanel.graph;
-            graph.getModel().beginUpdate();
-            graph.removeCells(new Object[]{key});
-            graph.refresh();
-            graph.getModel().endUpdate();
-            graph.refresh();
-
-        }
-
-    }
-
-    public void delete(Compound c) {
-        mxCell key = null;
-        for (Map.Entry entry : s.graphNodes.entrySet()) {
-            if (c == entry.getValue()) {
-                key = (mxCell) entry.getKey();
-                break;
-            }
-        }
-        if (key != null) {
-            for (Reaction r : s.reactions) {
-                if (r.compounds.contains(c) && !r.local) {
-                    JOptionPane.showMessageDialog(null, "Cannot remove compound because it is used in reaction.");
-                    return;
-                }
-            }
-            s.compounds.remove(c);
-            mxGraph graph = mainWindow.workSpacePanel.graph;
-            graph.getModel().beginUpdate();
-            graph.removeCells(new Object[]{key});
-            graph.refresh();
-            graph.getModel().endUpdate();
-            graph.refresh();
-        }
-    }
-    public void delete(ECNumber ec) {
-        s.ecNumbers.remove(ec);
-    }
-
-    public void delete(Protein p) {
-        s.proteins.remove(p);
-        for (Reaction or : s.reactions) {
-            if (or.enzyme == p) {
-                or.enzyme = null;
-            }
-        }
-    }
 
     public void commonReaction() {
         Part c1 = s.graphNodes.get(gm.getSelected()[0]);
@@ -569,6 +545,8 @@ public class PartsManager {
             final JDialog frame = new JDialog(mainWindow, "Structural Similarity", true);
             Object columnNames[] = {"Reactant", "Product", "Tanimoto"};
             ArrayList<String[]> rows = new ArrayList<>();
+            ArrayList<String> vals = getSim(r, 0);
+            int cc = 0;
             for (CompoundStoichiometry reactant : r.reactants) {
                 for (CompoundStoichiometry product : r.products) {
                     if (reactant.c.smiles == null || product.c.smiles == null) {
@@ -577,41 +555,7 @@ public class PartsManager {
                     String[] row = new String[3];
                     row[0] = reactant.c.name;
                     row[1] = product.c.name;
-                    IChemObjectBuilder bldr
-                            = SilentChemObjectBuilder.getInstance();
-                    SmilesParser smilesParser = new SmilesParser(bldr);
-                    IAtomContainer mol1 = smilesParser.parseSmiles(reactant.c.smiles);
-                    for (int i = 0; i < reactant.s - 1; i++) {
-                        mol1.addAtom(mol1.getAtom(0));
-                    }
-                    IAtomContainer mol2 = smilesParser.parseSmiles(product.c.smiles);
-                    for (int i = 0; i < product.s - 1; i++) {
-                        mol2.addAtom(mol2.getAtom(0));
-                    }
-                    IBitFingerprint bitset1 = null, bitset2=null;
-                    IFingerprinter fingerprinter = null;
-                    if(s.fOption == 0) {
-                        fingerprinter = new PubchemFingerprinter(DefaultChemObjectBuilder.getInstance());
-                    }else if(s.fOption == 1){
-                        fingerprinter = new EStateFingerprinter();
-                    }else if(s.fOption == 2){
-                        fingerprinter = new ExtendedFingerprinter();
-                    }else if(s.fOption == 3){
-                        fingerprinter = new GraphOnlyFingerprinter();
-                    }else if(s.fOption == 4){
-                        fingerprinter = new HybridizationFingerprinter();
-                    }else if(s.fOption == 5){
-                        fingerprinter = new ShortestPathFingerprinter();
-                    }else if(s.fOption == 6){
-                        fingerprinter = new KlekotaRothFingerprinter();
-                    }else if(s.fOption == 7){
-                        fingerprinter = new MACCSFingerprinter();
-                    }else if(s.fOption == 8){
-                        fingerprinter = new SubstructureFingerprinter();
-                    }
-                    bitset1 = fingerprinter.getBitFingerprint(mol1);
-                    bitset2 = fingerprinter.getBitFingerprint(mol2);
-                    row[2] = Double.toString(Tanimoto.calculate(bitset1, bitset2));
+                    row[2] = vals.get(cc++);
                     rows.add(row);
                 }
             }
@@ -621,10 +565,27 @@ public class PartsManager {
             }
             JTable table = new JTable(rowData, columnNames);
             JScrollPane scrollPane = new JScrollPane(table);
-            //table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            //new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED)
             frame.setMinimumSize(new Dimension(640, 360));
-            frame.getContentPane().add(scrollPane);
+            JPanel p = new JPanel();
+            UI.addTo(p, new JLabel("Select Fingerprinter"));
+            String[] fList = {"PubchemFingerprinter", "EStateFingerprinter", "ExtendedFingerprinter", "GraphOnlyFingerprinter", "HybridizationFingerprinter",
+                    "ShortestPathFingerprinter", "KlekotaRothFingerprinter", "MACCSFingerprinter", "SubstructureFingerprinter"};
+            JComboBox fComboBox = new JComboBox(fList);
+            fComboBox.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        ArrayList<String> newVals = getSim(r, fComboBox.getSelectedIndex());
+                        for (int i = 0; i < table.getModel().getRowCount(); i++) {
+                            table.getModel().setValueAt(newVals.get(i), i, 2);
+                        }
+                    } catch (Exception ex) {
+                    }
+                }
+            });
+            p.add(fComboBox);
+            frame.getContentPane().add(p, BorderLayout.NORTH);
+            frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
             frame.pack();
             frame.setLocationRelativeTo(mainWindow);
             frame.setVisible(true);
@@ -633,9 +594,56 @@ public class PartsManager {
         }
     }
 
+    private ArrayList<String> getSim(Reaction r, int f) throws CDKException {
+        ArrayList<String> list = new ArrayList<>();
+        for (CompoundStoichiometry reactant : r.reactants) {
+            for (CompoundStoichiometry product : r.products) {
+                if (reactant.c.smiles == null || product.c.smiles == null) {
+                    continue;
+                }
+                IChemObjectBuilder bldr
+                        = SilentChemObjectBuilder.getInstance();
+                SmilesParser smilesParser = new SmilesParser(bldr);
+                IAtomContainer mol1 = smilesParser.parseSmiles(reactant.c.smiles);
+                for (int i = 0; i < reactant.s - 1; i++) {
+                    mol1.addAtom(mol1.getAtom(0));
+                }
+                IAtomContainer mol2 = smilesParser.parseSmiles(product.c.smiles);
+                for (int i = 0; i < product.s - 1; i++) {
+                    mol2.addAtom(mol2.getAtom(0));
+                }
+                IBitFingerprint bitset1 = null, bitset2 = null;
+                IFingerprinter fingerprinter = null;
+                if (f == 0) {
+                    fingerprinter = new PubchemFingerprinter(DefaultChemObjectBuilder.getInstance());
+                } else if (f == 1) {
+                    fingerprinter = new EStateFingerprinter();
+                } else if (f == 2) {
+                    fingerprinter = new ExtendedFingerprinter();
+                } else if (f == 3) {
+                    fingerprinter = new GraphOnlyFingerprinter();
+                } else if (f == 4) {
+                    fingerprinter = new HybridizationFingerprinter();
+                } else if (f == 5) {
+                    fingerprinter = new ShortestPathFingerprinter();
+                } else if (f == 6) {
+                    fingerprinter = new KlekotaRothFingerprinter();
+                } else if (f == 7) {
+                    fingerprinter = new MACCSFingerprinter();
+                } else if (f == 8) {
+                    fingerprinter = new SubstructureFingerprinter();
+                }
+                bitset1 = fingerprinter.getBitFingerprint(mol1);
+                bitset2 = fingerprinter.getBitFingerprint(mol2);
+                list.add(Double.toString(Tanimoto.calculate(bitset1, bitset2)));
+            }
+        }
+        return list;
+    }
+
     public void deleteSelected() {
         Object[] cells = gm.getSelected();
-     delete(cells);
+        delete(cells);
     }
 
     public void delete(Object[] cells) {
@@ -644,47 +652,10 @@ public class PartsManager {
         //remove reactions
         for (Object cell : cells) {
             if (s.graphNodes.get(cell) instanceof Reaction) {
-                Reaction r = (Reaction) s.graphNodes.get(cell);
-                s.reactions.remove(r);
-                for (Part c : r.compounds) {
-                    boolean remove = true;
-                    for (Reaction or : s.reactions) {
-                        if (or.compounds.contains(c)) {
-                            remove = false;
-                            break;
-                        }
-                    }
-                    if (remove) {
-                        delete((Compound) c);
-                    }
-                }
-                for (ECNumber ec : r.ec) {
-                    boolean remove = true;
-                    for (Reaction or : s.reactions) {
-                        if (or.ec.contains(ec)) {
-                            remove = false;
-                            break;
-                        }
-                    }
-                    if (remove) {
-                        delete(ec);
-                    }
-                }
-                if(r.enzyme!=null){
-                    delete( r.enzyme);
-                }
-                graph.removeCells(new Object[]{cell});
-            }
-        }
-        //remove compounds
-        for (Object cell : cells) {
-            if (s.graphNodes.get(cell) instanceof Compound) {
+                delete((Reaction) s.graphNodes.get(cell));
+            } else if (s.graphNodes.get(cell) instanceof Compound) {
                 delete((Compound) s.graphNodes.get(cell));
-            }
-        }
-        //remove proteins
-        for (Object cell : cells) {
-            if (s.graphNodes.get(cell) instanceof Protein) {
+            } else if (s.graphNodes.get(cell) instanceof Protein) {
                 delete((Protein) s.graphNodes.get(cell));
             }
         }
@@ -693,6 +664,102 @@ public class PartsManager {
         graph.refresh();
         gm.updateGraph();
         updateTable();
+    }
+
+    public void delete(Reaction r) {
+        mxCell key = null;
+        for (Map.Entry entry : s.graphNodes.entrySet()) {
+            if (r == entry.getValue()) {
+                key = (mxCell) entry.getKey();
+                break;
+            }
+        }
+        if (key != null) {
+            s.reactions.remove(r);
+            for (Part c : r.compounds) {
+                boolean remove = true;
+                for (Reaction or : s.reactions) {
+                    if (or.compounds.contains(c)) {
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    delete((Compound) c);
+                }
+            }
+            for (ECNumber ec : r.ec) {
+                boolean remove = true;
+                for (Reaction or : s.reactions) {
+                    if (or.ec.contains(ec)) {
+                        remove = false;
+                        break;
+                    }
+                }
+                if (remove) {
+                    delete(ec);
+                }
+            }
+            if (r.enzyme != null) {
+                delete(r.enzyme);
+            }
+            mxGraph graph = mainWindow.workSpacePanel.graph;
+            graph.removeCells(new Object[]{key});
+        }
+        try {
+            new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + r.id).delete();
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void delete(Compound c) {
+        mxCell key = null;
+        for (Map.Entry entry : s.graphNodes.entrySet()) {
+            if (c == entry.getValue()) {
+                key = (mxCell) entry.getKey();
+                break;
+            }
+        }
+        if (key != null) {
+            for (Reaction r : s.reactions) {
+                if (r.compounds.contains(c) && !r.local) {
+                    JOptionPane.showMessageDialog(null, "Cannot remove compound because it is used in reaction.");
+                    return;
+                }
+            }
+            s.compounds.remove(c);
+            mxGraph graph = mainWindow.workSpacePanel.graph;
+            graph.removeCells(new Object[]{key});
+        }
+        try {
+            new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id).delete();
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void delete(ECNumber ec) {
+        s.ecNumbers.remove(ec);
+        try {
+            new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + ec.id).delete();
+        } catch (Exception e) {
+
+        }
+    }
+
+    public void delete(Protein p) {
+        s.proteins.remove(p);
+        for (Reaction or : s.reactions) {
+            if (or.enzyme == p) {
+                or.enzyme = null;
+            }
+        }
+        try {
+            new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id).delete();
+        } catch (Exception e) {
+
+        }
     }
 
     public void viewSelected() {
@@ -742,5 +809,20 @@ public class PartsManager {
             p[i] = searchParts[selectedIndices[i]];
         }
         addParts(p);
+    }
+
+    public void similarityClicked() {
+        if (gm.getSelected().length > 1) {
+            try {
+                Compound c1 = (Compound) s.graphNodes.get(gm.getSelected()[0]);
+                Compound c2 = (Compound) s.graphNodes.get(gm.getSelected()[1]);
+                Reaction r = new Reaction("", "", "", 0);
+                r.products.add(new CompoundStoichiometry(c1, 1));
+                r.reactants.add(new CompoundStoichiometry(c2, 1));
+                structSimilarity(r);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(null, "Select two compounds!");
+            }
+        }
     }
 }

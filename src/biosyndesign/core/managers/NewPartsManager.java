@@ -14,11 +14,11 @@ import java.io.File;
 /**
  * Created by Umarov on 1/27/2017.
  */
-public class LocalPartsManager {
+public class NewPartsManager {
     private ProjectState s;
     private MainWindow mainWindow;
 
-    public LocalPartsManager(ProjectState s, MainWindow mainWindow) {
+    public NewPartsManager(ProjectState s, MainWindow mainWindow) {
         this.mainWindow = mainWindow;
         this.s = s;
     }

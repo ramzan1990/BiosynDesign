@@ -76,9 +76,10 @@ public class GraphManager {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
             Mover m = new Mover(300);
-            int off = 170 + m.max(s.reactions.size()) * 170;
+            int off = 200 + m.max(s.reactions.size()) * 170;
             String compoundStyle;
             String reactionStyle;
+            String enzymeStyle;
             for (int i = 0; i < s.reactions.size(); i++) {
                 int rx = m.x() + off;
                 int ry = m.y() + off;
@@ -100,14 +101,19 @@ public class GraphManager {
 
                 if (r.enzyme != null) {
                     if (usedParts.contains(r.enzyme.id)) {
-                        graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(r.enzyme.id)));
+                        graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(r.enzyme.id)), "ENZYME_EDGE");
                     } else {
+                        if (r.enzyme.nat) {
+                            enzymeStyle = "ENZYME_NAT";
+                        } else {
+                            enzymeStyle = "ENZYME";
+                        }
                         cc++;
                         ms.move();
-                        Object v2 = graph.insertVertex(parent, null, Common.restrict(r.enzyme.name.split(",")[0], 12), rx + ms.x(), ry + ms.y(), 80, 30, "ENZYME");
+                        Object v2 = graph.insertVertex(parent, null, Common.restrict(r.enzyme.name.split(",")[0], 12), rx + ms.x(), ry + ms.y(), 80, 30, enzymeStyle);
                         s.graphNodes.put(v2, r.enzyme);
                         //, "shape=image;image=file:/c:/images/ME_C00022.png"
-                        graph.insertEdge(parent, null, "", v1, v2);
+                        graph.insertEdge(parent, null, "", v1, v2, "ENZYME_EDGE");
                         usedParts.add(r.enzyme.id);
                         objects.add(v2);
                     }

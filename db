@@ -9,7 +9,7 @@ CREATE TABLE compounds (
   DrugID varchar(40),
   SMILES varchar(5000)
 );
-CREATE TABLE compund_enzymes (
+CREATE TABLE compound_enzymes (
   Compound varchar(40),
   Enzyme varchar(40)
 );

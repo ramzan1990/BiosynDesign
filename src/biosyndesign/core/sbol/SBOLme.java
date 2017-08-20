@@ -123,18 +123,18 @@ public class SBOLme implements SBOLInterface {
         }
     }
 
-    public Protein[] getProteins(String ecNumber, String organism) {
+    public Protein[] getProteins(String ecNumber) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
-            nvps.add(new BasicNameValuePair("organism", organism));
+            nvps.add(new BasicNameValuePair("organism", ""));
             nvps.add(new BasicNameValuePair("ec_number", ecNumber));
             nvps.add(new BasicNameValuePair("sequence", ""));
             nvps.add(new BasicNameValuePair("page", "1"));
-            nvps.add(new BasicNameValuePair("max", "25"));
+            nvps.add(new BasicNameValuePair("max", "300"));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             CloseableHttpResponse response = httpclient.execute(httpPost);
             try {
@@ -245,5 +245,35 @@ public class SBOLme implements SBOLInterface {
             p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("FreeEnergy").getAsDouble());
         }
         return p;
+    }
+
+    @Override
+    public boolean isNative(String reaction, String organism) {
+        StringBuffer result = new StringBuffer();
+        try {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/is_native.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("reaction", reaction));
+            nvps.add(new BasicNameValuePair("organism", organism));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
+            }
+            httpclient.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+        return jsonObject.get("native").getAsBoolean();
     }
 }

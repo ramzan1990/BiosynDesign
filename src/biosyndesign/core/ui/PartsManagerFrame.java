@@ -2,6 +2,7 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.managers.ProjectIO;
+import biosyndesign.core.sbol.LocalRepo;
 import biosyndesign.core.ui.popups.RecentProjectPopUp;
 import biosyndesign.core.utils.UI;
 
@@ -14,12 +15,12 @@ import java.io.File;
  * Created by Umarov on 1/23/2017.
  */
 public class PartsManagerFrame extends BDFrame {
-    JFrame parent;
+    private LocalRepo lr;
 
 
     public PartsManagerFrame(JFrame parent) {
         super();
-        this.parent = parent;
+        lr = Main.getLocalRepo();
         final PartsManagerFrame ff = this;
         int w = 800;
         this.setSize(new Dimension(w, 600));
@@ -92,12 +93,6 @@ public class PartsManagerFrame extends BDFrame {
                 Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
             }
         });
-
-
-
-
-
-
         //rightPanel.add(Box.createRigidArea(new Dimension(0, 300)));
         JPanel topPanel = new JPanel();
         //topPanel.setSize(new Dimension(400, 250));
@@ -116,7 +111,19 @@ public class PartsManagerFrame extends BDFrame {
         JPanel jp2 = new JPanel();
         JButton b3 = new JButton("Import Parts");
         jp2.add(b3);
+        b3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lr.importParts();
+            }
+        });
         JButton b4 = new JButton("Delete Parts");
+        b3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lr.deleteParts();
+            }
+        });
         jp2.add(b4);
         lowerPanel.add(jp1, BorderLayout.EAST);
         lowerPanel.add(jp2, BorderLayout.WEST);

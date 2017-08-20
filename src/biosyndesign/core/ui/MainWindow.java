@@ -2,10 +2,7 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.graphics.PartsGraph;
-import biosyndesign.core.managers.LocalPartsManager;
-import biosyndesign.core.managers.ProjectIO;
 import biosyndesign.core.sbol.Part;
-import biosyndesign.core.sbol.SBOLInterface;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -13,7 +10,6 @@ import java.awt.event.*;
 import java.time.LocalDateTime;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.table.DefaultTableModel;
@@ -22,18 +18,16 @@ import javax.swing.table.TableModel;
 public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, Parts, HelpM, Options, fOptions, Window;
-    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions;
+    private JMenu File, Parts, HelpM, Options, Window;
+    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
-    private JCheckBoxMenuItem fO1, fO2, fO3, fO4, fO5, fO6, fO7, fO8, fO9;
-    public ButtonGroup fOptionsGroup;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
     Part[] parts;
@@ -59,7 +53,7 @@ public class MainWindow extends BDFrame {
         Parts = new JMenu("Parts");
         HelpM = new JMenu("Help");
         Options = new JMenu("Options");
-        fOptions = new JMenu("Fingerprinter Options");
+        chooseRepository = new JMenuItem("Choose Repository");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -74,80 +68,6 @@ public class MainWindow extends BDFrame {
         addEnzyme = new JMenuItem("Add Enzyme");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
 
-        fO1 = new JCheckBoxMenuItem("PubchemFingerprinter");
-        fO2 = new JCheckBoxMenuItem("EStateFingerprinter");
-        fO3 = new JCheckBoxMenuItem("ExtendedFingerprinter");
-        fO4 = new JCheckBoxMenuItem("GraphOnlyFingerprinter");
-        fO5 = new JCheckBoxMenuItem("HybridizationFingerprinter");
-        fO6 = new JCheckBoxMenuItem("ShortestPathFingerprinter");
-        fO7 = new JCheckBoxMenuItem("KlekotaRothFingerprinter");
-        fO8 = new JCheckBoxMenuItem("MACCSFingerprinter");
-        fO9 = new JCheckBoxMenuItem("SubstructureFingerprinter");
-        fOptionsGroup = new ButtonGroup();
-        fOptionsGroup.add(fO1);
-        fOptionsGroup.add(fO2);
-        fOptionsGroup.add(fO3);
-        fOptionsGroup.add(fO4);
-        fOptionsGroup.add(fO5);
-        fOptionsGroup.add(fO6);
-        fOptionsGroup.add(fO7);
-        fOptionsGroup.add(fO8);
-        fOptionsGroup.add(fO9);
-        fO1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(0);
-            }
-        });
-        fO2.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(1);
-            }
-        });
-        fO3.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(2);
-            }
-        });
-        fO4.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(3);
-            }
-        });
-        fO5.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(4);
-            }
-        });
-        fO6.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(5);
-            }
-        });
-        fO7.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(6);
-            }
-        });
-        fO8.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(7);
-            }
-        });
-        fO9.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                Main.setFOption(8);
-            }
-        });
-        fOptions.add(fO1);
-        fOptions.add(fO2);
-        fOptions.add(fO3);
-        fOptions.add(fO4);
-        fOptions.add(fO5);
-        fOptions.add(fO6);
-        fOptions.add(fO7);
-        fOptions.add(fO8);
-        fOptions.add(fO9);
-        fO1.setSelected(true);
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Main.projectIO.newProject();
@@ -338,8 +258,13 @@ public class MainWindow extends BDFrame {
             }
         });
 
-        Options.add(fOptions);
-
+        Options.add(chooseRepository);
+        chooseRepository.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.guim.chooseRepository();
+            }
+        });
         menu.add(File);
         menu.add(Parts);
         menu.add(Options);
@@ -423,6 +348,7 @@ public class MainWindow extends BDFrame {
         saveProject.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
                 Main.projectIO.saveProject();
+                setStatusLabel("Project Saved");
             }
 
             public void mousePressed(MouseEvent e) {
@@ -483,6 +409,29 @@ public class MainWindow extends BDFrame {
 
             public void mouseExited(MouseEvent e) {
                 update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
+            }
+        });
+
+        similarity = new JLabel();
+        similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
+        similarity.setToolTipText("Similarity");
+        similarity.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.similarityClicked();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
             }
         });
 
@@ -578,6 +527,8 @@ public class MainWindow extends BDFrame {
         toolsPanel.add(delete);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(update);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(similarity);
         toolsPanel.add(Box.createHorizontalGlue());
         JLabel lt = new JLabel("Info");
         lt.setIcon(new ImageIcon(Main.class.getResource("ui/images/v1.png")));
@@ -598,6 +549,15 @@ public class MainWindow extends BDFrame {
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+
+        lt.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JOptionPane.showMessageDialog(null, "Organism Name: " + Main.guim.getOrganism() + "\n"+
+                "More info later.");
+            }
+
+        });
         //</editor-fold>
 
         dataPanel = new JToolBar();

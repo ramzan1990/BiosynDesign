@@ -68,8 +68,9 @@ public class PartsGraph extends JPanel implements Serializable {
 
         Hashtable<String, Object> styler2 = new Hashtable<String, Object>();
         styler2.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        styler2.put(mxConstants.STYLE_DASHED, true);
         styler2.put(mxConstants.STYLE_FONTCOLOR, "#774400");
-        styler2.put(mxConstants.STYLE_FILLCOLOR, "#93edab");
+        styler2.put(mxConstants.STYLE_FILLCOLOR, "#ed9393");
         styler2.put(mxConstants.STYLE_ROUNDED, "1");
         styler2.put(mxConstants.STYLE_EDITABLE, "0");
         stylesheet.putCellStyle("REACTION_NAT", styler2);
@@ -82,6 +83,27 @@ public class PartsGraph extends JPanel implements Serializable {
         style3.put(mxConstants.STYLE_ROUNDED, "1");
         style3.put(mxConstants.STYLE_EDITABLE, "0");
         stylesheet.putCellStyle("ENZYME", style3);
+
+        Hashtable<String, Object> style4 = new Hashtable<String, Object>();
+        style4.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
+        style4.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style4.put(mxConstants.STYLE_DASHED, true);
+        style4.put(mxConstants.STYLE_FILLCOLOR, "#ffa500");
+        style4.put(mxConstants.STYLE_ROUNDED, "1");
+        style4.put(mxConstants.STYLE_EDITABLE, "0");
+        stylesheet.putCellStyle("ENZYME_NAT", style4);
+
+        Hashtable<String, Object>  edge = new Hashtable<String, Object>();
+        //edge.put(mxConstants.STYLE_ROUNDED, true);
+        //edge.put(mxConstants.STYLE_ORTHOGONAL, false);
+        //edge.put(mxConstants.STYLE_EDGE, "elbowEdgeStyle");
+        //edge.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
+        edge.put(mxConstants.STYLE_ENDARROW, mxConstants.NONE);
+        //edge.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE);
+        //edge.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER);
+        //edge.put(mxConstants.STYLE_STROKECOLOR, "#000000"); // default is #6482B9
+        //edge.put(mxConstants.STYLE_FONTCOLOR, "#446299");
+        stylesheet.putCellStyle("ENZYME_EDGE", edge);
 
         //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
 

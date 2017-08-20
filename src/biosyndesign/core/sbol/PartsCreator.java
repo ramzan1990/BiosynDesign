@@ -137,10 +137,7 @@ public class PartsCreator {
                     vec.addElement(new Annotation(new QName(ANNOTATION_THERMODYNAMICS_PREFIX_URI, ANNOTATION_FREE_ENERGY_TEMP, ANNOTATION_THERMODYNAMICS_PREFIX), FREE_ENERGY_TEMP));
                     mdef.createAnnotation(new QName(ANNOTATION_THERMODYNAMICS_PREFIX_URI, ANNOTATION_FREE_ENERGY, ANNOTATION_THERMODYNAMICS_PREFIX), new QName(ANNOTATION_THERMODYNAMICS_PREFIX_URI, "information", ANNOTATION_THERMODYNAMICS_PREFIX), mdef.getIdentity(), vec);
                 }
-                SBOLWriter.write(doc, System.out);
-                File file = new File("./rdf_output/reaction/");
-                file.mkdirs();
-                SBOLWriter.write(doc, "./rdf_output/reaction/" + modID + "-test");
+                SBOLWriter.write(doc, f);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -196,10 +193,7 @@ public class PartsCreator {
             qName = new QName(ANNOTATION_PREFIX_URI, ANNOTATION_COFACTOR, ANNOTATION_PREFIX);
             for (int i = 0; i < COFACTORS.length; i++)
                 if (!COFACTORS[i].equals("NULL")) cdef.createAnnotation(qName, COFACTORS[i]);
-
-
-            SBOLWriter.write(doc, System.out);
-            SBOLWriter.write(doc, "./rdf_output/" + EC_NUMBER + ".rdf");
+            SBOLWriter.write(doc, f);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -384,9 +378,7 @@ public class PartsCreator {
             QName sitesQName = new QName(ANNOTATION_STRUCTURE_PREFIX_URI, ANNOTATION_CATALYTIC_SITES, ANNOTATION_STRUCTURE_PREFIX);
             cdef.createAnnotation(sitesQName, new QName(ANNOTATION_STRUCTURE_PREFIX_URI, "information", ANNOTATION_STRUCTURE_PREFIX), cdef.getIdentity(), vec);
 
-
-//	    SBOLWriter.write(doc, System.out);
-            SBOLWriter.write(doc, "./rdf_output/" + PROTEIN_ID + ".rdf");
+            SBOLWriter.write(doc, f);
         } catch (Exception e) {
 
         }
