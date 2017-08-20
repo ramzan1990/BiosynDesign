@@ -1,8 +1,8 @@
 package biosyndesign.core.managers;
 
-import biosyndesign.core.sbol.Compound;
-import biosyndesign.core.sbol.Part;
-import biosyndesign.core.sbol.Reaction;
+import biosyndesign.core.sbol.parts.Compound;
+import biosyndesign.core.sbol.parts.Part;
+import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;

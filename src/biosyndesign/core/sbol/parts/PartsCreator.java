@@ -1,4 +1,4 @@
-package biosyndesign.core.sbol;
+package biosyndesign.core.sbol.parts;
 
 import java.awt.print.Printable;
 import java.io.ByteArrayInputStream;

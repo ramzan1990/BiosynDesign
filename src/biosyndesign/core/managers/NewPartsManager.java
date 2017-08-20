@@ -1,7 +1,7 @@
 package biosyndesign.core.managers;
 
 import biosyndesign.core.Main;
-import biosyndesign.core.sbol.*;
+import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.utils.UI;
 

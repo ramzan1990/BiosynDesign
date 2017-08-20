@@ -1,4 +1,4 @@
-package biosyndesign.core.sbol;
+package biosyndesign.core.sbol.parts;
 
 /**
  * Created by Umarov on 1/26/2017.

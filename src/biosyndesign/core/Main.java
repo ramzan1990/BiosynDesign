@@ -2,7 +2,7 @@ package biosyndesign.core;
 
 
 import biosyndesign.core.managers.*;
-import biosyndesign.core.sbol.LocalRepo;
+import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.ui.*;
 
 import javax.swing.*;
@@ -54,7 +54,7 @@ public class Main {
         gm = new GraphManager(s, mainWindow);
         pm = new PartsManager(s, mainWindow, gm);
         lpm = new NewPartsManager(s, mainWindow);
-        guim = new GUIManager(s);
+        guim = new GUIManager(s, pm);
     }
 
 

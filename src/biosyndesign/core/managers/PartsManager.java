@@ -2,6 +2,8 @@ package biosyndesign.core.managers;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.sbol.*;
+import biosyndesign.core.sbol.local.LocalRepo;
+import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.ui.ImageComponent;
 import biosyndesign.core.ui.popups.CompoundCellPopUp;
@@ -11,24 +13,19 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
-import jdk.internal.org.xml.sax.InputSource;
-import org.apache.xml.dtm.ref.DTMNodeList;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.*;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.ICDKObject;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.similarity.Tanimoto;
 import org.openscience.cdk.smiles.SmilesParser;
 
 
-import javax.imageio.plugins.jpeg.JPEGHuffmanTable;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.transform.*;
@@ -45,15 +42,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.jdom2.Content;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.util.IteratorIterable;
 
 /**
  * Created by Umarov on 2/21/2017.
@@ -63,10 +55,15 @@ public class PartsManager {
     private ProjectState s;
     private GraphManager gm;
     Part[] searchParts;
-    public static SBOLInterface sInt;
+    private static SBOLInterface cInt;
+    private static SBOLInterface sInt;
+    private static SBOLInterface lInt;
+
 
     public PartsManager(ProjectState s, MainWindow mainWindow, GraphManager gm) {
         sInt = new SBOLme(s.prefix);
+        lInt = new LocalRepo();
+        cInt = sInt;
         this.s = s;
         this.mainWindow = mainWindow;
         this.gm = gm;
@@ -107,7 +104,6 @@ public class PartsManager {
                             Reaction r = (Reaction) p[i];
                             s.reactions.add(r);
                             //adding reactions compounds
-
                             XPathExpression<Element> expr = xFactory.compile("//sbolParticipation", Filters.element());
                             List<Element> links = expr.evaluate(jdomDocument);
                             for (Element e : links) {
@@ -126,7 +122,7 @@ public class PartsManager {
                                 }
                                 if (op == null) {
                                     System.out.println("need to add compound");
-                                    op = (Compound) sInt.findParts(0, 0, id)[0];
+                                    op = (Compound) cInt.findParts(0, 0, id)[0];
                                     System.out.println("compound added");
                                     s.compounds.add(op);
                                     saveXML(op);
@@ -158,7 +154,7 @@ public class PartsManager {
                                     }
                                 }
                                 if (op == null) {
-                                    op = sInt.findECNumber(id);
+                                    op = cInt.findECNumber(id);
                                     if (op != null) {
                                         s.ecNumbers.add(op);
                                         saveXML(op);
@@ -170,7 +166,7 @@ public class PartsManager {
                                     r.partialEC = id;
                                 }
                             }
-                            r.nat = sInt.isNative(r.id, s.organism);
+                            r.nat = cInt.isNative(r.id, s.organism);
                         } else if (p[i] instanceof Compound) {
                             if (s.compounds.contains(p[i])) {
                                 continue;
@@ -254,7 +250,7 @@ public class PartsManager {
     }
 
     public void findReactions(Compound cell) {
-        Part[] parts = sInt.findParts(1, 1, cell.id);
+        Part[] parts = cInt.findParts(1, 1, cell.id);
         String[] names = new String[parts.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = parts[i].name;
@@ -353,7 +349,7 @@ public class PartsManager {
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         JLabel l1 = new JLabel("Choose enzyme for reaction:");
         UI.addTo(jp, l1);
-        Protein[] p = sInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
+        Protein[] p = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
         String[] lm = new String[p.length];
         int pick = -1;
         for (int i = 0; i < lm.length; i++) {
@@ -410,7 +406,7 @@ public class PartsManager {
     public void competingReactions() {
         ArrayList<Reaction> reactions = new ArrayList<>();
         for (Compound c : s.compounds) {
-            Reaction[] r = sInt.findCompetingReactions(s.organism, c.id, s.maxCompeting);
+            Reaction[] r = cInt.findCompetingReactions(s.organism, c.id, s.maxCompeting);
             reactions.addAll(Arrays.asList(r));
         }
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
@@ -506,7 +502,7 @@ public class PartsManager {
             jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
             JLabel l1 = new JLabel("Common Reactions");
             UI.addTo(jp, l1);
-            Reaction[] p = sInt.commonReactions(c1.id, c2.id);
+            Reaction[] p = cInt.commonReactions(c1.id, c2.id);
             String[] lm = new String[p.length];
             for (int i = 0; i < lm.length; i++) {
                 lm[i] = p[i].name;
@@ -789,8 +785,7 @@ public class PartsManager {
         new Thread() {
             public void run() {
                 try {
-                    SBOLInterface sInt = Main.pm.sInt;
-                    searchParts = sInt.findParts(c1, c2, value);
+                    searchParts = cInt.findParts(c1, c2, value);
                     String[] names = new String[searchParts.length];
                     for (int i = 0; i < names.length; i++) {
                         names[i] = searchParts[i].name;
@@ -825,4 +820,17 @@ public class PartsManager {
             }
         }
     }
+
+    public void setPrefix(String p) {
+        ((SBOLme) cInt).prefix = p;
+    }
+
+    public void setRepo(boolean local){
+        if(local){
+            cInt = lInt;
+        }else{
+            cInt = sInt;
+        }
+    }
+
 }

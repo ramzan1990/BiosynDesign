@@ -1,6 +1,6 @@
 package biosyndesign.core.ui.popups;
 
-import biosyndesign.core.sbol.Reaction;
+import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.Main;
 
 import javax.swing.*;

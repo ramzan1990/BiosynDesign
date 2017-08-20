@@ -2,7 +2,7 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.graphics.PartsGraph;
-import biosyndesign.core.sbol.Part;
+import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -18,9 +18,9 @@ import javax.swing.table.TableModel;
 public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, Parts, HelpM, Options, Window;
+    private JMenu File, Parts, HelpM, repoOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository;
-    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole;
+    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
@@ -52,8 +52,9 @@ public class MainWindow extends BDFrame {
         File = new JMenu("File");
         Parts = new JMenu("Parts");
         HelpM = new JMenu("Help");
-        Options = new JMenu("Options");
+        repoOptions = new JMenu("Repository");
         chooseRepository = new JMenuItem("Choose Repository");
+        useLocalRepo = new JCheckBoxMenuItem("Use Local Repository");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -258,16 +259,23 @@ public class MainWindow extends BDFrame {
             }
         });
 
-        Options.add(chooseRepository);
+        repoOptions.add(chooseRepository);
+        repoOptions.add(useLocalRepo);
         chooseRepository.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Main.guim.chooseRepository();
             }
         });
+        useLocalRepo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.guim.useLocalRepo(useLocalRepo.isSelected());
+            }
+        });
         menu.add(File);
         menu.add(Parts);
-        menu.add(Options);
+        menu.add(repoOptions);
         menu.add(Window);
         menu.add(HelpM);
         // </editor-fold>

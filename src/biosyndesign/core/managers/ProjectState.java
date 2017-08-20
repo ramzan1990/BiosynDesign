@@ -1,10 +1,9 @@
 package biosyndesign.core.managers;
 
-import biosyndesign.core.sbol.*;
+import biosyndesign.core.sbol.parts.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 /**

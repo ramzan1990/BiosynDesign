@@ -4,6 +4,7 @@ CREATE TABLE compound_names (
 );
 CREATE TABLE compounds (
   ID varchar(40) CONSTRAINT COMPOUNDS_PK PRIMARY KEY,
+  Name varchar(255),
   URL varchar(255),
   KeggID varchar(40),
   DrugID varchar(40),

@@ -1,5 +1,6 @@
 package biosyndesign.core.sbol;
 
+import biosyndesign.core.sbol.parts.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SBOLme implements SBOLInterface {
-    String prefix;
+    public String prefix;
 
     public SBOLme(String prefix) {
         this.prefix = prefix;

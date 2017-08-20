@@ -1,15 +1,12 @@
 package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
-import biosyndesign.core.managers.ProjectIO;
-import biosyndesign.core.sbol.LocalRepo;
-import biosyndesign.core.ui.popups.RecentProjectPopUp;
+import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.utils.UI;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
 
 /**
  * Created by Umarov on 1/23/2017.
@@ -118,7 +115,7 @@ public class PartsManagerFrame extends BDFrame {
             }
         });
         JButton b4 = new JButton("Delete Parts");
-        b3.addActionListener(new ActionListener() {
+        b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 lr.deleteParts();
