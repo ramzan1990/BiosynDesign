@@ -44,38 +44,30 @@ public class LocalRepo implements SBOLInterface {
             conn.setAutoCommit(false);
             s = conn.createStatement();
             statements.add(s);
-            boolean first = true;
+            boolean first = false;
             try {
                 rs = s.executeQuery("select * from compounds limit 1");
             } catch (Exception e) {
                 first = true;
             }
             if (first) {
-                Utils.dropSchema(conn.getMetaData(), "APP");
-                String dbcreate = new Scanner(new File("db")).useDelimiter("\\Z").next();
-                String batch[] = dbcreate.split(";");
-                s = conn.createStatement();
-                statements.add(s);
-                for (String b : batch) {
-                    s.addBatch(b);
-                }
-                s.executeBatch();
-                conn.commit();
-            }
-            PreparedStatement psInsert;
-            PreparedStatement psUpdate;
-            psInsert = conn.prepareStatement(
-                    "insert into compounds values (?,  ?, ?, ?, ?, ?)");
-            statements.add(psInsert);
+                reset();
 
-            psInsert.setString(1, "C0000000000000001");
-            psInsert.setString(2, "2");
-            psInsert.setString(3, "3");
-            psInsert.setString(4, "4");
-            psInsert.setString(5, "5");
-            psInsert.setString(6, "6");
-            psInsert.executeUpdate();
-            conn.commit();
+            }
+//            PreparedStatement psInsert;
+//            PreparedStatement psUpdate;
+//            psInsert = conn.prepareStatement(
+//                    "insert into compounds values (?,  ?, ?, ?, ?, ?)");
+//            statements.add(psInsert);
+//
+//            psInsert.setString(1, "C0000000000000001");
+//            psInsert.setString(2, "2");
+//            psInsert.setString(3, "3");
+//            psInsert.setString(4, "4");
+//            psInsert.setString(5, "5");
+//            psInsert.setString(6, "6");
+//            psInsert.executeUpdate();
+//            conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -295,4 +287,58 @@ public class LocalRepo implements SBOLInterface {
         return null;
     }
 
+    public void reset() {
+        Connection conn = null;
+        ArrayList<Statement> statements = new ArrayList<Statement>();
+        Statement s;
+        ResultSet rs = null;
+        try {
+            Properties props = new Properties();
+            String dbName = "sbol";
+            conn = DriverManager.getConnection(protocol + dbName
+                    + ";create=true", props);
+
+            conn.setAutoCommit(false);
+            s = conn.createStatement();
+            statements.add(s);
+            Utils.dropSchema(conn.getMetaData(), "APP");
+            String dbcreate = new Scanner(new File("db")).useDelimiter("\\Z").next();
+            String batch[] = dbcreate.split(";");
+            s = conn.createStatement();
+            statements.add(s);
+            for (String b : batch) {
+                s.addBatch(b);
+            }
+            s.executeBatch();
+            conn.commit();
+        }catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                    rs = null;
+                }
+            } catch (SQLException sqle) {
+            }
+            int i = 0;
+            while (!statements.isEmpty()) {
+                Statement st = (Statement) statements.remove(i);
+                try {
+                    if (st != null) {
+                        st.close();
+                        st = null;
+                    }
+                } catch (SQLException sqle) {
+                }
+            }
+            try {
+                if (conn != null) {
+                    conn.close();
+                    conn = null;
+                }
+            } catch (SQLException sqle) {
+            }
+        }
+    }
 }

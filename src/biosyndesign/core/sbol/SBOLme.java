@@ -270,11 +270,11 @@ public class SBOLme implements SBOLInterface {
             }
             httpclient.close();
 
+            JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+            return jsonObject.get("native").getAsBoolean();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
-        return jsonObject.get("native").getAsBoolean();
+        return false;
     }
 }

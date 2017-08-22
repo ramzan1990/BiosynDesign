@@ -121,7 +121,15 @@ public class PartsManagerFrame extends BDFrame {
                 lr.deleteParts();
             }
         });
+        JButton b5 = new JButton("Reset DB");
+        b5.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lr.reset();
+            }
+        });
         jp2.add(b4);
+        jp2.add(b5);
         lowerPanel.add(jp1, BorderLayout.EAST);
         lowerPanel.add(jp2, BorderLayout.WEST);
         lowerPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
