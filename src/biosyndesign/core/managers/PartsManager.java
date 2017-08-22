@@ -90,6 +90,8 @@ public class PartsManager {
                     try {
                         if (!p[i].local) {
                             saveXML(p[i]);
+                        }else{
+                            Common.copy(p[i].url, s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id);
                         }
                         String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
 

@@ -46,7 +46,8 @@ public class LocalRepo implements SBOLInterface {
             statements.add(s);
             boolean first = false;
             try {
-                rs = s.executeQuery("select * from compounds limit 1");
+                s.setMaxRows(1);
+                rs = s.executeQuery("select * from compounds");
             } catch (Exception e) {
                 first = true;
             }
@@ -200,12 +201,31 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Part[] findParts(int type, int filter, String value) {
-        String sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE c.ID = '"+value+"'";
-        JsonArray ja = execute(sql);
-        JsonObject o = ja.get(0).getAsJsonObject();
-        Part[] parts = new Part[1];
-        parts[0] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
-        return parts;
+        if (type == 0) {
+            JsonArray ja1 = execute("SELECT * FROM compounds WHERE ID = '" + value + "'");
+            if (ja1.size() == 0) {
+                ja1 = execute("SELECT * FROM compounds WHERE KeggID = '" + value + "'");
+                if (ja1.size() > 0) {
+                    value = ja1.get(0).getAsJsonObject().get("ID").getAsString();
+                } else {
+                    ja1 = execute("SELECT Compound FROM compound_names WHERE Name='" + value + "'");
+                    if (ja1.size() > 0) {
+                        value = ja1.get(0).getAsJsonObject().get("COMPOUND").getAsString();
+                    }
+                }
+            }
+            String sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE c.ID = '" + value + "'";
+            JsonArray ja2 = execute(sql);
+            if (ja2.size() > 0) {
+                JsonObject o = ja2.get(0).getAsJsonObject();
+                Part[] parts = new Part[1];
+                Compound c = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                c.local = true;
+                parts[0] = c;
+                return parts;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -274,12 +294,13 @@ public class LocalRepo implements SBOLInterface {
         drugID = drugID.substring(drugID.length() - 7, drugID.length());
         XPathExpression<Element> expr = xFactory.compile("//compoundsynonym", Filters.element());
         List<Element> links = expr.evaluate(jdomDocument);
-        String names ="";
+        String names = "";
         for (Element e : links) {
-            names+=e.getText().replaceAll("'", "''") + " | ";
-            //execute2("INSERT INTO compound_names(Compound,  Name) VALUES ('" + id + "','" + name + "')");
+            String name = e.getText().replaceAll("'", "''");
+            names += name + " | ";
+            execute2("INSERT INTO compound_names(Compound,  Name) VALUES ('" + id + "','" + name + "')");
         }
-        execute2("INSERT INTO compounds(ID, Name, KeggID, DrugID, URL) VALUES ('" + id + "','" + names +"','"+ keggid + "','" + drugID + "','" + f.getAbsolutePath() + "')");
+        execute2("INSERT INTO compounds(ID, Name, KeggID, DrugID, URL) VALUES ('" + id + "','" + names + "','" + keggid + "','" + drugID + "','" + f.getAbsolutePath() + "')");
 
     }
 
@@ -311,7 +332,7 @@ public class LocalRepo implements SBOLInterface {
             }
             s.executeBatch();
             conn.commit();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             try {
