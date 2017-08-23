@@ -53,6 +53,7 @@ public class PartsManagerFrame extends BDFrame {
         cmb2.setMaximumSize(new Dimension(500, cmb2.getPreferredSize().height));
         cmb1.addItem("Compound");
         cmb1.addItem("Reaction");
+        cmb1.addItem("EC Number");
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -68,6 +69,10 @@ public class PartsManagerFrame extends BDFrame {
                     cmb2.addItem("Reaction ID");
                     cmb2.addItem("Participating compound");
                     cmb2.addItem("Catalyzing enzyme class");
+                } else if (cmb1.getSelectedIndex() == 2) {
+                    cmb2.addItem("EC number");
+                    cmb2.addItem("Transformed compound");
+                    cmb2.addItem("Catalyzing reaction");
                 }
             }
         });

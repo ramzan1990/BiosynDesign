@@ -5,7 +5,7 @@ CREATE TABLE compound_names (
 CREATE TABLE compounds (
   ID varchar(40) CONSTRAINT COMPOUNDS_PK PRIMARY KEY,
   Name varchar(255),
-  URL varchar(255),
+  URL varchar(300),
   KeggID varchar(40),
   DrugID varchar(40),
   SMILES varchar(5000)
@@ -17,7 +17,7 @@ CREATE TABLE compound_enzymes (
 CREATE TABLE ecnum (
   ID varchar(40),
   ECNumber varchar(40),
-  URL varchar(40),
+  URL varchar(300),
   Title varchar(255)
 );
 CREATE INDEX index1 ON ecnum(ECNumber);
@@ -33,7 +33,7 @@ CREATE TABLE proteins (
   OrganismName varchar(300),
   ECNumber varchar(80),
   URL varchar(300),
-  sequence blob
+  sequence varchar(7000)
 );
 CREATE INDEX index2 ON proteins(OrganismID,ECNumber);
 CREATE INDEX index3 ON proteins(OrganismName,ECNumber);
@@ -59,7 +59,7 @@ CREATE INDEX index10 ON reaction_products(Reaction,Product);
 CREATE INDEX index11 ON reaction_products(Reaction);
 CREATE TABLE reactions (
   ID varchar(255) CONSTRAINT REACTIONS_PK PRIMARY KEY,
-  URL varchar(255),
+  URL varchar(300),
   KeggID varchar(40),
   Name varchar(255),
   Energy varchar(255)

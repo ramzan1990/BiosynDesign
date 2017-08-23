@@ -280,7 +280,7 @@ public class LocalRepo implements SBOLInterface {
                     }
                     p = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), energy);
                 } else if (type == 2) {
-                    p = new Part(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                    p = new Part(o.get("ID").getAsString(), o.get("TITLE").getAsString(), o.get("URL").getAsString());
                 }
                 p.local = true;
                 parts[i] = p;
@@ -376,17 +376,17 @@ public class LocalRepo implements SBOLInterface {
                     execute("INSERT INTO compound_names(Compound,  Name) VALUES ('" + id + "','" + synonym + "')");
                 }
                 execute("INSERT INTO compounds(ID, Name, KeggID, DrugID, URL, SMILES) VALUES ('" + id + "','" + name + "','" + keggid + "','" + drugID + "','" + url + "'," + SMILES + ")");
-            } else if (definition.getChild("ecnumid") != null) {
-                //EC Number
-                String ECNumber = definition.getChildText("ecnumid");
-                execute("INSERT INTO ecnum(ID, ECNumber, Title, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
-            } else {
+            } else if (definition.getChild("organismname") != null) {
                 //Protein
                 String oID = definition.getChildText("organismkegg_id");
                 String oName = definition.getChildText("organismname");
                 String ECNumber = definition.getChildText("ecnumid");
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
                 execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, ECNumber, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
+            } else {
+                //EC Number
+                String ECNumber = definition.getChildText("ecnumid");
+                execute("INSERT INTO ecnum(ID, ECNumber, Title, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
             //Reaction
