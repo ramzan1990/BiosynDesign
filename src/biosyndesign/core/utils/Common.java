@@ -46,4 +46,8 @@ public class Common {
         String name = fc.substring(fc.indexOf(s1) + s1.length(), fc.indexOf(s2));
         return name;
     }
+
+    public static int countMatches(String line, String m) {
+        return line.length() - line.replace(m, "").length();
+    }
 }

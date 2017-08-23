@@ -156,7 +156,7 @@ public class PartsManager {
                                     }
                                 }
                                 if (op == null) {
-                                    op = cInt.findECNumber(id);
+                                    op = (ECNumber) cInt.findParts(2, 0, id)[0];
                                     if (op != null) {
                                         s.ecNumbers.add(op);
                                         saveXML(op);

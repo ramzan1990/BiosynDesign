@@ -9,8 +9,6 @@ public interface SBOLInterface {
 
     public Part[] findParts(int type, int filter, String value);
 
-    public ECNumber findECNumber(String ECNumber);
-
     public Protein[] getProteins(String ecNumber);
 
     public Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting);

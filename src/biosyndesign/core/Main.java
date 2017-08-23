@@ -47,7 +47,7 @@ public class Main {
                 }}});
 
 
-        //lp.execute("select * from compounds");
+        //lp.executeJSON("select * from compounds");
     }
 
     public static void initManagers(){

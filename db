@@ -62,5 +62,5 @@ CREATE TABLE reactions (
   URL varchar(255),
   KeggID varchar(40),
   Name varchar(255),
-  Energy double
+  Energy varchar(255)
 );

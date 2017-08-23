@@ -3,6 +3,7 @@ package biosyndesign.core.sbol.local;
 
 import biosyndesign.core.sbol.*;
 import biosyndesign.core.sbol.parts.*;
+import biosyndesign.core.utils.Common;
 import com.google.gson.*;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -18,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
 
 import java.util.*;
@@ -104,7 +104,7 @@ public class LocalRepo implements SBOLInterface {
         }
     }
 
-    public JsonArray execute(String sql) {
+    public JsonArray executeJSON(String sql) {
         JsonArray result = null;
         Connection conn = null;
         ArrayList<Statement> statements = new ArrayList<Statement>();
@@ -152,7 +152,7 @@ public class LocalRepo implements SBOLInterface {
         return result;
     }
 
-    public JsonArray execute2(String sql) {
+    public JsonArray execute(String sql) {
         JsonArray result = null;
         Connection conn = null;
         ArrayList<Statement> statements = new ArrayList<Statement>();
@@ -167,6 +167,7 @@ public class LocalRepo implements SBOLInterface {
             s = conn.createStatement();
             statements.add(s);
             s.execute(sql);
+            conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -201,41 +202,103 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Part[] findParts(int type, int filter, String value) {
-        if (type == 0) {
-            JsonArray ja1 = execute("SELECT * FROM compounds WHERE ID = '" + value + "'");
-            if (ja1.size() == 0) {
-                ja1 = execute("SELECT * FROM compounds WHERE KeggID = '" + value + "'");
-                if (ja1.size() > 0) {
-                    value = ja1.get(0).getAsJsonObject().get("ID").getAsString();
+        JsonArray ja;
+        String sql = null, op = null;
+        if ((type == 0 && filter == 4) || (type == 1 && filter == 2) || (type == 2 && filter == 0)) {
+            if (Common.countMatches(value, ".") == 3) {
+                op = "= '" + value + "'";
+            } else {
+                op = "LIKE '" + value + "%'";
+            }
+        } else if ((type == 0 && (filter == 0 || filter == 3)) || (type == 1 && filter == 1) || (type == 2 && filter == 1)) {
+            ja = executeJSON("SELECT * FROM compounds WHERE ID = '" + value + "'");
+            if (ja.size() == 0) {
+                ja = executeJSON("SELECT * FROM compounds WHERE KeggID = '" + value + "'");
+                if (ja.size() > 0) {
+                    value = ja.get(0).getAsJsonObject().get("ID").getAsString();
                 } else {
-                    ja1 = execute("SELECT Compound FROM compound_names WHERE Name='" + value + "'");
-                    if (ja1.size() > 0) {
-                        value = ja1.get(0).getAsJsonObject().get("COMPOUND").getAsString();
+                    ja = executeJSON("SELECT Compound FROM compound_names WHERE Name='" + value + "'");
+                    if (ja.size() > 0) {
+                        value = ja.get(0).getAsJsonObject().get("COMPOUND").getAsString();
                     }
                 }
             }
-            String sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE c.ID = '" + value + "'";
-            JsonArray ja2 = execute(sql);
-            if (ja2.size() > 0) {
-                JsonObject o = ja2.get(0).getAsJsonObject();
-                Part[] parts = new Part[1];
-                Compound c = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
-                c.local = true;
-                parts[0] = c;
-                return parts;
+
+        } else if ((type == 0 && filter == 2) || (type == 1 && filter == 0) || (type == 2 && filter == 2)) {
+            JsonArray ja1 = executeJSON("SELECT * FROM reactions WHERE ID = '" + value + "'");
+            if (ja1.size() == 0) {
+                ja1 = executeJSON("SELECT * FROM reactions WHERE KeggID = '" + value + "'");
+                if (ja1.size() > 0) {
+                    value = ja1.get(0).getAsJsonObject().get("ID").getAsString();
+                }
             }
+        }
+        if (type == 0) {
+            if (filter == 0) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE c.ID = '" + value + "'";
+            } else if (filter == 1) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE c.DrugID = '" + value + "'";
+            } else if (filter == 2) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE ID IN (SELECT Compound FROM reaction_compounds WHERE Reaction = '" + value + "')";
+            } else if (filter == 3) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c INNER JOIN (SELECT rc.Compound FROM reaction_compounds AS rc  INNER JOIN reaction_compounds AS rc2 ON rc2.Reaction = rc.Reaction AND rc2.Compound =  '" + value + "' AND rc.Compound!='" + value + "') AS tt ON tt.Compound = c.ID";
+            } else if (filter == 4) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE ID IN (SELECT Compound FROM reaction_compounds AS rc INNER JOIN reaction_enzymes AS re ON rc.Reaction = re.Reaction AND re.Enzyme " + op + " )";
+            } else if (filter == 5) {
+                sql = "SELECT ID, Name, URL, KeggID, DrugID FROM compounds AS c WHERE SMILES = " + value;
+            }
+        } else if (type == 1) {
+            if (filter == 0) {
+                sql = "SELECT r.ID, r.URL, r.KeggID, r.Name FROM reactions AS r WHERE ID = '" + value + "'";
+            } else if (filter == 1) {
+                sql = "SELECT r.ID, r.URL, r.KeggID, r.Name FROM reactions AS r INNER JOIN reaction_compounds AS rc ON r.ID = rc.Reaction AND rc.Compound='" + value + "'";
+            } else if (filter == 2) {
+                sql = "SELECT r.ID, r.URL, r.KeggID, r.Name FROM reactions AS r INNER JOIN reaction_enzymes AS re ON r.ID = re.Reaction AND re.Enzyme " + op;
+            }
+        } else if (type == 2) {
+            if (filter == 0) {
+                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e WHERE ECNumber " + op;
+            } else if (filter == 1) {
+                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.ECNumber = ce.Enzyme";
+            } else if (filter == 2) {
+                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.ECNumber = re.Enzyme";
+            }
+        }
+
+        ja = executeJSON(sql);
+        if (ja != null && ja.size() > 0) {
+            JsonObject o = ja.get(0).getAsJsonObject();
+            Part[] parts = new Part[ja.size()];
+            for (int i = 0; i < parts.length; i++) {
+                Part p = null;
+                if (type == 0) {
+                    p = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                } else if (type == 1) {
+                    double energy = 1000;
+                    if (o.has("ENERGY") && !o.get("ENERGY").isJsonNull()) {
+                        energy = o.get("ENERGY").getAsDouble();
+                    }
+                    p = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), energy);
+                } else if (type == 2) {
+                    p = new Part(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                }
+                p.local = true;
+                parts[i] = p;
+            }
+            return parts;
         }
         return null;
     }
 
     @Override
-    public ECNumber findECNumber(String ECNumber) {
-        return null;
-    }
-
-    @Override
-    public Protein[] getProteins(String ecNumber) {
-        return new Protein[0];
+    public Protein[] getProteins(String ECNumber) {
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.ECNumber FROM proteins AS p WHERE p.ECNumber = '" + ECNumber + "'");
+        Protein[] p = new Protein[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ECNumber);
+        }
+        return p;
     }
 
     @Override
@@ -250,6 +313,10 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public boolean isNative(String reaction, String organism) {
+        JsonArray a = executeJSON("SELECT * FROM reaction_enzymes AS re INNER JOIN  proteins AS p ON re.Reaction = '" + reaction + "' AND p.OrganismName = '" + organism + "' AND re.Enzyme = p.ECNumber");
+        if (a != null && a.size() > 0) {
+            return true;
+        }
         return false;
     }
 
@@ -284,24 +351,73 @@ public class LocalRepo implements SBOLInterface {
     public void addPart(File f, String batchName) throws IOException, JDOMException {
         String xml = new String(Files.readAllBytes(f.toPath()));
         xml = xml.replaceAll(":", "");
+        String url = f.getAbsolutePath();
         SAXBuilder jdomBuilder = new SAXBuilder();
         Document jdomDocument = jdomBuilder.build(new StringReader(xml));
         XPathFactory xFactory = XPathFactory.instance();
-        Element root = jdomDocument.getRootElement().getChild("sbolComponentDefinition");
-        String id = root.getChildText("sboldisplayId");
-        String keggid = root.getChildText("compoundkegg_id");
-        String drugID = root.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
-        drugID = drugID.substring(drugID.length() - 7, drugID.length());
-        XPathExpression<Element> expr = xFactory.compile("//compoundsynonym", Filters.element());
-        List<Element> links = expr.evaluate(jdomDocument);
-        String names = "";
-        for (Element e : links) {
-            String name = e.getText().replaceAll("'", "''");
-            names += name + " | ";
-            execute2("INSERT INTO compound_names(Compound,  Name) VALUES ('" + id + "','" + name + "')");
+        Element root = jdomDocument.getRootElement();
+        if (root.getChild("sbolComponentDefinition") != null) {
+            Element definition = root.getChild("sbolComponentDefinition");
+            String id = definition.getChildText("sboldisplayId");
+            String name = definition.getChildText("dctermstitle").replaceAll("'", "''");
+            if (definition.getChild("compoundsynonym") != null) {
+                //Compound
+                String keggid = definition.getChildText("compoundkegg_id");
+                String drugID = definition.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
+                drugID = drugID.substring(drugID.length() - 7, drugID.length());
+                String SMILES = "NULL";
+                if (root.getChild("sbolSequence") != null) {
+                    SMILES = "'" + root.getChild("sbolSequence").getChildText("sbolelements") + "'";
+                }
+                XPathExpression<Element> expr = xFactory.compile("//compoundsynonym", Filters.element());
+                List<Element> links = expr.evaluate(jdomDocument);
+                for (Element e : links) {
+                    String synonym = e.getText().replaceAll("'", "''");
+                    execute("INSERT INTO compound_names(Compound,  Name) VALUES ('" + id + "','" + synonym + "')");
+                }
+                execute("INSERT INTO compounds(ID, Name, KeggID, DrugID, URL, SMILES) VALUES ('" + id + "','" + name + "','" + keggid + "','" + drugID + "','" + url + "'," + SMILES + ")");
+            } else if (definition.getChild("ecnumid") != null) {
+                //EC Number
+                String ECNumber = definition.getChildText("ecnumid");
+                execute("INSERT INTO ecnum(ID, ECNumber, Title, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
+            } else {
+                //Protein
+                String oID = definition.getChildText("organismkegg_id");
+                String oName = definition.getChildText("organismname");
+                String ECNumber = definition.getChildText("ecnumid");
+                String seq = root.getChild("sbolSequence").getChildText("sbolelements");
+                execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, ECNumber, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
+            }
+        } else {
+            //Reaction
+            Element definition = root.getChild("sbolModuleDefinition");
+            String id = definition.getChildText("sboldisplayId");
+            String name = definition.getChildText("dctermstitle").replaceAll("'", "''");
+            String keggid = definition.getChildText("reactionkegg_id");
+            ArrayList<String> enzymes = new ArrayList();
+            ArrayList<String> compounds = new ArrayList();
+            XPathExpression<Element> expr = xFactory.compile("//sbolfunctionalComponent", Filters.element());
+            List<Element> links = expr.evaluate(definition);
+            for (Element e : links) {
+                Element fc = e.getChild("sbolFunctionalComponent");
+                String fcName = fc.getChildText("sboldisplayId");
+                if (fcName.endsWith("enzyme")) {
+                    enzymes.add(fc.getChildText("ecnumid"));
+                } else {
+                    compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
+                }
+            }
+            execute("INSERT INTO reactions(ID, KeggID, URL, Name, Energy) VALUES ('" + id + "','" + keggid + "','" + url + "','" + name + "', '0')");
+            for (String e : enzymes) {
+                execute("INSERT INTO reaction_enzymes(Reaction,  Enzyme) VALUES ('" + id + "','" + e + "')");
+                for (String c : compounds) {
+                    execute("INSERT INTO compound_enzymes(Compound,  Enzyme) VALUES ('" + c + "','" + e + "')");
+                }
+            }
+            for (String c : compounds) {
+                execute("INSERT INTO reaction_compounds(Reaction,  Compound) VALUES ('" + id + "','" + c + "')");
+            }
         }
-        execute2("INSERT INTO compounds(ID, Name, KeggID, DrugID, URL) VALUES ('" + id + "','" + names + "','" + keggid + "','" + drugID + "','" + f.getAbsolutePath() + "')");
-
     }
 
     public String[] getBatches() {

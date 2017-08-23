@@ -71,57 +71,19 @@ public class SBOLme implements SBOLInterface {
             } else {
                 name = o.get("Name").getAsString();
             }
-            if (o.get("ID").getAsString().contains("R")) {
+            if (type == 0){
+                parts[i] = new Compound(o.get("ID").getAsString(), name, o.get("URL").getAsString());
+            } else if (type == 1) {
                 double energy = 1000;
                 if (o.has("Energy") && !o.get("Energy").isJsonNull()) {
                     energy = o.get("Energy").getAsDouble();
                 }
                 parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString(), energy);
-
-            } else {
-                parts[i] = new Compound(o.get("ID").getAsString(), name, o.get("URL").getAsString());
+            } else  if (type == 2) {
+                parts[i] = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
             }
         }
         return parts;
-    }
-
-    public ECNumber findECNumber(String ECNumber) {
-        StringBuffer result = new StringBuffer();
-        try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
-            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("type", "2"));
-            nvps.add(new BasicNameValuePair("filter", "0"));
-            nvps.add(new BasicNameValuePair("value", ECNumber));
-            nvps.add(new BasicNameValuePair("page", "1"));
-            nvps.add(new BasicNameValuePair("max", "25"));
-            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
-        JsonArray a = jsonObject.getAsJsonArray("rows");
-        if (a.size() > 0) {
-            ECNumber ec;
-            JsonObject o = a.get(0).getAsJsonObject();
-            ec = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
-            return ec;
-        } else {
-            return null;
-        }
     }
 
     public Protein[] getProteins(String ecNumber) {

@@ -2,9 +2,12 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.sbol.local.LocalRepo;
+import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.utils.UI;
+import com.google.gson.JsonArray;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -13,7 +16,8 @@ import java.awt.event.*;
  */
 public class PartsManagerFrame extends BDFrame {
     private LocalRepo lr;
-
+    private JTable table;
+    private String[] columnNames = new String[]{"ID", "Name"};
 
     public PartsManagerFrame(JFrame parent) {
         super();
@@ -87,22 +91,24 @@ public class PartsManagerFrame extends BDFrame {
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                Part[] p = lr.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                String[][] rowData = new String[p.length][2];
+                for(int i =0; i<p.length; i++){
+                    rowData[i][0] = p[i].id;
+                    rowData[i][1] = p[i].name;
+                }
+                table.setModel(new DefaultTableModel(rowData, columnNames));
             }
         });
         //rightPanel.add(Box.createRigidArea(new Dimension(0, 300)));
         JPanel topPanel = new JPanel();
         //topPanel.setSize(new Dimension(400, 250));
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
-        String[] columnNames = new String[]{"Name", "Description"};
+
         String[][] rowData = new String[][]{{"", ""}};
-        JTable table = new JTable(rowData, columnNames);
+        table = new JTable(rowData, columnNames);
         JScrollPane scrollPane = new JScrollPane(table);
         topPanel.add(scrollPane);
-
-
-
-
         JPanel lowerPanel = new JPanel(new BorderLayout());
         JPanel jp1 = new JPanel();
         JPanel jp2 = new JPanel();
@@ -115,6 +121,7 @@ public class PartsManagerFrame extends BDFrame {
             }
         });
         JButton b4 = new JButton("Delete Parts");
+        b4.setEnabled(false);
         b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
