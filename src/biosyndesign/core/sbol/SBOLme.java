@@ -68,7 +68,9 @@ public class SBOLme implements SBOLInterface {
             String name = "";
             if (o.has("Names")) {
                 name = o.get("Names").getAsString();
-            } else {
+            } else if (o.has("Title")) {
+                name = o.get("Title").getAsString();
+            } else if (o.has("Name")) {
                 name = o.get("Name").getAsString();
             }
             if (type == 0){
@@ -235,7 +237,7 @@ public class SBOLme implements SBOLInterface {
             JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
             return jsonObject.get("native").getAsBoolean();
         } catch (Exception e) {
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return false;
     }
