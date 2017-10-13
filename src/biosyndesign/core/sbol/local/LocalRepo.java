@@ -302,6 +302,17 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
+    public Protein[] getProteins(String ECNumber, String organism) {
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.ECNumber FROM proteins AS p WHERE p.ECNumber = '" + ECNumber + "' AND p.OrganismName = '" + organism + "'");
+        Protein[] p = new Protein[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ECNumber);
+        }
+        return p;
+    }
+
+    @Override
     public Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting) {
         return new Reaction[0];
     }
@@ -338,6 +349,18 @@ public class LocalRepo implements SBOLInterface {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public void importCustomPart(File f) {
+        try {
+            File nd = new File(lp + File.separator + "custom");
+            nd.mkdirs();
+            File np = new File(lp + File.separator + "custom" + File.separator + f.getName());
+            Files.copy(f.toPath(), np.toPath());
+            addPart(np, "custom");
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 

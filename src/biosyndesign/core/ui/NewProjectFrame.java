@@ -3,6 +3,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.Main;
 import biosyndesign.core.managers.ProjectIO;
 import biosyndesign.core.ui.popups.repoPopUp;
+import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.PopClickListener;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 
@@ -65,18 +66,8 @@ public class NewProjectFrame extends BDFrame {
         browsePanel.add(browse);
        // UI.addTo(topPanel, picLabel);
         topPanel.add(browsePanel);
-        String options[] = {"Photorhabdus luminescens"};
-        try {
-            Scanner scan = new Scanner(new File("names.txt"));
-            ArrayList<String> names = new ArrayList<>();
-            while(scan.hasNextLine()){
-                names.add(scan.nextLine().trim());
-            }
-            options = names.toArray(new String[0]);
-        }catch(Exception e){
 
-        }
-        JComboBox textField = new JComboBox(options);
+        JComboBox textField = Common.organismsBox();
         textField.setPreferredSize(new Dimension(340, h));
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
@@ -90,8 +81,6 @@ public class NewProjectFrame extends BDFrame {
         organismPanel.add(l2);
         organismPanel.add(textField);
         topPanel.add(organismPanel);
-
-        AutoCompleteDecorator.decorate(textField);
 
         JPanel prefixPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         prefixPanel.setMaximumSize(new Dimension(w, 100));

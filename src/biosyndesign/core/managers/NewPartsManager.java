@@ -70,7 +70,7 @@ public class NewPartsManager {
                 PartsCreator.newCompound(path, id.getText(), split(synonyms), split(extLinks), formula.getText(), smiles.getText(), charge.getText(), s.prefix);
                 Compound c = new Compound(id.getText(), split(synonyms)[0], path);
                 c.setLocal(true);
-                Main.pm.addParts(new Part[]{c});
+                Main.pm.addParts(new Part[]{c}, true);
                 c.info.add(synonyms.getText());
                 c.info.add(extLinks.getText());
                 c.info.add(formula.getText());
@@ -218,7 +218,8 @@ public class NewPartsManager {
                         splitInt(pStoichiometry), split(ECNumbers), kReaction.getText(), id.getText(), freeEnergy.getText(), s.prefix);
                 Reaction r = new Reaction(id.getText(), "", path, Integer.parseInt(freeEnergy.getText()));
                 r.setLocal(true);
-                Main.pm.addParts(new Part[]{r});
+                Main.pm.addParts(new Part[]{r}, true);
+                //Main.getLocalRepo().importCustomPart(new File(path));
                 r.info.add(reactants.getText());
                 r.info.add(products.getText());
                 r.info.add(rStoichiometry.getText());
@@ -367,7 +368,7 @@ public class NewPartsManager {
                 PartsCreator.newECNumber(path, id.getText(), split(names), split(synonyms), extLinks.getText(), split(formulas), split(cofactors), s.prefix);
                 ECNumber e = new ECNumber(id.getText(), split(names)[0], path, id.getText());
                 e.setLocal(true);
-                Main.pm.addParts(new Part[]{e});
+                Main.pm.addParts(new Part[]{e}, true);
                 e.info.add(names.getText());
                 e.info.add(synonyms.getText());
                 e.info.add(extLinks.getText());
@@ -509,7 +510,8 @@ public class NewPartsManager {
                 p.info.add(extLinks.getText());
                 p.info.add(aaSeq.getText());
                 p.info.add(ECNumbers.getText());
-                Main.pm.addParts(new Part[]{p});
+                Main.pm.addParts(new Part[]{p}, true);
+                Main.getLocalRepo().importCustomPart(new File(path));
                 frame.setVisible(false);
                 frame.dispose();
             }
@@ -521,7 +523,7 @@ public class NewPartsManager {
     }
 
     public void editEnzyme(Protein p) {
-        final JDialog frame = new JDialog(mainWindow, "New Compound", true);
+        final JDialog frame = new JDialog(mainWindow, "New Enzyme", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
 
@@ -602,11 +604,11 @@ public class NewPartsManager {
     }
 
     private static String[] split(JTextField tf) {
-        return tf.getText().split("\\s+,\\s+");
+        return tf.getText().split("\\s*,\\s*");
     }
 
     private static int[] splitInt(JTextField tf) {
-        String[] sv = tf.getText().split("\\s+,\\s+");
+        String[] sv = tf.getText().split("\\s*,\\s*");
         int[] iv = new int[sv.length];
         for (int i = 0; i < iv.length; i++) {
             iv[i] = Integer.parseInt(sv[i]);

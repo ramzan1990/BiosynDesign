@@ -126,6 +126,7 @@ public class ProjectIO {
             oos.writeObject(s);
             oos.close();
             FileUtils.saveGraph(mainWindow.workSpacePanel.graphComponent, s.projectPath + s.projectName + File.separator + "graph.xml");
+            mainWindow.setStatusLabel("Project Saved");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error While Saving!", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -250,7 +251,6 @@ public class ProjectIO {
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             mainWindow.setVisible(true);
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
-            Main.gm.updateGraph();
             remember();
         } else {
             //remove(selectedIndex);

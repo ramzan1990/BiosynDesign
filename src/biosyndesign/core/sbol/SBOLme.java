@@ -89,13 +89,17 @@ public class SBOLme implements SBOLInterface {
     }
 
     public Protein[] getProteins(String ecNumber) {
+        return getProteins(ecNumber, "");
+    }
+
+    public Protein[] getProteins(String ecNumber, String organism) {
         StringBuffer result = new StringBuffer();
         try {
             CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
-            nvps.add(new BasicNameValuePair("organism", ""));
+            nvps.add(new BasicNameValuePair("organism", organism));
             nvps.add(new BasicNameValuePair("ec_number", ecNumber));
             nvps.add(new BasicNameValuePair("sequence", ""));
             nvps.add(new BasicNameValuePair("page", "1"));

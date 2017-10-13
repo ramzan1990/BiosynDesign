@@ -9,6 +9,7 @@ import biosyndesign.core.ui.ImageComponent;
 import biosyndesign.core.ui.popups.CompoundCellPopUp;
 import biosyndesign.core.ui.popups.EnzymeCellPopUp;
 import biosyndesign.core.ui.popups.ReactionCellPopUp;
+import biosyndesign.core.ui.popups.TablePopUp;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
@@ -32,8 +33,7 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -55,6 +55,7 @@ public class PartsManager {
     private ProjectState s;
     private GraphManager gm;
     Part[] searchParts;
+    private Protein[] prots;
     private static SBOLInterface cInt;
     private static SBOLInterface sInt;
     private static SBOLInterface lInt;
@@ -82,120 +83,127 @@ public class PartsManager {
         }
     }
 
-    public void addParts(Part[] p) {
+    public void addParts(Part[] p, boolean update) {
         System.out.println("Adding Parts");
         new Thread() {
             public void run() {
-                for (int i = 0; i < p.length; i++) {
-                    try {
-                        if (!p[i].local) {
-                            saveXML(p[i]);
-                        }else{
-                            Common.copy(p[i].url, s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id);
-                        }
-                        String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
-
-                        if (p[i] instanceof Reaction) {
-                            if (s.reactions.contains(p[i])) {
-                                continue;
-                            }
-                            xml = xml.replaceAll(":", "");
-                            SAXBuilder jdomBuilder = new SAXBuilder();
-                            Document jdomDocument = jdomBuilder.build(new StringReader(xml));
-                            XPathFactory xFactory = XPathFactory.instance();
-                            Reaction r = (Reaction) p[i];
-                            s.reactions.add(r);
-                            //adding reactions compounds
-                            XPathExpression<Element> expr = xFactory.compile("//sbolParticipation", Filters.element());
-                            List<Element> links = expr.evaluate(jdomDocument);
-                            for (Element e : links) {
-                                String id = e.getChildText("sboldisplayId");
-                                if (!(id.contains("product") || id.contains("reactant"))) {
-                                    continue;
-                                }
-                                boolean p = id.contains("product");
-                                id = id.substring(0, id.lastIndexOf("_"));
-                                Compound op = null;
-                                for (Compound c : s.compounds) {
-                                    if (c.id.equals(id)) {
-                                        op = c;
-                                        break;
-                                    }
-                                }
-                                if (op == null) {
-                                    System.out.println("need to add compound");
-                                    op = (Compound) cInt.findParts(0, 0, id)[0];
-                                    System.out.println("compound added");
-                                    s.compounds.add(op);
-                                    saveXML(op);
-                                    String xmlC = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + op.id)));
-                                    op.name = Common.between(xmlC, "<dcterms:title>", "</dcterms:title>");
-                                    try {
-                                        op.smiles = Common.between(xmlC, "<sbol:elements>", "</sbol:elements>");
-                                    } catch (Exception ex) {
-                                    }
-                                }
-                                r.compounds.add(op);
-                                int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
-                                if (p) {
-                                    r.products.add(new CompoundStoichiometry(op, s));
-                                } else {
-                                    r.reactants.add(new CompoundStoichiometry(op, s));
-                                }
-                            }
-                            //adding reactions ec numbers
-                            expr = xFactory.compile("//ecnumid", Filters.element());
-                            links = expr.evaluate(jdomDocument);
-                            for (Element e : links) {
-                                String id = e.getText();
-                                ECNumber op = null;
-                                for (ECNumber c : s.ecNumbers) {
-                                    if (c.id.equals(id)) {
-                                        op = c;
-                                        break;
-                                    }
-                                }
-                                if (op == null) {
-                                    op = (ECNumber) cInt.findParts(2, 0, id)[0];
-                                    if (op != null) {
-                                        s.ecNumbers.add(op);
-                                        saveXML(op);
-                                    }
-                                }
-                                if (op != null) {
-                                    r.ec.add(op);
-                                } else {
-                                    r.partialEC = id;
-                                }
-                            }
-                            r.nat = cInt.isNative(r.id, s.organism);
-                        } else if (p[i] instanceof Compound) {
-                            if (s.compounds.contains(p[i])) {
-                                continue;
-                            }
-                            p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
-                            try {
-                                ((Compound) p[i]).smiles = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
-                            } catch (Exception e) {
-                            }
-                            s.compounds.add((Compound) p[i]);
-                        } else if (p[i] instanceof Protein) {
-                            Protein pr = (Protein) p[i];
-                            pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
-                            pr.name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
-                            pr.nat = pr.organism.equals(s.organism);
-                            s.proteins.add(pr);
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                    System.out.println("Part Added");
-                }
-                gm.updateGraph();
-                updateTable();
-                mainWindow.setStatusLabel("Parts Added");
+                addPartsS(p, update);
             }
         }.start();
+    }
+
+    private void addPartsS(Part[] p, boolean update){
+        for (int i = 0; i < p.length; i++) {
+            try {
+                if (!p[i].local) {
+                    saveXML(p[i]);
+                } else {
+                    Common.copy(p[i].url, s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id);
+                }
+                String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
+
+                if (p[i] instanceof Reaction) {
+                    if (s.reactions.contains(p[i])) {
+                        continue;
+                    }
+                    xml = xml.replaceAll(":", "");
+                    SAXBuilder jdomBuilder = new SAXBuilder();
+                    Document jdomDocument = jdomBuilder.build(new StringReader(xml));
+                    XPathFactory xFactory = XPathFactory.instance();
+                    Reaction r = (Reaction) p[i];
+                    s.reactions.add(r);
+                    //adding reactions compounds
+                    XPathExpression<Element> expr = xFactory.compile("//sbolParticipation", Filters.element());
+                    List<Element> links = expr.evaluate(jdomDocument);
+                    for (Element e : links) {
+                        String id = e.getChildText("sboldisplayId");
+                        if (!(id.contains("product") || id.contains("reactant"))) {
+                            continue;
+                        }
+                        boolean prod = id.contains("product");
+                        id = id.substring(0, id.lastIndexOf("_"));
+                        Compound op = null;
+                        for (Compound c : s.compounds) {
+                            if (c.id.equals(id)) {
+                                op = c;
+                                break;
+                            }
+                        }
+                        if (op == null) {
+                            System.out.println("need to add compound");
+                            op = (Compound) cInt.findParts(0, 0, id)[0];
+                            System.out.println("compound added");
+                            addPartsS(new Part[]{op}, false);
+                        }
+                        r.compounds.add(op);
+                        int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
+                        if (prod) {
+                            r.products.add(new CompoundStoichiometry(op, s));
+                        } else {
+                            r.reactants.add(new CompoundStoichiometry(op, s));
+                        }
+                    }
+                    //adding reactions ec numbers
+                    expr = xFactory.compile("//ecnumid", Filters.element());
+                    links = expr.evaluate(jdomDocument);
+                    for (Element e : links) {
+                        String id = e.getText();
+                        ECNumber op = null;
+                        for (ECNumber c : s.ecNumbers) {
+                            if (c.id.equals(id)) {
+                                op = c;
+                                break;
+                            }
+                        }
+                        if (op == null) {
+                            op = (ECNumber) cInt.findParts(2, 0, id)[0];
+                            if (op != null) {
+                                s.ecNumbers.add(op);
+                                saveXML(op);
+                            }
+                        }
+                        if (op != null) {
+                            r.ec.add(op);
+                        } else {
+                            r.partialEC = id;
+                        }
+                    }
+                    r.nat = cInt.isNative(r.id, s.organism);
+                    Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
+                    if (prots.length > 0) {
+                        r.enzyme = prots[0];
+                        r.enzymeType = "Native";
+                        addPartsS(new Part[]{prots[0]}, false);
+                    } else {
+                        r.enzymeType = "Foreign";
+                    }
+                } else if (p[i] instanceof Compound) {
+                    if (s.compounds.contains(p[i])) {
+                        continue;
+                    }
+                    p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                    try {
+                        ((Compound) p[i]).smiles = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
+                    } catch (Exception e) {
+                    }
+                    s.compounds.add((Compound) p[i]);
+                } else if (p[i] instanceof Protein) {
+                    Protein pr = (Protein) p[i];
+                    pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
+                    pr.name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                    pr.nat = pr.organism.equals(s.organism);
+                    s.proteins.add(pr);
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            System.out.println("Part Added");
+        }
+        if (update) {
+            gm.updateGraph();
+            updateTable();
+            mainWindow.setStatusLabel("Parts Added");
+        }
     }
 
     public void showInfo(Part c) {
@@ -283,7 +291,7 @@ public class PartsManager {
                 for (int i = 0; i < p.length; i++) {
                     p[i] = parts[rList.getSelectedIndices()[i]];
                 }
-                addParts(p);
+                addParts(p, true);
                 frame.setVisible(false);
                 frame.dispose();
                 gm.updateGraph();
@@ -349,41 +357,51 @@ public class PartsManager {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-        JLabel l1 = new JLabel("Choose enzyme for reaction:");
-        UI.addTo(jp, l1);
-        Protein[] p = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
-        String[] lm = new String[p.length];
-        int pick = -1;
-        for (int i = 0; i < lm.length; i++) {
-            lm[i] = p[i].id;
-            if (r.enzyme != null && r.enzyme.id.equals(p[i].id)) {
-                pick = i;
+        UI.addTo(jp, new JLabel("Reaction " + r.getEName()));
+
+        UI.addTo(jp, new JLabel("Enzyme Origin "));
+        JComboBox cmb1 = new JComboBox();
+        cmb1.addItem("Native");
+        cmb1.addItem("Foreign");
+        cmb1.addItem("De novo");
+        UI.addTo(jp, cmb1);
+
+        UI.addTo(jp, new JLabel("Organism Filter "));
+        JComboBox cmb2 = Common.organismsBox();
+        UI.addTo(jp, cmb2);
+
+        UI.addTo(jp, new JLabel("Enzyme "));
+        DefaultListModel model = new DefaultListModel();
+        JList partsList = new JList(model);
+        JScrollPane partsPane = new JScrollPane();
+        partsPane.setViewportView(partsList);
+        partsPane.setPreferredSize(new Dimension(400, 200));
+        partsPane.setMaximumSize(new Dimension(400, 200));
+        partsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        UI.addTo(jp, partsPane);
+
+        //UI.addTo(jp, new JLabel("Primary structure "));
+        //JTextArea ta = new JTextArea();
+        //ta.setPreferredSize(new Dimension(400, 140));
+        //ta.setMaximumSize(new Dimension(400, 140));
+        //UI.addTo(jp, ta);
+
+        prepareEnzymeDialog(r, cmb1, cmb2, partsList);
+        cmb1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                r.enzymeType = cmb1.getSelectedItem().toString();
+                prepareEnzymeDialog(r, null, cmb2, partsList);
             }
-        }
-        JList ecList = new JList(lm);
-        JScrollPane ecPane = new JScrollPane();
-        ecPane.setMaximumSize(new Dimension(300, 150));
-        ecPane.setPreferredSize(new Dimension(200, 150));
-        ecPane.setViewportView(ecList);
-        if (pick != -1) {
-            ecList.setSelectedIndex(pick);
-        }
-        ecPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        UI.addTo(jp, ecPane);
+        });
         JButton b1 = new JButton("Done");
         UI.addToRight(jp, b1, false);
         b1.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                Protein ps = p[ecList.getSelectedIndex()];
-                if (!s.proteins.contains(ps)) {
-                    addParts(new Part[]{ps});
-                }
-                if (r.enzyme != null) {
-                    s.proteins.remove(r.enzyme);
-                }
-                r.enzyme = ps;
+                r.enzyme = prots[partsList.getSelectedIndex()];
+                addParts(new Part[]{r.enzyme}, true);
                 frame.setVisible(false);
                 frame.dispose();
             }
@@ -394,16 +412,88 @@ public class PartsManager {
         frame.setVisible(true);
     }
 
-    private void updateTable() {
+    private void prepareEnzymeDialog(Reaction r, JComboBox cmb1, JComboBox cmb2, JList partsList) {
+        DefaultListModel model = (DefaultListModel)partsList.getModel();
+        model.clear();
+        if (r.enzymeType.equals("Native")) {
+            if(cmb1!=null){
+                cmb1.setSelectedIndex(0);
+            }
+            prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
+            int pick = -1;
+            for(int i =0; i< prots.length;i++){
+                model.addElement(prots[i].id);
+                if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                    pick = i;
+                }
+            }
+            if(pick!=-1){
+                partsList.setSelectedIndex(pick);
+            }
+            cmb2.setEnabled(false);
+            cmb2.setSelectedItem(s.organism);
+        } else if (r.enzymeType.equals("Foreign")) {
+            if(cmb1!=null){
+                cmb1.setSelectedIndex(1);
+            }
+            cmb2.setSelectedIndex(-1);
+            cmb2.setEnabled(true);
+            cmb2.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(cmb2.getSelectedItem()!=null && Common.isOrganism(cmb2.getSelectedItem().toString())){
+                        prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, cmb2.getSelectedItem().toString());
+                        int pick = -1;
+                        for(int i =0; i< prots.length;i++){
+                            model.addElement(prots[i].id);
+                            if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                                pick = i;
+                            }
+                        }
+                        if(pick!=-1){
+                            partsList.setSelectedIndex(pick);
+                        }
+                    }
+                }
+            });
+        } else {
+            if(cmb1!=null){
+                cmb1.setSelectedIndex(2);
+            }
+            cmb2.setEnabled(false);
+            cmb2.setSelectedIndex(-1);
+            prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber, "");
+            int pick = -1;
+            for(int i =0; i< prots.length;i++){
+                model.addElement(prots[i].id);
+                if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                    pick = i;
+                }
+            }
+            if(pick!=-1){
+                partsList.setSelectedIndex(pick);
+            }
+        }
+    }
+
+    public void updateTable() {
         DefaultTableModel dtm = (DefaultTableModel) (mainWindow.enzymeTable.getModel());
         dtm.setRowCount(0);
-        for (Protein pr : s.proteins) {
-            dtm.addRow(new Object[]{pr.name, pr.sequence});
+        for (Reaction r : s.reactions) {
+            if (r.enzyme != null) {
+                dtm.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
+            } else {
+                dtm.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
+            }
         }
         dtm.fireTableDataChanged();
         mainWindow.enzymeTable.repaint();
     }
 
+    public void rowClicked(int row, int x, int y) {
+        TablePopUp pop = new TablePopUp(Main.pm, s.reactions.get(row));
+        pop.show(mainWindow, x, y+50);
+    }
 
     public void competingReactions() {
         ArrayList<Reaction> reactions = new ArrayList<>();
@@ -419,7 +509,7 @@ public class PartsManager {
         String[] lm = new String[reactions.size()];
         int pick = -1;
         for (int i = 0; i < lm.length; i++) {
-            lm[i] =reactions.get(i).name;
+            lm[i] = reactions.get(i).name;
         }
         JList rList = new JList(lm);
         rList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -438,11 +528,11 @@ public class PartsManager {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                Reaction[] selectedReactions = new Reaction[ rList.getSelectedIndices().length];
-                for(int i= 0; i< selectedReactions.length; i++){
+                Reaction[] selectedReactions = new Reaction[rList.getSelectedIndices().length];
+                for (int i = 0; i < selectedReactions.length; i++) {
                     selectedReactions[i] = reactions.get(rList.getSelectedIndices()[i]);
                 }
-                addParts(selectedReactions);
+                addParts(selectedReactions, true);
                 frame.setVisible(false);
                 frame.dispose();
             }
@@ -524,7 +614,7 @@ public class PartsManager {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     Reaction r = p[rList.getSelectedIndex()];
-                    addParts(new Part[]{r});
+                    addParts(new Part[]{r}, true);
                     frame.setVisible(false);
                     frame.dispose();
                     gm.updateGraph();
@@ -805,7 +895,7 @@ public class PartsManager {
         for (int i = 0; i < p.length; i++) {
             p[i] = searchParts[selectedIndices[i]];
         }
-        addParts(p);
+        addParts(p, true);
     }
 
     public void similarityClicked() {
@@ -827,10 +917,10 @@ public class PartsManager {
         ((SBOLme) cInt).prefix = p;
     }
 
-    public void setRepo(boolean local){
-        if(local){
+    public void setRepo(boolean local) {
+        if (local) {
             cInt = lInt;
-        }else{
+        } else {
             cInt = sInt;
         }
     }

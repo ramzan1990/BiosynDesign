@@ -90,6 +90,9 @@ public class GraphManager {
                 } else {
                     rt = r.ec.get(r.pickedEC).ecNumber + " [" + r.ec.size() + "]";
                 }
+                if(r.enzyme!=null){
+                    rt+="\n"+Common.restrict(r.enzyme.name, 14);
+                }
                 if (r.nat) {
                     reactionStyle = "REACTION_NAT";
                 } else {
@@ -99,25 +102,25 @@ public class GraphManager {
                 s.graphNodes.put(v1, s.reactions.get(i));
                 Mover ms = new Mover(90);
 
-                if (r.enzyme != null) {
-                    if (usedParts.contains(r.enzyme.id)) {
-                        graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(r.enzyme.id)), "ENZYME_EDGE");
-                    } else {
-                        if (r.enzyme.nat) {
-                            enzymeStyle = "ENZYME_NAT";
-                        } else {
-                            enzymeStyle = "ENZYME";
-                        }
-                        cc++;
-                        ms.move();
-                        Object v2 = graph.insertVertex(parent, null, Common.restrict(r.enzyme.name.split(",")[0], 12), rx + ms.x(), ry + ms.y(), 80, 30, enzymeStyle);
-                        s.graphNodes.put(v2, r.enzyme);
-                        //, "shape=image;image=file:/c:/images/ME_C00022.png"
-                        graph.insertEdge(parent, null, "", v1, v2, "ENZYME_EDGE");
-                        usedParts.add(r.enzyme.id);
-                        objects.add(v2);
-                    }
-                }
+//                if (r.enzyme != null) {
+//                    if (usedParts.contains(r.enzyme.id)) {
+//                        graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(r.enzyme.id)), "ENZYME_EDGE");
+//                    } else {
+//                        if (r.enzyme.nat) {
+//                            enzymeStyle = "ENZYME_NAT";
+//                        } else {
+//                            enzymeStyle = "ENZYME";
+//                        }
+//                        cc++;
+//                        ms.move();
+//                        Object v2 = graph.insertVertex(parent, null, Common.restrict(r.enzyme.name.split(",")[0], 12), rx + ms.x(), ry + ms.y(), 80, 30, enzymeStyle);
+//                        s.graphNodes.put(v2, r.enzyme);
+//                        //, "shape=image;image=file:/c:/images/ME_C00022.png"
+//                        graph.insertEdge(parent, null, "", v1, v2, "ENZYME_EDGE");
+//                        usedParts.add(r.enzyme.id);
+//                        objects.add(v2);
+//                    }
+//                }
 
                 for (int j = 0; j < s.reactions.get(i).compounds.size(); j++) {
                     Part c = s.reactions.get(i).compounds.get(j);

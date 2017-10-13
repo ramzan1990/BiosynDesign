@@ -1,5 +1,8 @@
 package biosyndesign.core.utils;
 
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -7,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  * Created by Umarov on 1/19/2017.
@@ -49,5 +54,36 @@ public class Common {
 
     public static int countMatches(String line, String m) {
         return line.length() - line.replace(m, "").length();
+    }
+
+    public static JComboBox organismsBox(){
+        String options[] = {"Photorhabdus luminescens"};
+        try {
+            Scanner scan = new Scanner(new File("names.txt"));
+            ArrayList<String> names = new ArrayList<>();
+            while(scan.hasNextLine()){
+                names.add(scan.nextLine().trim());
+            }
+            options = names.toArray(new String[0]);
+        }catch(Exception e){
+
+        }
+        JComboBox cb = new JComboBox(options);
+        AutoCompleteDecorator.decorate(cb);
+        return cb;
+    }
+
+    public static boolean isOrganism(String s) {
+        try {
+            Scanner scan = new Scanner(new File("names.txt"));
+            while(scan.hasNextLine()){
+                if(scan.nextLine().trim().equals(s)){
+                    return true;
+                }
+            }
+        }catch(Exception e){
+
+        }
+        return false;
     }
 }

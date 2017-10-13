@@ -55,6 +55,9 @@ public class Main {
         pm = new PartsManager(s, mainWindow, gm);
         lpm = new NewPartsManager(s, mainWindow);
         guim = new GUIManager(s, pm);
+
+        gm.updateGraph();
+        pm.updateTable();
     }
 
 

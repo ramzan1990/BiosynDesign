@@ -16,6 +16,7 @@ public class Reaction extends Part{
     public String partialEC;
     public double energy;
     public boolean nat;
+    public String enzymeType;
 
     public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);
@@ -25,5 +26,9 @@ public class Reaction extends Part{
         products=new ArrayList();
         partialEC="";
         this.energy=energy;
+    }
+
+    public String getEName() {
+        return "EC:"+ec.get(pickedEC).ecNumber;
     }
 }

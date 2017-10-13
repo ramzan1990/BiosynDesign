@@ -2,7 +2,10 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.graphics.PartsGraph;
+import biosyndesign.core.sbol.parts.Compound;
 import biosyndesign.core.sbol.parts.Part;
+import biosyndesign.core.ui.popups.CompoundCellPopUp;
+import biosyndesign.core.ui.popups.TablePopUp;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -283,12 +286,22 @@ public class MainWindow extends BDFrame {
 
         tbp = new JTabbedPane();
         workSpacePanel = new PartsGraph();
-        String[] columnNames = {"Name",
-                "Sequence"};
-        TableModel tableModel = new DefaultTableModel(columnNames, 0);
+        String[] columnNames = {"Reaction",
+                "Enzyme Origin", "Enzyme Name", "Primary Structure"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         enzymeTable = new JTable(tableModel);
-        tbp.addTab("Graph", workSpacePanel);
-        tbp.addTab("Enzymes", new JScrollPane(enzymeTable));
+        enzymeTable.addMouseListener(new MouseAdapter(){
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.rowClicked(enzymeTable.getSelectedRow(), e.getX(), e.getY()+50);
+            }
+        });
+        tbp.addTab("Pathway", workSpacePanel);
+        tbp.addTab("Enzyme", new JScrollPane(enzymeTable));
         dataSelectPanel = new JPanel();
         dataSelectPanel.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         GridLayout blayout = new GridLayout(3, 2);
@@ -399,10 +412,10 @@ public class MainWindow extends BDFrame {
 
         update = new JLabel();
         update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
-        update.setToolTipText("Update Graph");
+        update.setToolTipText("Refresh");
         update.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.gm.updateGraph();
+                Main.gm.updateGraph(); Main.pm.updateTable();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -726,5 +739,6 @@ public class MainWindow extends BDFrame {
         partsList.setModel(new DefaultComboBoxModel(names));
         b3.setVisible(true);
         partsPane.setVisible(true);
+        partsPane.repaint();
     }
 }
