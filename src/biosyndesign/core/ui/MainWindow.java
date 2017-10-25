@@ -434,7 +434,7 @@ public class MainWindow extends BDFrame {
         });
 
         similarity = new JLabel();
-        similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
+        similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/similar-1.png")));
         similarity.setToolTipText("Similarity");
         similarity.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
@@ -448,11 +448,11 @@ public class MainWindow extends BDFrame {
             }
 
             public void mouseEntered(MouseEvent e) {
-                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update0.png")));
+                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/similar-2.png")));
             }
 
             public void mouseExited(MouseEvent e) {
-                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
+                similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/similar-1.png")));
             }
         });
 
@@ -552,12 +552,13 @@ public class MainWindow extends BDFrame {
         toolsPanel.add(similarity);
         toolsPanel.add(Box.createHorizontalGlue());
         JLabel lt = new JLabel("Info");
-        lt.setIcon(new ImageIcon(Main.class.getResource("ui/images/v1.png")));
+        lt.setIcon(new ImageIcon(Main.class.getResource("ui/images/project-info.png")));
         toolsPanel.add(lt);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         JLabel tb1 = new JLabel("Common Reaction");
+        tb1.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-1.png")));
         tb1.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
