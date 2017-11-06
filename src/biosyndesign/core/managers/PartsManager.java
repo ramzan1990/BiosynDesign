@@ -156,6 +156,9 @@ public class PartsManager {
                             }
                         }
                         if (op == null) {
+                            if(cInt.findParts(2, 0, id).length==0){
+                                int dfdfd= 1+1;
+                            }
                             op = (ECNumber) cInt.findParts(2, 0, id)[0];
                             if (op != null) {
                                 s.ecNumbers.add(op);
@@ -413,8 +416,7 @@ public class PartsManager {
     }
 
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb1, JComboBox cmb2, JList partsList) {
-        DefaultListModel model = (DefaultListModel)partsList.getModel();
-        model.clear();
+        ArrayList<String> names = new ArrayList<>();
         if (r.enzymeType.equals("Native")) {
             if(cmb1!=null){
                 cmb1.setSelectedIndex(0);
@@ -422,11 +424,12 @@ public class PartsManager {
             prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
             int pick = -1;
             for(int i =0; i< prots.length;i++){
-                model.addElement(prots[i].id);
+                names.add(prots[i].id);
                 if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
                     pick = i;
                 }
             }
+            partsList.setModel(new DefaultComboBoxModel(names.toArray()));
             if(pick!=-1){
                 partsList.setSelectedIndex(pick);
             }
@@ -441,15 +444,18 @@ public class PartsManager {
             cmb2.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                    names.clear();
                     if(cmb2.getSelectedItem()!=null && Common.isOrganism(cmb2.getSelectedItem().toString())){
                         prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, cmb2.getSelectedItem().toString());
+
                         int pick = -1;
                         for(int i =0; i< prots.length;i++){
-                            model.addElement(prots[i].id);
+                            names.add(prots[i].id);
                             if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
                                 pick = i;
                             }
                         }
+                        partsList.setModel(new DefaultComboBoxModel(names.toArray()));
                         if(pick!=-1){
                             partsList.setSelectedIndex(pick);
                         }
@@ -463,13 +469,16 @@ public class PartsManager {
             cmb2.setEnabled(false);
             cmb2.setSelectedIndex(-1);
             prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber, "");
+
             int pick = -1;
             for(int i =0; i< prots.length;i++){
-                model.addElement(prots[i].id);
+                names.add(prots[i].id);
                 if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
                     pick = i;
                 }
             }
+
+            partsList.setModel(new DefaultComboBoxModel(names.toArray()));
             if(pick!=-1){
                 partsList.setSelectedIndex(pick);
             }
