@@ -156,13 +156,14 @@ public class PartsManager {
                             }
                         }
                         if (op == null) {
-                            if(cInt.findParts(2, 0, id).length==0){
-                                int dfdfd= 1+1;
-                            }
-                            op = (ECNumber) cInt.findParts(2, 0, id)[0];
-                            if (op != null) {
-                                s.ecNumbers.add(op);
-                                saveXML(op);
+                            Part[] temp = cInt.findParts(2, 0, id);
+                            if(temp.length==0){
+                            }else {
+                                op = (ECNumber) temp[0];
+                                if (op != null) {
+                                    s.ecNumbers.add(op);
+                                    saveXML(op);
+                                }
                             }
                         }
                         if (op != null) {
@@ -172,13 +173,15 @@ public class PartsManager {
                         }
                     }
                     r.nat = cInt.isNative(r.id, s.organism);
-                    Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
-                    if (prots.length > 0) {
-                        r.enzyme = prots[0];
-                        r.enzymeType = "Native";
-                        addPartsS(new Part[]{prots[0]}, false);
-                    } else {
-                        r.enzymeType = "Foreign";
+                    if(r.ec.size()>0) {
+                        Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
+                        if (prots.length > 0) {
+                            r.enzyme = prots[0];
+                            r.enzymeType = "Native";
+                            addPartsS(new Part[]{prots[0]}, false);
+                        } else {
+                            r.enzymeType = "Foreign";
+                        }
                     }
                 } else if (p[i] instanceof Compound) {
                     if (s.compounds.contains(p[i])) {

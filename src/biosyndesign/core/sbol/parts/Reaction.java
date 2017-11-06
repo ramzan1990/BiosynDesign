@@ -29,6 +29,9 @@ public class Reaction extends Part{
     }
 
     public String getEName() {
-        return "EC:"+ec.get(pickedEC).ecNumber;
+        if(pickedEC >=0 && ec.size()>pickedEC){
+            return "EC:"+ec.get(pickedEC).ecNumber;
+        }
+        return "EC:Partial";
     }
 }
