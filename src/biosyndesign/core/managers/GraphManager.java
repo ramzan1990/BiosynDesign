@@ -1,6 +1,7 @@
 package biosyndesign.core.managers;
 
 import biosyndesign.core.sbol.parts.Compound;
+import biosyndesign.core.sbol.parts.CompoundStoichiometry;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.ui.MainWindow;
@@ -130,8 +131,10 @@ public class GraphManager {
                         compoundStyle = "COMPOUND";
                     }
                     boolean product = false;
-                    if (r.products.contains(c)) {
-                        product = true;
+                    for(CompoundStoichiometry cs : r.products){
+                        if(cs.c.id.equals(c.id)) {
+                            product = true;
+                        }
                     }
                     if (usedParts.contains(c.id)) {
                         if (product) {
