@@ -132,10 +132,10 @@ public class GraphManager {
                     } else {
                         compoundStyle = "COMPOUND";
                     }
-                    boolean product = false;
+                    boolean product = r.reverse;
                     for(CompoundStoichiometry cs : r.products){
                         if(cs.c.id.equals(c.id)) {
-                            product = true;
+                            product = !r.reverse;
                             stoichiometry = cs.s+"";
                         }
                     }

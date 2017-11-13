@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class ReactionCellPopUp extends JPopupMenu {
-    JMenuItem item0, item1, item2, item3, item4;
+    JMenuItem item0, item1, item2, item3, item4, item5;
 
     public ReactionCellPopUp(Reaction cell){
         item0 = new JMenuItem("Show info");
@@ -41,10 +41,17 @@ public class ReactionCellPopUp extends JPopupMenu {
                 Main.pm.delete(new Object[]{cell});
             }
         });
+        item5= new JMenuItem("Reverse");
+        item5.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.pm.reverse(cell);
+            }
+        });
         add(item0);
         add(item1);
         //add(item2);
         add(item3);
         //add(item4);
+        add(item5);
     }
 }

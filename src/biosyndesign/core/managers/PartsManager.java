@@ -955,4 +955,8 @@ public class PartsManager {
         }
     }
 
+    public void reverse(Reaction r) {
+        r.reverse = !r.reverse;
+        gm.updateGraph();
+    }
 }

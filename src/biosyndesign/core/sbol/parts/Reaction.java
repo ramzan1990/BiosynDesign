@@ -17,6 +17,7 @@ public class Reaction extends Part{
     public double energy;
     public boolean nat;
     public String enzymeType;
+    public boolean reverse;
 
     public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);
