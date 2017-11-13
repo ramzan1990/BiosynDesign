@@ -38,6 +38,6 @@ public class CompoundCellPopUp extends JPopupMenu {
         add(item0);
         add(item1);
         add(item3);
-        add(item2);
+        //add(item2);
     }
 }

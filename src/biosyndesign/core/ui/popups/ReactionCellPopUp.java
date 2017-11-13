@@ -45,6 +45,6 @@ public class ReactionCellPopUp extends JPopupMenu {
         add(item1);
         //add(item2);
         add(item3);
-        add(item4);
+        //add(item4);
     }
 }
