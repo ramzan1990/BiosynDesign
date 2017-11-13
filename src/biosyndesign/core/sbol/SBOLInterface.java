@@ -18,4 +18,6 @@ public interface SBOLInterface {
     public Reaction[] commonReactions(String id1, String id2);
 
     public boolean isNative(String reaction, String organism);
+
+    String[] getOrganisms(String ecNumber);
 }

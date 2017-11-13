@@ -105,6 +105,11 @@ public class PartsGraph extends JPanel implements Serializable {
         //edge.put(mxConstants.STYLE_FONTCOLOR, "#446299");
         stylesheet.putCellStyle("ENZYME_EDGE", edge);
 
+        Hashtable<String, Object>  edge1 = new Hashtable<String, Object>();
+        edge1.put(mxConstants.STYLE_FONTSIZE, 30);
+        edge1.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_RIGHT);
+        edge1.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP);
+        stylesheet.putCellStyle("EDGE", edge1);
         //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
 
 

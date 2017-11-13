@@ -331,6 +331,11 @@ public class LocalRepo implements SBOLInterface {
         return false;
     }
 
+    @Override
+    public String[] getOrganisms(String ecNumber) {
+        return new String[0];
+    }
+
 
     public void importParts() {
         String name = JOptionPane.showInputDialog("Choose name for the batch:");
@@ -500,5 +505,15 @@ public class LocalRepo implements SBOLInterface {
             } catch (SQLException sqle) {
             }
         }
+    }
+
+    public Part[] catalog(String table) {
+        JsonArray a = executeJSON("SELECT ID, Name, URL FROM "+table);
+        Part[] p = new Part[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+        }
+        return p;
     }
 }

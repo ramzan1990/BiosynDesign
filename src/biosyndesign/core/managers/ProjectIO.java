@@ -304,4 +304,18 @@ public class ProjectIO {
         }
     }
 
+    public void saveComponentImage(ImageComponent ic, String id) {
+        BufferedImage myImage;
+        JComponent jc = (JComponent) ic;
+        jc.setSize(new Dimension(200, 100));
+        jc.repaint();
+        myImage = new BufferedImage(jc.getWidth(), jc.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = myImage.createGraphics();
+        jc.paint(g);
+        try {
+            ImageIO.write(myImage, "png", new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + id + ".png"));
+            mainWindow.setStatusLabel("Image saved");
+        } catch (Exception e) {
+        }
+    }
 }

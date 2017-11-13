@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -244,5 +245,45 @@ public class SBOLme implements SBOLInterface {
             //e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public String[] getOrganisms(String ecNumber) {
+        StringBuffer result = new StringBuffer();
+        try {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_organisms.php");
+            RequestConfig.Builder requestConfig = RequestConfig.custom();
+            requestConfig.setConnectTimeout(20 * 1000);
+            requestConfig.setConnectionRequestTimeout(20 * 1000);
+            requestConfig.setSocketTimeout(20 * 1000);
+            httpPost.setConfig(requestConfig.build());
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("ec", ecNumber));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
+            }
+            httpclient.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+        JsonArray a = jsonObject.getAsJsonArray("rows");
+        String options[] = new String[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            options[i] =o.get("OrganismName").getAsString();
+        }
+        return options;
     }
 }

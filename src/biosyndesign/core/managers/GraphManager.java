@@ -9,6 +9,7 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.Mover;
 import com.mxgraph.view.mxGraph;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -76,7 +77,7 @@ public class GraphManager {
         try {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
-            Mover m = new Mover(300);
+            Mover m = new Mover(700);
             int off = 200 + m.max(s.reactions.size()) * 170;
             String compoundStyle;
             String reactionStyle;
@@ -99,9 +100,9 @@ public class GraphManager {
                 } else {
                     reactionStyle = "REACTION";
                 }
-                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 80, 30, reactionStyle);
+                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 140, 70, reactionStyle);
                 s.graphNodes.put(v1, s.reactions.get(i));
-                Mover ms = new Mover(90);
+                Mover ms = new Mover(250);
 
 //                if (r.enzyme != null) {
 //                    if (usedParts.contains(r.enzyme.id)) {
@@ -125,6 +126,7 @@ public class GraphManager {
 
                 for (int j = 0; j < s.reactions.get(i).compounds.size(); j++) {
                     Part c = s.reactions.get(i).compounds.get(j);
+                    String stoichiometry = "";
                     if (c == s.target) {
                         compoundStyle = "COMPOUND_TARGET";
                     } else {
@@ -134,24 +136,30 @@ public class GraphManager {
                     for(CompoundStoichiometry cs : r.products){
                         if(cs.c.id.equals(c.id)) {
                             product = true;
+                            stoichiometry = cs.s+"";
+                        }
+                    }
+                    for(CompoundStoichiometry cs : r.reactants){
+                        if(cs.c.id.equals(c.id)) {
+                            stoichiometry = cs.s+"";
                         }
                     }
                     if (usedParts.contains(c.id)) {
                         if (product) {
-                            graph.insertEdge(parent, null, "", v1, objects.get(usedParts.indexOf(c.id)));
+                            graph.insertEdge(parent, null, stoichiometry, v1, objects.get(usedParts.indexOf(c.id)), "EDGE");
                         } else {
-                            graph.insertEdge(parent, null, "", objects.get(usedParts.indexOf(c.id)), v1);
+                            graph.insertEdge(parent, null, stoichiometry, objects.get(usedParts.indexOf(c.id)), v1, "EDGE");
                         }
                     } else {
                         cc++;
                         ms.move();
-                        Object v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12), rx + ms.x(), ry + ms.y(), 80, 30, compoundStyle);
+                        String im = "file:/" + s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png";
+                        Object v2 = graph.insertVertex(parent, null, "", rx + ms.x(), ry + ms.y(), 200, 100,  "shape=image;image="+im);
                         s.graphNodes.put(v2, c);
-                        //, "shape=image;image=file:/c:/images/ME_C00022.png"
                         if (product) {
-                            graph.insertEdge(parent, null, "", v1, v2);
+                            graph.insertEdge(parent, null, stoichiometry, v1, v2, "EDGE");
                         } else {
-                            graph.insertEdge(parent, null, "", v2, v1);
+                            graph.insertEdge(parent, null, stoichiometry, v2, v1, "EDGE");
                         }
                         usedParts.add(c.id);
                         objects.add(v2);

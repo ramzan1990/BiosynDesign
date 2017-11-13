@@ -18,7 +18,7 @@ CREATE TABLE ecnum (
   ID varchar(40),
   ECNumber varchar(40),
   URL varchar(300),
-  Title varchar(255)
+  Name varchar(255)
 );
 CREATE INDEX index1 ON ecnum(ECNumber);
 CREATE TABLE oIDs (

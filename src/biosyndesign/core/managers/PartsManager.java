@@ -14,6 +14,7 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
@@ -193,6 +194,19 @@ public class PartsManager {
                     } catch (Exception e) {
                     }
                     s.compounds.add((Compound) p[i]);
+                    String smiles = ((Compound) p[i]).smiles;
+                    if (smiles != null) {
+                        try {
+                            IChemObjectBuilder bldr
+                                    = SilentChemObjectBuilder.getInstance();
+                            SmilesParser smipar = new SmilesParser(bldr);
+                            IAtomContainer mol = smipar.parseSmiles(smiles);
+                            ImageComponent ic = new ImageComponent(mol);
+                            ic.setText(p[i].name);
+                            Main.projectIO.saveComponentImage(ic, p[i].id);
+                        } catch (Exception ex) {
+                        }
+                    }
                 } else if (p[i] instanceof Protein) {
                     Protein pr = (Protein) p[i];
                     pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
@@ -373,7 +387,9 @@ public class PartsManager {
         UI.addTo(jp, cmb1);
 
         UI.addTo(jp, new JLabel("Organism Filter "));
-        JComboBox cmb2 = Common.organismsBox();
+        String[] options = cInt.getOrganisms(r.ec.get(r.pickedEC).ecNumber);
+        JComboBox cmb2 = new JComboBox(options);
+        AutoCompleteDecorator.decorate(cmb2);
         UI.addTo(jp, cmb2);
 
         UI.addTo(jp, new JLabel("Enzyme "));
@@ -412,6 +428,9 @@ public class PartsManager {
                 frame.dispose();
             }
         });
+        if(r.enzyme!=null){
+            cmb2.setSelectedItem(r.enzyme.organism);
+        }
         frame.getContentPane().add(jp);
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
@@ -450,7 +469,6 @@ public class PartsManager {
                     names.clear();
                     if(cmb2.getSelectedItem()!=null && Common.isOrganism(cmb2.getSelectedItem().toString())){
                         prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, cmb2.getSelectedItem().toString());
-
                         int pick = -1;
                         for(int i =0; i< prots.length;i++){
                             names.add(prots[i].id);

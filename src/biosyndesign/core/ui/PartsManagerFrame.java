@@ -65,14 +65,17 @@ public class PartsManagerFrame extends BDFrame {
                     cmb2.addItem("Associated compound");
                     cmb2.addItem("Transforming enzyme");
                     cmb2.addItem("SMILES");
+                    showParts(lr.catalog("compounds"));
                 } else if (cmb1.getSelectedIndex() == 1) {
                     cmb2.addItem("Reaction ID");
                     cmb2.addItem("Participating compound");
                     cmb2.addItem("Catalyzing enzyme class");
+                    showParts(lr.catalog("reactions"));
                 } else if (cmb1.getSelectedIndex() == 2) {
                     cmb2.addItem("EC number");
                     cmb2.addItem("Transformed compound");
                     cmb2.addItem("Catalyzing reaction");
+                    showParts(lr.catalog("ecnum"));
                 }
             }
         });
@@ -80,8 +83,7 @@ public class PartsManagerFrame extends BDFrame {
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         UI.addTo(rightPanel, l2);
         UI.addTo(rightPanel, cmb2);
-        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        cmb1.setSelectedIndex(0);
+        //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)))
         UI.addTo(rightPanel, l3);
         qValueTF = new JTextField("Pyruvate");
         qValueTF.setPreferredSize(new Dimension(dpcw, qValueTF.getPreferredSize().height));
@@ -97,12 +99,7 @@ public class PartsManagerFrame extends BDFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Part[] p = lr.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
-                String[][] rowData = new String[p.length][2];
-                for(int i =0; i<p.length; i++){
-                    rowData[i][0] = p[i].id;
-                    rowData[i][1] = p[i].name;
-                }
-                table.setModel(new DefaultTableModel(rowData, columnNames));
+                showParts(p);
             }
         });
         //rightPanel.add(Box.createRigidArea(new Dimension(0, 300)));
@@ -161,7 +158,16 @@ public class PartsManagerFrame extends BDFrame {
         //this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+        cmb1.setSelectedIndex(0);
     }
 
+    private void showParts(Part[] p){
+        String[][] rowData = new String[p.length][2];
+        for(int i =0; i<p.length; i++){
+            rowData[i][0] = p[i].id;
+            rowData[i][1] = p[i].name;
+        }
+        table.setModel(new DefaultTableModel(rowData, columnNames));
+    }
 
 }
