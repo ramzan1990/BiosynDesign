@@ -10,6 +10,7 @@ import biosyndesign.core.utils.Mover;
 import com.mxgraph.view.mxGraph;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -153,7 +154,7 @@ public class GraphManager {
                     } else {
                         cc++;
                         ms.move();
-                        String im = "file:/" + s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png";
+                        String im = Paths.get(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png").toUri().toURL().toString();
                         Object v2 = graph.insertVertex(parent, null, "", rx + ms.x(), ry + ms.y(), 200, 100,  "shape=image;image="+im);
                         s.graphNodes.put(v2, c);
                         if (product) {
@@ -182,7 +183,8 @@ public class GraphManager {
                 }
                 if (!usedParts.contains(c.id)) {
                     m.move();
-                    Object v2 = graph.insertVertex(parent, null, Common.restrict(c.name.split(",")[0], 12), rx, ry, 80, 30, compoundStyle);
+                    String im = Paths.get(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png").toUri().toURL().toString();
+                    Object v2 = graph.insertVertex(parent, null, "", rx, ry, 200, 100, "shape=image;image="+im);
                     s.graphNodes.put(v2, c);
                     usedParts.add(c.id);
                     objects.add(v2);

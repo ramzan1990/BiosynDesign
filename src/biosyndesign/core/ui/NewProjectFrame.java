@@ -87,7 +87,7 @@ public class NewProjectFrame extends BDFrame {
         JLabel l3 = new JLabel("Prefix:");
         l3.setPreferredSize(new Dimension(m, h));
         prefixPanel.add(l3);
-        JTextField prefixField = new JTextField("http://www.cbrc.kaust.edu.sa/sbolme/dev");
+        JTextField prefixField = new JTextField("http://www.cbrc.kaust.edu.sa/sbolme");
         prefixField.setPreferredSize(new Dimension(340, h));
         prefixPanel.add(prefixField);
         topPanel.add(prefixPanel);
