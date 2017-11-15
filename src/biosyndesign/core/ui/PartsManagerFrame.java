@@ -36,7 +36,22 @@ public class PartsManagerFrame extends BDFrame {
 
 
         int dpcw = rightPanel.getPreferredSize().width - 15;
-        JComboBox cmb1, cmb2;
+        JComboBox cmb1, cmb2, cmb0;
+        JLabel l0 = new JLabel("Data set:");
+        l0.setMaximumSize(new Dimension(dpcw, l0.getPreferredSize().height));
+        UI.addTo(rightPanel, l0);
+        cmb0 = new JComboBox();
+        String[] batches = lr.getBatches();
+        for(String b:batches){
+            cmb0.addItem(b);
+        }
+        cmb0.addActionListener(new ActionListener() {
+                                   @Override
+                                   public void actionPerformed(ActionEvent e) {
+                                        lr.setCurrentDataset(cmb0.getSelectedItem().toString());
+                                   }
+                               });
+
         JTextField qValueTF;
         JLabel l1 = new JLabel("Search for");
         l1.setMaximumSize(new Dimension(dpcw, l1.getPreferredSize().height));

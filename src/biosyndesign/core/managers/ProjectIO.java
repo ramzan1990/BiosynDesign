@@ -105,10 +105,12 @@ public class ProjectIO {
             } catch (Exception e) {
                 new File(s.projectPath + s.projectName + File.separator + "images").mkdir();
                 new File(s.projectPath + s.projectName + File.separator + "parts").mkdir();
+                new File(s.projectPath + s.projectName + File.separator + "ci").mkdir();
             }
         } else {
             new File(s.projectPath + s.projectName + File.separator + "images").mkdir();
             new File(s.projectPath + s.projectName + File.separator + "parts").mkdir();
+            new File(s.projectPath + s.projectName + File.separator + "ci").mkdir();
         }
         isSaved = true;
         saveProject();

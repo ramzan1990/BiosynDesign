@@ -1,6 +1,5 @@
 package biosyndesign.core.sbol;
 
-import biosyndesign.core.sbol.parts.ECNumber;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Protein;
 import biosyndesign.core.sbol.parts.Reaction;

@@ -29,6 +29,7 @@ public class LocalRepo implements SBOLInterface {
 
     private String protocol = "jdbc:derby:";
     private final String lp = System.getProperty("user.home") + File.separator + "BiosynDesign" + File.separator + "LocalParts";
+    private String currentDataset = "";
 
     public void init() {
         Connection conn = null;
@@ -515,5 +516,9 @@ public class LocalRepo implements SBOLInterface {
             p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
         }
         return p;
+    }
+
+    public void setCurrentDataset(String value){
+        currentDataset = value;
     }
 }
