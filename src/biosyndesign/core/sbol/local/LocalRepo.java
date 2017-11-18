@@ -5,6 +5,7 @@ import biosyndesign.core.sbol.*;
 import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.utils.Common;
 import com.google.gson.*;
+import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -29,7 +30,8 @@ public class LocalRepo implements SBOLInterface {
 
     private String protocol = "jdbc:derby:";
     private final String lp = System.getProperty("user.home") + File.separator + "BiosynDesign" + File.separator + "LocalParts";
-    private String currentDataset = "";
+    private String dbName;
+    private ArrayList<String> dbNames;
 
     public void init() {
         Connection conn = null;
@@ -38,7 +40,80 @@ public class LocalRepo implements SBOLInterface {
         ResultSet rs = null;
         try {
             Properties props = new Properties();
-            String dbName = "sbol";
+            dbName = "default";
+            conn = DriverManager.getConnection(protocol + dbName
+                    + ";create=true", props);
+
+            conn.setAutoCommit(false);
+            s = conn.createStatement();
+            statements.add(s);
+            boolean first = false;
+            try {
+                rs = s.executeQuery("select * from dblist");
+            } catch (Exception e) {
+                first = true;
+            }
+            dbNames = new ArrayList<>();
+            if (first) {
+                s = conn.createStatement();
+                statements.add(s);
+                s.addBatch("CREATE TABLE dblist (\n" +
+                        "  name varchar(300)\n" +
+                        ")");
+                s.executeBatch();
+                conn.commit();
+            }else{
+                while(rs.next()){
+                    dbNames.add(rs.getString("name"));
+                }
+                if(dbNames.size()>0){
+                    dbName = dbNames.get(0);
+                } else{
+                    dbName = null;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                    rs = null;
+                }
+            } catch (SQLException sqle) {
+            }
+            int i = 0;
+            while (!statements.isEmpty()) {
+                Statement st = (Statement) statements.remove(i);
+                try {
+                    if (st != null) {
+                        st.close();
+                        st = null;
+                    }
+                } catch (SQLException sqle) {
+                }
+            }
+            try {
+                if (conn != null) {
+                    conn.close();
+                    conn = null;
+                }
+            } catch (SQLException sqle) {
+            }
+        }
+        File p = new File(lp);
+        if (!p.exists()) {
+            p.mkdirs();
+        }
+    }
+
+    public void checkDB() {
+        Connection conn = null;
+        ArrayList<Statement> statements = new ArrayList<Statement>();
+        Statement s;
+        ResultSet rs = null;
+        try {
+            Properties props = new Properties();
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
 
@@ -53,23 +128,8 @@ public class LocalRepo implements SBOLInterface {
                 first = true;
             }
             if (first) {
-                reset();
-
+                resetDB();
             }
-//            PreparedStatement psInsert;
-//            PreparedStatement psUpdate;
-//            psInsert = conn.prepareStatement(
-//                    "insert into compounds values (?,  ?, ?, ?, ?, ?)");
-//            statements.add(psInsert);
-//
-//            psInsert.setString(1, "C0000000000000001");
-//            psInsert.setString(2, "2");
-//            psInsert.setString(3, "3");
-//            psInsert.setString(4, "4");
-//            psInsert.setString(5, "5");
-//            psInsert.setString(6, "6");
-//            psInsert.executeUpdate();
-//            conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -113,7 +173,6 @@ public class LocalRepo implements SBOLInterface {
         ResultSet rs = null;
         try {
             Properties props = new Properties();
-            String dbName = "sbol";
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
 
@@ -161,7 +220,6 @@ public class LocalRepo implements SBOLInterface {
         ResultSet rs = null;
         try {
             Properties props = new Properties();
-            String dbName = "sbol";
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
 
@@ -338,8 +396,15 @@ public class LocalRepo implements SBOLInterface {
     }
 
 
-    public void importParts() {
-        String name = JOptionPane.showInputDialog("Choose name for the batch:");
+    public void importParts(String name) {
+        if(name.length() == 0){
+            name = dbName;
+        }else{
+            dbNames.add(name);
+            dbName = name;
+            changeDBList(name, true);
+        }
+        checkDB();
         FileDialog fd = new FileDialog((Frame) null, "Choose Directory", FileDialog.LOAD);
         fd.setMultipleMode(true);
         fd.setVisible(true);
@@ -350,7 +415,7 @@ public class LocalRepo implements SBOLInterface {
                 try {
                     File np = new File(lp + File.separator + name + File.separator + f.getName());
                     Files.copy(f.toPath(), np.toPath());
-                    addPart(np, name);
+                    addPart(np);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -364,20 +429,82 @@ public class LocalRepo implements SBOLInterface {
             nd.mkdirs();
             File np = new File(lp + File.separator + "custom" + File.separator + f.getName());
             Files.copy(f.toPath(), np.toPath());
-            addPart(np, "custom");
+            addPart(np);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void deleteParts() {
-        String[] choices = getBatches();
-        String name = (String) JOptionPane.showInputDialog(null, "Choose batch",
-                "Delete Parts", JOptionPane.QUESTION_MESSAGE, null, choices, choices[0]);
-        //deleteBatch(name);
+    public void deleteDataset(String name){
+        try {
+            FileUtils.deleteDirectory(new File(lp + File.separator + name));
+            changeDBList(name, false);
+            dbNames.remove(name);
+            try {
+            DriverManager.getConnection("jdbc:derby:"+name+";shutdown=true");
+            }catch(Exception e){
+            }
+            FileUtils.deleteDirectory(new File(name));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
-    public void addPart(File f, String batchName) throws IOException, JDOMException {
+    private void changeDBList(String name, boolean b) {
+        Connection conn = null;
+        ArrayList<Statement> statements = new ArrayList<Statement>();
+        Statement s;
+        ResultSet rs = null;
+        try {
+            Properties props = new Properties();
+            conn = DriverManager.getConnection(protocol + "default"
+                    + ";create=true", props);
+
+            conn.setAutoCommit(false);
+            s = conn.createStatement();
+            statements.add(s);
+            try {
+                if(b){
+                    s.execute("insert into dblist values ('" + name + "') ");
+                }else {
+                    s.execute("delete from dblist where name = '" + name+"'");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                    rs = null;
+                }
+            } catch (SQLException sqle) {
+            }
+            int i = 0;
+            while (!statements.isEmpty()) {
+                Statement st = (Statement) statements.remove(i);
+                try {
+                    if (st != null) {
+                        st.close();
+                        st = null;
+                    }
+                } catch (SQLException sqle) {
+                }
+            }
+            try {
+                if (conn != null) {
+                    conn.close();
+                    conn = null;
+                }
+            } catch (SQLException sqle) {
+            }
+        }
+    }
+
+    public void addPart(File f) throws IOException, JDOMException {
         String xml = new String(Files.readAllBytes(f.toPath()));
         xml = xml.replaceAll(":", "");
         String url = f.getAbsolutePath();
@@ -392,8 +519,12 @@ public class LocalRepo implements SBOLInterface {
             if (definition.getChild("compoundsynonym") != null) {
                 //Compound
                 String keggid = definition.getChildText("compoundkegg_id");
-                String drugID = definition.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
-                drugID = drugID.substring(drugID.length() - 7, drugID.length());
+                String drugID = "";
+                try {
+                    drugID = definition.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
+                    drugID = drugID.substring(drugID.length() - 7, drugID.length());
+                }catch (Exception e){
+                }
                 String SMILES = "NULL";
                 if (root.getChild("sbolSequence") != null) {
                     SMILES = "'" + root.getChild("sbolSequence").getChildText("sbolelements") + "'";
@@ -449,25 +580,24 @@ public class LocalRepo implements SBOLInterface {
         }
     }
 
-    public String[] getBatches() {
-        return null;
+    public String[] getDatasets() {
+        return dbNames.toArray(new String[0]);
     }
 
-    public void reset() {
+    public void resetDB() {
         Connection conn = null;
         ArrayList<Statement> statements = new ArrayList<Statement>();
         Statement s;
         ResultSet rs = null;
         try {
             Properties props = new Properties();
-            String dbName = "sbol";
             conn = DriverManager.getConnection(protocol + dbName
                     + ";create=true", props);
 
             conn.setAutoCommit(false);
             s = conn.createStatement();
             statements.add(s);
-            Utils.dropSchema(conn.getMetaData(), "APP");
+            //Utils.dropSchema(conn.getMetaData(), "APP");
             String dbcreate = new Scanner(new File("db")).useDelimiter("\\Z").next();
             String batch[] = dbcreate.split(";");
             s = conn.createStatement();
@@ -509,6 +639,9 @@ public class LocalRepo implements SBOLInterface {
     }
 
     public Part[] catalog(String table) {
+        if(dbName==null){
+            return new Part[]{};
+        }
         JsonArray a = executeJSON("SELECT ID, Name, URL FROM "+table);
         Part[] p = new Part[a.size()];
         for (int i = 0; i < a.size(); i++) {
@@ -519,6 +652,6 @@ public class LocalRepo implements SBOLInterface {
     }
 
     public void setCurrentDataset(String value){
-        currentDataset = value;
+        dbName = value;
     }
 }

@@ -4,7 +4,6 @@ import biosyndesign.core.Main;
 import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.utils.UI;
-import com.google.gson.JsonArray;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +21,6 @@ public class PartsManagerFrame extends BDFrame {
     public PartsManagerFrame(JFrame parent) {
         super();
         lr = Main.getLocalRepo();
-        final PartsManagerFrame ff = this;
         int w = 800;
         this.setSize(new Dimension(w, 600));
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -33,24 +31,19 @@ public class PartsManagerFrame extends BDFrame {
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
         rightPanel.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY));
         rightPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-
-
         int dpcw = rightPanel.getPreferredSize().width - 15;
         JComboBox cmb1, cmb2, cmb0;
         JLabel l0 = new JLabel("Data set:");
         l0.setMaximumSize(new Dimension(dpcw, l0.getPreferredSize().height));
         UI.addTo(rightPanel, l0);
         cmb0 = new JComboBox();
-        String[] batches = lr.getBatches();
+        cmb0.setPreferredSize(new Dimension(dpcw, cmb0.getPreferredSize().height));
+        cmb0.setMaximumSize(new Dimension(500, cmb0.getPreferredSize().height));
+        String[] batches = lr.getDatasets();
         for(String b:batches){
             cmb0.addItem(b);
         }
-        cmb0.addActionListener(new ActionListener() {
-                                   @Override
-                                   public void actionPerformed(ActionEvent e) {
-                                        lr.setCurrentDataset(cmb0.getSelectedItem().toString());
-                                   }
-                               });
+        UI.addTo(rightPanel, cmb0);
 
         JTextField qValueTF;
         JLabel l1 = new JLabel("Search for");
@@ -117,6 +110,20 @@ public class PartsManagerFrame extends BDFrame {
                 showParts(p);
             }
         });
+        b2.setEnabled(false);
+        cmb0.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(cmb0.getSelectedIndex()>-1) {
+                    lr.setCurrentDataset(cmb0.getSelectedItem().toString());
+                    b2.setEnabled(true);
+                    cmb1.setSelectedIndex(0);
+                }else{
+                    DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+                    dtm.setRowCount(0);
+                }
+            }
+        });
         //rightPanel.add(Box.createRigidArea(new Dimension(0, 300)));
         JPanel topPanel = new JPanel();
         //topPanel.setSize(new Dimension(400, 250));
@@ -134,26 +141,39 @@ public class PartsManagerFrame extends BDFrame {
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lr.importParts();
+                String name = JOptionPane.showInputDialog("Choose name for the dataset OR leave empty to import into current dataset:");
+                lr.importParts(name);
+                if(name.length() != 0){
+                    cmb0.addItem(name);
+                    cmb0.setSelectedItem(name);
+                }else{
+                    cmb1.setSelectedIndex(cmb1.getSelectedIndex());
+                }
             }
         });
         JButton b4 = new JButton("Delete Parts");
-        b4.setEnabled(false);
         b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lr.deleteParts();
+                if(cmb0.getSelectedIndex()!=-1) {
+                    String name= cmb0.getSelectedItem().toString();
+                    lr.deleteDataset(name);
+                    cmb0.removeItem(name);
+                    cmb0.setSelectedIndex(-1);
+                    b2.setEnabled(false);
+                }
+
             }
         });
         JButton b5 = new JButton("Reset DB");
         b5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lr.reset();
+                lr.resetDB();
             }
         });
         jp2.add(b4);
-        jp2.add(b5);
+        //jp2.add(b5);
         lowerPanel.add(jp1, BorderLayout.EAST);
         lowerPanel.add(jp2, BorderLayout.WEST);
         lowerPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.LIGHT_GRAY));
