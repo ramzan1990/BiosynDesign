@@ -106,9 +106,11 @@ public class PartsGraph extends JPanel implements Serializable {
         stylesheet.putCellStyle("ENZYME_EDGE", edge);
 
         Hashtable<String, Object>  edge1 = new Hashtable<String, Object>();
-        edge1.put(mxConstants.STYLE_FONTSIZE, 30);
+        edge1.put(mxConstants.STYLE_FONTSIZE, 20);
         edge1.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_RIGHT);
         edge1.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP);
+        edge1.put(mxConstants.STYLE_ENDSIZE, 10);
+        edge1.put(mxConstants.STYLE_STARTSIZE, 10);
         stylesheet.putCellStyle("EDGE", edge1);
         //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
 
@@ -127,7 +129,7 @@ public class PartsGraph extends JPanel implements Serializable {
                 if(SwingUtilities.isRightMouseButton(e)){
                     mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
                     if (cell != null) {
-                        Main.pm.cellClicked(cell, e.getX(), e.getY());
+                        Main.pm.cellClicked(cell, e.getXOnScreen(), e.getYOnScreen());
                     }
                 }
             }

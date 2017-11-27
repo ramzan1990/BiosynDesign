@@ -209,10 +209,10 @@ public class SBOLme implements SBOLInterface {
         if (a.size() < max) {
             max = a.size();
         }
-        Reaction[] p = new Reaction[max];
+        Reaction[] p = new Reaction [max];
         for (int i = 0; i < p.length; i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), o.get("FreeEnergy").getAsDouble());
+            p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), 1000); //o.get("FreeEnergy").getAsDouble()
         }
         return p;
     }

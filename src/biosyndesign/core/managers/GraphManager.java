@@ -22,6 +22,7 @@ import java.util.Hashtable;
 public class GraphManager {
     private ProjectState s;
     private MainWindow mainWindow;
+    private int scale = 1;
 
     public GraphManager(ProjectState s, MainWindow mainWindow) {
         this.s = s;
@@ -78,8 +79,8 @@ public class GraphManager {
         try {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
-            Mover m = new Mover(700);
-            int off = 200 + m.max(s.reactions.size()) * 170;
+            Mover m = new Mover(175*scale);
+            int off = 80*scale + m.max(s.reactions.size()) * (42*scale);
             String compoundStyle;
             String reactionStyle;
             String enzymeStyle;
@@ -101,9 +102,9 @@ public class GraphManager {
                 } else {
                     reactionStyle = "REACTION";
                 }
-                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 140, 70, reactionStyle);
+                Object v1 = graph.insertVertex(parent, null, rt, rx, ry, 35*scale, 17.5*scale, reactionStyle);
                 s.graphNodes.put(v1, s.reactions.get(i));
-                Mover ms = new Mover(250);
+                Mover ms = new Mover(63*scale);
 
 //                if (r.enzyme != null) {
 //                    if (usedParts.contains(r.enzyme.id)) {
@@ -155,7 +156,13 @@ public class GraphManager {
                         cc++;
                         ms.move();
                         String im = Paths.get(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png").toUri().toURL().toString();
-                        Object v2 = graph.insertVertex(parent, null, "", rx + ms.x(), ry + ms.y(), 200, 100,  "shape=image;image="+im);
+                        File f = new File(im);
+                        Object v2;
+                        if(f.exists()) {
+                            v2 = graph.insertVertex(parent, null, "", rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "shape=image;image="+im);
+                        }else{
+                            v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12), rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  compoundStyle);
+                        }
                         s.graphNodes.put(v2, c);
                         if (product) {
                             graph.insertEdge(parent, null, stoichiometry, v1, v2, "EDGE");
@@ -170,7 +177,7 @@ public class GraphManager {
                 m.move();
             }
             if (off == 0) {
-                off = 170;
+                off = 43*scale;
             }
             for (int i = 0; i < s.compounds.size(); i++) {
                 int rx = m.x() + off;
@@ -184,7 +191,7 @@ public class GraphManager {
                 if (!usedParts.contains(c.id)) {
                     m.move();
                     String im = Paths.get(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png").toUri().toURL().toString();
-                    Object v2 = graph.insertVertex(parent, null, "", rx, ry, 200, 100, "shape=image;image="+im);
+                    Object v2 = graph.insertVertex(parent, null, "", rx, ry, 50*scale, 25*scale, "shape=image;image="+im);
                     s.graphNodes.put(v2, c);
                     usedParts.add(c.id);
                     objects.add(v2);
@@ -207,4 +214,12 @@ public class GraphManager {
     }
 
 
+    public void zoom(boolean b) {
+        if(b && scale<4){
+            scale++;
+        }else if(!b && scale>1){
+            scale--;
+        }
+        updateGraph();
+    }
 }

@@ -265,4 +265,32 @@ public class Utils {
     public static final String[] GET_TABLES_VIEW = new String[]{"VIEW"};
     public static final String[] GET_TABLES_SYNONYM =
             new String[]{"SYNONYM"};
+
+    public static void close(ResultSet rs, ArrayList<Statement> statements, Connection conn) {
+        try {
+            if (rs != null) {
+                rs.close();
+                rs = null;
+            }
+        } catch (SQLException sqle) {
+        }
+        int i = 0;
+        while (!statements.isEmpty()) {
+            Statement st = (Statement) statements.remove(i);
+            try {
+                if (st != null) {
+                    st.close();
+                    st = null;
+                }
+            } catch (SQLException sqle) {
+            }
+        }
+        try {
+            if (conn != null) {
+                conn.close();
+                conn = null;
+            }
+        } catch (SQLException sqle) {
+        }
+    }
 }

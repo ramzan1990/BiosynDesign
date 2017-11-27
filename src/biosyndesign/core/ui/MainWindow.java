@@ -30,7 +30,7 @@ public class MainWindow extends BDFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity, zoomIn, zoomOut;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
     Part[] parts;
@@ -410,6 +410,53 @@ public class MainWindow extends BDFrame {
             }
         });
 
+        zoomIn = new JLabel();
+        zoomIn.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomin.png")));
+        zoomIn.setToolTipText("Zoom In");
+        zoomIn.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.gm.zoom(true);
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                zoomIn.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomin0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                zoomIn.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomin.png")));
+            }
+        });
+
+        zoomOut = new JLabel();
+        zoomOut.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomout.png")));
+        zoomOut.setToolTipText("Zoom Out");
+        zoomOut.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.gm.zoom(false);
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                zoomOut.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomout0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                zoomOut.setIcon(new ImageIcon(Main.class.getResource("ui/images/zoomout.png")));
+            }
+        });
+
+
         update = new JLabel();
         update.setIcon(new ImageIcon(Main.class.getResource("ui/images/update.png")));
         update.setToolTipText("Refresh");
@@ -540,6 +587,10 @@ public class MainWindow extends BDFrame {
         toolsPanel.addSeparator();
         //toolsPanel.add(Box.createRigidArea(new Dimension(2, 0)));
         toolsPanel.add(snapShotLabel);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(zoomIn);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(zoomOut);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(view);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));

@@ -165,11 +165,17 @@ public class PartsManagerFrame extends BDFrame {
 
             }
         });
-        JButton b5 = new JButton("Reset DB");
+        JButton b5 = new JButton("Reset");
         b5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lr.resetDB();
+                int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to reset your collection? All data will be lost.","Warning", JOptionPane.YES_NO_OPTION);
+                if(dialogResult == JOptionPane.YES_OPTION){
+                    //lr.resetDB(); ??
+                    cmb0.removeAllItems();
+                    DefaultTableModel dtm = (DefaultTableModel) table.getModel();
+                    dtm.setRowCount(0);
+                }
             }
         });
         jp2.add(b4);

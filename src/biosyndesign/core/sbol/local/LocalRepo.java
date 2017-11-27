@@ -55,51 +55,43 @@ public class LocalRepo implements SBOLInterface {
             }
             dbNames = new ArrayList<>();
             if (first) {
-                s = conn.createStatement();
-                statements.add(s);
+                try {
+                    s.execute("drop table dblist");
+                } catch (Exception e) {
+                    System.out.println("no dblist");
+                }
+                try {
+                    s.execute("drop table cdb");
+                } catch (Exception e) {
+                    System.out.println("no cdb");
+                }
                 s.addBatch("CREATE TABLE dblist (\n" +
+                        "  name varchar(300)\n" +
+                        ")");
+                s.addBatch("CREATE TABLE cdb (\n" +
                         "  name varchar(300)\n" +
                         ")");
                 s.executeBatch();
                 conn.commit();
-            }else{
-                while(rs.next()){
+            } else {
+                while (rs.next()) {
                     dbNames.add(rs.getString("name"));
                 }
-                if(dbNames.size()>0){
-                    dbName = dbNames.get(0);
-                } else{
-                    dbName = null;
+                rs = s.executeQuery("select * from cdb");
+                if (rs.next()) {
+                    dbName = rs.getString("name");
+                } else {
+                    if (dbNames.size() > 0) {
+                        dbName = dbNames.get(0);
+                    } else {
+                        dbName = null;
+                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                    rs = null;
-                }
-            } catch (SQLException sqle) {
-            }
-            int i = 0;
-            while (!statements.isEmpty()) {
-                Statement st = (Statement) statements.remove(i);
-                try {
-                    if (st != null) {
-                        st.close();
-                        st = null;
-                    }
-                } catch (SQLException sqle) {
-                }
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                    conn = null;
-                }
-            } catch (SQLException sqle) {
-            }
+            Utils.close(rs, statements, conn);
         }
         File p = new File(lp);
         if (!p.exists()) {
@@ -133,31 +125,7 @@ public class LocalRepo implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                    rs = null;
-                }
-            } catch (SQLException sqle) {
-            }
-            int i = 0;
-            while (!statements.isEmpty()) {
-                Statement st = (Statement) statements.remove(i);
-                try {
-                    if (st != null) {
-                        st.close();
-                        st = null;
-                    }
-                } catch (SQLException sqle) {
-                }
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                    conn = null;
-                }
-            } catch (SQLException sqle) {
-            }
+            Utils.close(rs, statements, conn);
         }
         File p = new File(lp);
         if (!p.exists()) {
@@ -183,31 +151,7 @@ public class LocalRepo implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                    rs = null;
-                }
-            } catch (SQLException sqle) {
-            }
-            int i = 0;
-            while (!statements.isEmpty()) {
-                Statement st = (Statement) statements.remove(i);
-                try {
-                    if (st != null) {
-                        st.close();
-                        st = null;
-                    }
-                } catch (SQLException sqle) {
-                }
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                    conn = null;
-                }
-            } catch (SQLException sqle) {
-            }
+            Utils.close(rs, statements, conn);
         }
         return result;
     }
@@ -230,31 +174,7 @@ public class LocalRepo implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                    rs = null;
-                }
-            } catch (SQLException sqle) {
-            }
-            int i = 0;
-            while (!statements.isEmpty()) {
-                Statement st = (Statement) statements.remove(i);
-                try {
-                    if (st != null) {
-                        st.close();
-                        st = null;
-                    }
-                } catch (SQLException sqle) {
-                }
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                    conn = null;
-                }
-            } catch (SQLException sqle) {
-            }
+            Utils.close(rs, statements, conn);
         }
         return result;
     }
@@ -397,9 +317,9 @@ public class LocalRepo implements SBOLInterface {
 
 
     public void importParts(String name) {
-        if(name.length() == 0){
+        if (name.length() == 0) {
             name = dbName;
-        }else{
+        } else {
             dbNames.add(name);
             dbName = name;
             changeDBList(name, true);
@@ -430,22 +350,22 @@ public class LocalRepo implements SBOLInterface {
             File np = new File(lp + File.separator + "custom" + File.separator + f.getName());
             Files.copy(f.toPath(), np.toPath());
             addPart(np);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteDataset(String name){
+    public void deleteDataset(String name) {
         try {
             FileUtils.deleteDirectory(new File(lp + File.separator + name));
             changeDBList(name, false);
             dbNames.remove(name);
             try {
-            DriverManager.getConnection("jdbc:derby:"+name+";shutdown=true");
-            }catch(Exception e){
+                DriverManager.getConnection("jdbc:derby:" + name + ";shutdown=true");
+            } catch (Exception e) {
             }
             FileUtils.deleteDirectory(new File(name));
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -464,10 +384,10 @@ public class LocalRepo implements SBOLInterface {
             s = conn.createStatement();
             statements.add(s);
             try {
-                if(b){
+                if (b) {
                     s.execute("insert into dblist values ('" + name + "') ");
-                }else {
-                    s.execute("delete from dblist where name = '" + name+"'");
+                } else {
+                    s.execute("delete from dblist where name = '" + name + "'");
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -476,31 +396,7 @@ public class LocalRepo implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                    rs = null;
-                }
-            } catch (SQLException sqle) {
-            }
-            int i = 0;
-            while (!statements.isEmpty()) {
-                Statement st = (Statement) statements.remove(i);
-                try {
-                    if (st != null) {
-                        st.close();
-                        st = null;
-                    }
-                } catch (SQLException sqle) {
-                }
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                    conn = null;
-                }
-            } catch (SQLException sqle) {
-            }
+            Utils.close(rs, statements, conn);
         }
     }
 
@@ -523,7 +419,7 @@ public class LocalRepo implements SBOLInterface {
                 try {
                     drugID = definition.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
                     drugID = drugID.substring(drugID.length() - 7, drugID.length());
-                }catch (Exception e){
+                } catch (Exception e) {
                 }
                 String SMILES = "NULL";
                 if (root.getChild("sbolSequence") != null) {
@@ -546,7 +442,7 @@ public class LocalRepo implements SBOLInterface {
             } else {
                 //EC Number
                 String ECNumber = definition.getChildText("ecnumid");
-                execute("INSERT INTO ecnum(ID, ECNumber, Title, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
+                execute("INSERT INTO ecnum(ID, ECNumber, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
             //Reaction
@@ -639,10 +535,10 @@ public class LocalRepo implements SBOLInterface {
     }
 
     public Part[] catalog(String table) {
-        if(dbName==null){
+        if (dbName == null) {
             return new Part[]{};
         }
-        JsonArray a = executeJSON("SELECT ID, Name, URL FROM "+table);
+        JsonArray a = executeJSON("SELECT ID, Name, URL FROM " + table);
         Part[] p = new Part[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
@@ -651,7 +547,33 @@ public class LocalRepo implements SBOLInterface {
         return p;
     }
 
-    public void setCurrentDataset(String value){
+    public void setCurrentDataset(String value) {
         dbName = value;
+        Connection conn = null;
+        ArrayList<Statement> statements = new ArrayList<Statement>();
+        Statement s;
+        ResultSet rs = null;
+        try {
+            Properties props = new Properties();
+            conn = DriverManager.getConnection(protocol + "default"
+                    + ";create=true", props);
+
+            conn.setAutoCommit(false);
+            s = conn.createStatement();
+            statements.add(s);
+            try {
+                s.execute("TRUNCATE TABLE cdb ");
+                s = conn.createStatement();
+                statements.add(s);
+                s.execute("insert into cdb values ('" + value + "') ");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            conn.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Utils.close(rs, statements, conn);
+        }
     }
 }

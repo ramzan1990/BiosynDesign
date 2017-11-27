@@ -67,8 +67,10 @@ public class FirstFrame extends BDFrame {
                         io.openRecentSelected(selectedItem.trim(), projectsList.getSelectedIndex());
                     }
                 }else if(e.getButton() == 3){
-                    RecentProjectPopUp p= new RecentProjectPopUp(projectsList, projectsList.getSelectedIndex(), io);
-                    p.show(ff, e.getX(), e.getY());
+                    if(projectsList.getSelectedIndex()>-1) {
+                        RecentProjectPopUp p = new RecentProjectPopUp(projectsList, projectsList.getSelectedIndex(), io);
+                        p.show(ff, e.getX(), e.getY());
+                    }
                 }
             }
         };
