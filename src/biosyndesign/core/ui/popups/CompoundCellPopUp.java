@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class CompoundCellPopUp extends JPopupMenu {
-    JMenuItem item0, item1, item2, item3;
+    JMenuItem item0, item1, item2, item3, item4;
 
     public CompoundCellPopUp(Compound cell){
         item0 = new JMenuItem("Show info");
@@ -17,8 +17,14 @@ public class CompoundCellPopUp extends JPopupMenu {
                 Main.pm.showInfo(cell);
             }
         });
-        item1 = new JMenuItem("Set as Target");
+        item1 = new JMenuItem("Set as Source");
         item1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                Main.pm.setSource(cell);
+            }
+        });
+        item4 = new JMenuItem("Set as Target");
+        item4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 Main.pm.setTarget(cell);
             }
@@ -37,6 +43,7 @@ public class CompoundCellPopUp extends JPopupMenu {
         });
         add(item0);
         add(item1);
+        add(item4);
         add(item3);
         //add(item2);
     }

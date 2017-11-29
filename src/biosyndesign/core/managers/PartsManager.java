@@ -139,10 +139,11 @@ public class PartsManager {
                         r.compounds.add(op);
                         int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
                         if (prod) {
-                            r.products.add(new CompoundStoichiometry(op, s));
+                            r.products.add(op);
                         } else {
-                            r.reactants.add(new CompoundStoichiometry(op, s));
+                            r.reactants.add(op);
                         }
+                        r.stoichiometry.put(op, s);
                     }
                     //adding reactions ec numbers
                     expr = xFactory.compile("//ecnumid", Filters.element());
@@ -531,7 +532,7 @@ public class PartsManager {
             Reaction[] r = cInt.findCompetingReactions(s.organism, c.id, s.maxCompeting);
             reactions.addAll(Arrays.asList(r));
         }
-        final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        final JDialog frame = new JDialog(mainWindow, "Competing Reactions", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         JLabel l1 = new JLabel("Choose reactions to add:");
@@ -579,6 +580,11 @@ public class PartsManager {
         gm.updateGraph();
     }
 
+    public void setSource(Compound cell) {
+        s.source = cell;
+        gm.updateGraph();
+    }
+
     public void edgeAdded(mxCell edge, mxCell source, mxCell target) {
         Reaction r = null;
         Compound c = null;
@@ -600,10 +606,11 @@ public class PartsManager {
             r.compounds.add(c);
             int s = Integer.parseInt(JOptionPane.showInputDialog("Stoichiometry:"));
             if (product) {
-                r.products.add(new CompoundStoichiometry(c, s));
+                r.products.add(c);
             } else {
-                r.reactants.add(new CompoundStoichiometry(c, s));
+                r.reactants.add(c);
             }
+            r.stoichiometry.put(c, s);
         } else {
             mxGraph graph = mainWindow.workSpacePanel.graph;
             graph.getModel().beginUpdate();
@@ -665,14 +672,14 @@ public class PartsManager {
             ArrayList<String[]> rows = new ArrayList<>();
             ArrayList<String> vals = getSim(r, 0);
             int cc = 0;
-            for (CompoundStoichiometry reactant : r.reactants) {
-                for (CompoundStoichiometry product : r.products) {
-                    if (reactant.c.smiles == null || product.c.smiles == null) {
+            for (Compound reactant : r.reactants) {
+                for (Compound product : r.products) {
+                    if (reactant.smiles == null || product.smiles == null) {
                         continue;
                     }
                     String[] row = new String[3];
-                    row[0] = reactant.c.name;
-                    row[1] = product.c.name;
+                    row[0] = reactant.name;
+                    row[1] = product.name;
                     row[2] = vals.get(cc++);
                     rows.add(row);
                 }
@@ -714,20 +721,20 @@ public class PartsManager {
 
     private ArrayList<String> getSim(Reaction r, int f) throws CDKException {
         ArrayList<String> list = new ArrayList<>();
-        for (CompoundStoichiometry reactant : r.reactants) {
-            for (CompoundStoichiometry product : r.products) {
-                if (reactant.c.smiles == null || product.c.smiles == null) {
+        for (Compound reactant : r.reactants) {
+            for (Compound product : r.products) {
+                if (reactant.smiles == null || product.smiles == null) {
                     continue;
                 }
                 IChemObjectBuilder bldr
                         = SilentChemObjectBuilder.getInstance();
                 SmilesParser smilesParser = new SmilesParser(bldr);
-                IAtomContainer mol1 = smilesParser.parseSmiles(reactant.c.smiles);
-                for (int i = 0; i < reactant.s - 1; i++) {
+                IAtomContainer mol1 = smilesParser.parseSmiles(reactant.smiles);
+                for (int i = 0; i < r.stoichiometry.get(reactant) - 1; i++) {
                     mol1.addAtom(mol1.getAtom(0));
                 }
-                IAtomContainer mol2 = smilesParser.parseSmiles(product.c.smiles);
-                for (int i = 0; i < product.s - 1; i++) {
+                IAtomContainer mol2 = smilesParser.parseSmiles(product.smiles);
+                for (int i = 0; i <r.stoichiometry.get(product) - 1; i++) {
                     mol2.addAtom(mol2.getAtom(0));
                 }
                 IBitFingerprint bitset1 = null, bitset2 = null;
@@ -934,8 +941,10 @@ public class PartsManager {
                 Compound c1 = (Compound) s.graphNodes.get(gm.getSelected()[0]);
                 Compound c2 = (Compound) s.graphNodes.get(gm.getSelected()[1]);
                 Reaction r = new Reaction("", "", "", 0);
-                r.products.add(new CompoundStoichiometry(c1, 1));
-                r.reactants.add(new CompoundStoichiometry(c2, 1));
+                r.products.add(c1);
+                r.reactants.add(c2);
+                r.stoichiometry.put(c1, 1);
+                r.stoichiometry.put(c2, 1);
                 structSimilarity(r);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Select two compounds!");
@@ -958,5 +967,46 @@ public class PartsManager {
     public void reverse(Reaction r) {
         r.reverse = !r.reverse;
         gm.updateGraph();
+    }
+
+    public void align(){
+        if(s.source != null) {
+            align(s.source, new ArrayList<Reaction>(), s.reactions.size(), false);
+        }
+        if(s.target != null) {
+            align(s.target, new ArrayList<Reaction>(), s.reactions.size(), true);
+        }
+        gm.updateGraph();
+    }
+    private void align(Compound start, ArrayList<Reaction> exclude, int n, boolean isTarget) {
+        if(n<=0){
+            return;
+        }
+        n--;
+        ArrayList<Compound> needAlign = new ArrayList<>();
+        for(Reaction r:s.reactions){
+            if(exclude.contains(r)){
+                continue;
+            }
+            boolean c = true;
+            if(r.reactants.contains(start)){
+                r.reverse = isTarget;
+            }else if(r.products.contains(start)){
+                r.reverse = !isTarget;
+            }else{
+                c = false;
+            }
+            if(c){
+                if(isTarget) {
+                    needAlign.addAll(r.getReactants());
+                }else{
+                    needAlign.addAll(r.getProducts());
+                }
+                exclude.add(r);
+            }
+        }
+        for(Compound c:needAlign){
+            align(c, exclude, n, isTarget);
+        }
     }
 }

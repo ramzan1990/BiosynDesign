@@ -1,6 +1,7 @@
 package biosyndesign.core.sbol.parts;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Umarov on 1/26/2017.
@@ -8,9 +9,10 @@ import java.util.ArrayList;
 public class Reaction extends Part{
 
     public ArrayList<Compound> compounds;
-    public ArrayList<CompoundStoichiometry> reactants;
-    public ArrayList<CompoundStoichiometry> products;
+    public ArrayList<Compound> reactants;
+    public ArrayList<Compound> products;
     public ArrayList<ECNumber> ec;
+    public HashMap<Compound, Integer> stoichiometry = new HashMap<Compound, Integer>();
     public int pickedEC;
     public Protein enzyme;
     public String partialEC;
@@ -34,5 +36,21 @@ public class Reaction extends Part{
             return "EC:"+ec.get(pickedEC).ecNumber;
         }
         return "EC:Partial";
+    }
+
+    public ArrayList<Compound> getReactants() {
+        if(reverse){
+            return products;
+        }else{
+            return reactants;
+        }
+    }
+
+    public ArrayList<Compound> getProducts() {
+        if(reverse){
+            return reactants;
+        }else{
+            return products;
+        }
     }
 }

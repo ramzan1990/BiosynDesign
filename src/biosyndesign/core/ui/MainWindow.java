@@ -30,7 +30,7 @@ public class MainWindow extends BDFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity, zoomIn, zoomOut;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity, zoomIn, zoomOut, alignArrows;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
     Part[] parts;
@@ -480,6 +480,29 @@ public class MainWindow extends BDFrame {
             }
         });
 
+        alignArrows = new JLabel();
+        alignArrows.setIcon(new ImageIcon(Main.class.getResource("ui/images/align.png")));
+        alignArrows.setToolTipText("Align Arrows");
+        alignArrows.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.align();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                alignArrows.setIcon(new ImageIcon(Main.class.getResource("ui/images/align0.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                alignArrows.setIcon(new ImageIcon(Main.class.getResource("ui/images/align.png")));
+            }
+        });
+
         similarity = new JLabel();
         similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/similar-1.png")));
         similarity.setToolTipText("Similarity");
@@ -599,6 +622,8 @@ public class MainWindow extends BDFrame {
         toolsPanel.add(delete);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(update);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(alignArrows);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(similarity);
         toolsPanel.add(Box.createHorizontalGlue());

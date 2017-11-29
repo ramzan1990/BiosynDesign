@@ -20,6 +20,7 @@ public class ProjectState implements Serializable {
     public String organism;
     public String prefix;
     public Compound target;
+    public Compound source;
     public int maxCompeting = 5;
 
     public ProjectState(){
