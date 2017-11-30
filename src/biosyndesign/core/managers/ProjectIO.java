@@ -2,6 +2,7 @@ package biosyndesign.core.managers;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.graphics.FileUtils;
+import biosyndesign.core.graphics.ImageComponent;
 import biosyndesign.core.ui.*;
 import biosyndesign.core.utils.Common;
 import com.mxgraph.util.mxCellRenderer;
@@ -12,10 +13,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;

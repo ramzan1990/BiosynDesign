@@ -131,9 +131,9 @@ public class GraphManager {
                     String stoichiometry = "";
                     compoundStyle ="";
                     if (c == s.target) {
-                        compoundStyle = "\nTARGET";
+                        compoundStyle = "TARGET";
                     } else if (c == s.source){
-                        compoundStyle = "\nSOURCE";
+                        compoundStyle = "SOURCE";
                     }
                     boolean product = r.reverse;
                     for(Compound cs : r.products){
@@ -162,7 +162,7 @@ public class GraphManager {
                         if(f.exists()) {
                             v2 = graph.insertVertex(parent, null, compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "shape=image;image="+im);
                         }else{
-                            v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12)+compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "COMPOUND");
+                            v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12)+"\n" +compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "COMPOUND");
                         }
                         s.graphNodes.put(v2, c);
                         if (product) {
@@ -186,9 +186,9 @@ public class GraphManager {
                 Compound c = s.compounds.get(i);
                 compoundStyle ="";
                 if (c == s.target) {
-                    compoundStyle = "\nTARGET";
+                    compoundStyle = "TARGET";
                 } else if (c == s.source){
-                    compoundStyle = "\nSOURCE";
+                    compoundStyle = "SOURCE";
                 }
                 if (!usedParts.contains(c.id)) {
                     m.move();
@@ -196,9 +196,9 @@ public class GraphManager {
                     File f = new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png");
                     Object v2;
                     if(f.exists()) {
-                        v2 = graph.insertVertex(parent, null, "compoundStyle", rx, ry, 50 * scale, 25 * scale, "shape=image;image=" + im);
+                        v2 = graph.insertVertex(parent, null, compoundStyle, rx, ry, 50 * scale, 25 * scale, "shape=image;image=" + im);
                     }else{
-                        v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12) + compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND");
+                        v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12) +"\n" +compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND");
                     }
                     s.graphNodes.put(v2, c);
                     usedParts.add(c.id);

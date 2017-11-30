@@ -5,7 +5,7 @@ import biosyndesign.core.sbol.*;
 import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
-import biosyndesign.core.ui.ImageComponent;
+import biosyndesign.core.graphics.ImageComponent;
 import biosyndesign.core.ui.popups.CompoundCellPopUp;
 import biosyndesign.core.ui.popups.EnzymeCellPopUp;
 import biosyndesign.core.ui.popups.ReactionCellPopUp;
@@ -93,7 +93,7 @@ public class PartsManager {
         }.start();
     }
 
-    private void addPartsS(Part[] p, boolean update){
+    private void addPartsS(Part[] p, boolean update) {
         for (int i = 0; i < p.length; i++) {
             try {
                 if (!p[i].local) {
@@ -159,8 +159,8 @@ public class PartsManager {
                         }
                         if (op == null) {
                             Part[] temp = cInt.findParts(2, 0, id);
-                            if(temp.length==0){
-                            }else {
+                            if (temp.length == 0) {
+                            } else {
                                 op = (ECNumber) temp[0];
                                 if (op != null) {
                                     s.ecNumbers.add(op);
@@ -175,7 +175,7 @@ public class PartsManager {
                         }
                     }
                     r.nat = cInt.isNative(r.id, s.organism);
-                    if(r.ec.size()>0) {
+                    if (r.ec.size() > 0) {
                         Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
                         if (prots.length > 0) {
                             r.enzyme = prots[0];
@@ -429,7 +429,7 @@ public class PartsManager {
                 frame.dispose();
             }
         });
-        if(r.enzyme!=null){
+        if (r.enzyme != null) {
             cmb2.setSelectedItem(r.enzyme.organism);
         }
         frame.getContentPane().add(jp);
@@ -441,25 +441,25 @@ public class PartsManager {
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb1, JComboBox cmb2, JList partsList) {
         ArrayList<String> names = new ArrayList<>();
         if (r.enzymeType.equals("Native")) {
-            if(cmb1!=null){
+            if (cmb1 != null) {
                 cmb1.setSelectedIndex(0);
             }
             prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
             int pick = -1;
-            for(int i =0; i< prots.length;i++){
+            for (int i = 0; i < prots.length; i++) {
                 names.add(prots[i].id);
-                if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                if (r.enzyme != null && prots[i].id.equals(r.enzyme.id)) {
                     pick = i;
                 }
             }
             partsList.setModel(new DefaultComboBoxModel(names.toArray()));
-            if(pick!=-1){
+            if (pick != -1) {
                 partsList.setSelectedIndex(pick);
             }
             cmb2.setEnabled(false);
             cmb2.setSelectedItem(s.organism);
         } else if (r.enzymeType.equals("Foreign")) {
-            if(cmb1!=null){
+            if (cmb1 != null) {
                 cmb1.setSelectedIndex(1);
             }
             cmb2.setSelectedIndex(-1);
@@ -468,24 +468,24 @@ public class PartsManager {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     names.clear();
-                    if(cmb2.getSelectedItem()!=null && Common.isOrganism(cmb2.getSelectedItem().toString())){
+                    if (cmb2.getSelectedItem() != null && Common.isOrganism(cmb2.getSelectedItem().toString())) {
                         prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, cmb2.getSelectedItem().toString());
                         int pick = -1;
-                        for(int i =0; i< prots.length;i++){
+                        for (int i = 0; i < prots.length; i++) {
                             names.add(prots[i].id);
-                            if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                            if (r.enzyme != null && prots[i].id.equals(r.enzyme.id)) {
                                 pick = i;
                             }
                         }
                         partsList.setModel(new DefaultComboBoxModel(names.toArray()));
-                        if(pick!=-1){
+                        if (pick != -1) {
                             partsList.setSelectedIndex(pick);
                         }
                     }
                 }
             });
         } else {
-            if(cmb1!=null){
+            if (cmb1 != null) {
                 cmb1.setSelectedIndex(2);
             }
             cmb2.setEnabled(false);
@@ -493,15 +493,15 @@ public class PartsManager {
             prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber, "");
 
             int pick = -1;
-            for(int i =0; i< prots.length;i++){
+            for (int i = 0; i < prots.length; i++) {
                 names.add(prots[i].id);
-                if(r.enzyme!=null && prots[i].id.equals(r.enzyme.id)){
+                if (r.enzyme != null && prots[i].id.equals(r.enzyme.id)) {
                     pick = i;
                 }
             }
 
             partsList.setModel(new DefaultComboBoxModel(names.toArray()));
-            if(pick!=-1){
+            if (pick != -1) {
                 partsList.setSelectedIndex(pick);
             }
         }
@@ -523,7 +523,7 @@ public class PartsManager {
 
     public void rowClicked(int row, int x, int y) {
         TablePopUp pop = new TablePopUp(Main.pm, s.reactions.get(row));
-        pop.show(mainWindow, x, y+50);
+        pop.show(mainWindow, x, y + 50);
     }
 
     public void competingReactions() {
@@ -576,13 +576,21 @@ public class PartsManager {
     }
 
     public void setTarget(Compound cell) {
-        s.target = cell;
-        gm.updateGraph();
+        if (s.source != cell) {
+            s.target = cell;
+            gm.updateGraph();
+        } else {
+            JOptionPane.showMessageDialog(null, "This compound is already marked as source!");
+        }
     }
 
     public void setSource(Compound cell) {
-        s.source = cell;
-        gm.updateGraph();
+        if (s.target != cell) {
+            s.source = cell;
+            gm.updateGraph();
+        } else {
+            JOptionPane.showMessageDialog(null, "This compound is already marked as target!");
+        }
     }
 
     public void edgeAdded(mxCell edge, mxCell source, mxCell target) {
@@ -734,7 +742,7 @@ public class PartsManager {
                     mol1.addAtom(mol1.getAtom(0));
                 }
                 IAtomContainer mol2 = smilesParser.parseSmiles(product.smiles);
-                for (int i = 0; i <r.stoichiometry.get(product) - 1; i++) {
+                for (int i = 0; i < r.stoichiometry.get(product) - 1; i++) {
                     mol2.addAtom(mol2.getAtom(0));
                 }
                 IBitFingerprint bitset1 = null, bitset2 = null;
@@ -911,7 +919,7 @@ public class PartsManager {
     }
 
     public void search(int c1, int c2, String value) {
-        if(value.length()==0){
+        if (value.length() == 0) {
             JOptionPane.showMessageDialog(null, "Value cannot be empty!");
             return;
         }
@@ -921,7 +929,7 @@ public class PartsManager {
                     searchParts = cInt.findParts(c1, c2, value);
                     String[] names = new String[searchParts.length];
                     for (int i = 0; i < names.length; i++) {
-                        names[i] = searchParts[i].name + " ["+searchParts[i].id+"]";
+                        names[i] = searchParts[i].name + " [" + searchParts[i].id + "]";
                     }
                     mainWindow.setResults(names);
                 } catch (Exception ex) {
@@ -973,43 +981,44 @@ public class PartsManager {
         gm.updateGraph();
     }
 
-    public void align(){
-        if(s.source != null) {
+    public void align() {
+        if (s.source != null) {
             align(s.source, new ArrayList<Reaction>(), s.reactions.size(), false);
         }
-        if(s.target != null) {
+        if (s.target != null) {
             align(s.target, new ArrayList<Reaction>(), s.reactions.size(), true);
         }
         gm.updateGraph();
     }
+
     private void align(Compound start, ArrayList<Reaction> exclude, int n, boolean isTarget) {
-        if(n<=0){
+        if (n <= 0) {
             return;
         }
         n--;
         ArrayList<Compound> needAlign = new ArrayList<>();
-        for(Reaction r:s.reactions){
-            if(exclude.contains(r)){
+        for (Reaction r : s.reactions) {
+            if (exclude.contains(r)) {
                 continue;
             }
             boolean c = true;
-            if(r.reactants.contains(start)){
+            if (r.reactants.contains(start)) {
                 r.reverse = isTarget;
-            }else if(r.products.contains(start)){
+            } else if (r.products.contains(start)) {
                 r.reverse = !isTarget;
-            }else{
+            } else {
                 c = false;
             }
-            if(c){
-                if(isTarget) {
+            if (c) {
+                if (isTarget) {
                     needAlign.addAll(r.getReactants());
-                }else{
+                } else {
                     needAlign.addAll(r.getProducts());
                 }
                 exclude.add(r);
             }
         }
-        for(Compound c:needAlign){
+        for (Compound c : needAlign) {
             align(c, exclude, n, isTarget);
         }
     }

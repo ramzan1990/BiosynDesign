@@ -1,9 +1,11 @@
-package biosyndesign.core.ui;
+package biosyndesign.core.graphics;
 
 import biosyndesign.core.utils.Common;
 import org.openscience.cdk.CDKConstants;
 import org.openscience.cdk.depict.DepictionGenerator;
+import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.renderer.color.IAtomColorer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +32,17 @@ public class ImageComponent extends JComponent {
         g.fillRect(0, 0, this.getWidth(),  this.getHeight());
         //mol.setProperty(CDKConstants.TITLE, text);.withMolTitle().withTitleColor(Color.BLACK)
         try {
-            im = new DepictionGenerator().withBackgroundColor(bg)
+            im = new DepictionGenerator().withBackgroundColor(bg).withAtomColors(new IAtomColorer() {
+                @Override
+                public Color getAtomColor(IAtom iAtom) {
+                    return Color.lightGray;
+                }
+
+                @Override
+                public Color getAtomColor(IAtom iAtom, Color color) {
+                    return Color.lightGray;
+                }
+            })
                     .withSize(w, h)
                     .depict(mol).toImg();
         }catch(Exception e){
