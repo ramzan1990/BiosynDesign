@@ -911,13 +911,17 @@ public class PartsManager {
     }
 
     public void search(int c1, int c2, String value) {
+        if(value.length()==0){
+            JOptionPane.showMessageDialog(null, "Value cannot be empty!");
+            return;
+        }
         new Thread() {
             public void run() {
                 try {
                     searchParts = cInt.findParts(c1, c2, value);
                     String[] names = new String[searchParts.length];
                     for (int i = 0; i < names.length; i++) {
-                        names[i] = searchParts[i].name;
+                        names[i] = searchParts[i].name + " ["+searchParts[i].id+"]";
                     }
                     mainWindow.setResults(names);
                 } catch (Exception ex) {

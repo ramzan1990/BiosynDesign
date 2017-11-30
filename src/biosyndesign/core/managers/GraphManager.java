@@ -80,7 +80,7 @@ public class GraphManager {
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
             Mover m = new Mover(175*scale);
-            int off = 80*scale + m.max(s.reactions.size()) * (42*scale);
+            int off = 80*scale + m.max(s.reactions.size()) * (80*scale);
             String compoundStyle;
             String reactionStyle;
             String enzymeStyle;
