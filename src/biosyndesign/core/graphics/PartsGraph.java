@@ -42,7 +42,7 @@ public class PartsGraph extends JPanel implements Serializable {
         Hashtable<String, Object> style = new Hashtable<String, Object>();
         style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
         //style.put(mxConstants.STYLE_OPACITY, 50);
-        style.put(mxConstants.STYLE_FONTCOLOR, "#774400");
+        style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_BOLD);
         style.put(mxConstants.STYLE_FILLCOLOR, "#addeed");
         style.put(mxConstants.STYLE_ROUNDED, "1");
         style.put(mxConstants.STYLE_EDITABLE, "0");

@@ -35,12 +35,12 @@ public class ImageComponent extends JComponent {
             im = new DepictionGenerator().withBackgroundColor(bg).withAtomColors(new IAtomColorer() {
                 @Override
                 public Color getAtomColor(IAtom iAtom) {
-                    return Color.lightGray;
+                    return Color.black;
                 }
 
                 @Override
                 public Color getAtomColor(IAtom iAtom, Color color) {
-                    return Color.lightGray;
+                    return Color.black;
                 }
             })
                     .withSize(w, h)

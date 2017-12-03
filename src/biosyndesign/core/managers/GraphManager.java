@@ -160,7 +160,7 @@ public class GraphManager {
                         File f = new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png");
                         Object v2;
                         if(f.exists()) {
-                            v2 = graph.insertVertex(parent, null, compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "shape=image;image="+im);
+                            v2 = graph.insertVertex(parent, null, compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "fontSize="+(11*scale)+";shape=image;image="+im);
                         }else{
                             v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12)+"\n" +compoundStyle, rx + ms.x(), ry + ms.y(), 50*scale, 25*scale,  "COMPOUND");
                         }
@@ -196,7 +196,7 @@ public class GraphManager {
                     File f = new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".png");
                     Object v2;
                     if(f.exists()) {
-                        v2 = graph.insertVertex(parent, null, compoundStyle, rx, ry, 50 * scale, 25 * scale, "shape=image;image=" + im);
+                        v2 = graph.insertVertex(parent, null, compoundStyle, rx, ry, 50 * scale, 25 * scale,  "fontSize="+(11*scale)+";shape=image;image="+im);
                     }else{
                         v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12) +"\n" +compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND");
                     }
