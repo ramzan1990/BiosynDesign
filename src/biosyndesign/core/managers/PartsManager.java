@@ -180,6 +180,7 @@ public class PartsManager {
                         if (prots.length > 0) {
                             r.enzyme = prots[0];
                             r.enzymeType = "Native";
+                            r.nativeEnzyme = true;
                             addPartsS(new Part[]{prots[0]}, false);
                         } else {
                             r.enzymeType = "Foreign";
@@ -413,8 +414,13 @@ public class PartsManager {
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                r.enzymeType = cmb1.getSelectedItem().toString();
-                prepareEnzymeDialog(r, null, cmb2, partsList);
+                if(!r.nativeEnzyme && cmb1.getSelectedIndex()==0){
+                    cmb1.setSelectedIndex(1);
+                    JOptionPane.showMessageDialog(null, "Native enzyme for this enzyme class doesn't exist!");
+                }else {
+                    r.enzymeType = cmb1.getSelectedItem().toString();
+                    prepareEnzymeDialog(r, null, cmb2, partsList);
+                }
             }
         });
         JButton b1 = new JButton("Done");
@@ -508,17 +514,22 @@ public class PartsManager {
     }
 
     public void updateTable() {
-        DefaultTableModel dtm = (DefaultTableModel) (mainWindow.enzymeTable.getModel());
-        dtm.setRowCount(0);
+        DefaultTableModel dtm1 = (DefaultTableModel) (mainWindow.enzymeTable.getModel());
+        DefaultTableModel dtm2 = (DefaultTableModel) (mainWindow.genesTable.getModel());
+        dtm1.setRowCount(0);
+        dtm2.setRowCount(0);
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
-                dtm.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
+                dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
+                dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.enzyme.cDNA});
             } else {
-                dtm.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
+                dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
             }
         }
-        dtm.fireTableDataChanged();
+        dtm1.fireTableDataChanged();
+        dtm2.fireTableDataChanged();
         mainWindow.enzymeTable.repaint();
+        mainWindow.genesTable.repaint();
     }
 
     public void rowClicked(int row, int x, int y) {
@@ -1020,6 +1031,19 @@ public class PartsManager {
         }
         for (Compound c : needAlign) {
             align(c, exclude, n, isTarget);
+        }
+    }
+
+    public void updateCDNA(int i, String cDNA) {
+        int ii = 0;
+        for (Reaction r : s.reactions) {
+            if (r.enzyme != null) {
+                if(ii == i){
+                    s.reactions.get(ii).enzyme.cDNA = cDNA;
+                    break;
+                }
+                ii++;
+            }
         }
     }
 }

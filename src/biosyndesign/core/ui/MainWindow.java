@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -37,7 +39,7 @@ public class MainWindow extends BDFrame {
     JList partsList;
     private JTabbedPane tbp;
     public PartsGraph workSpacePanel;
-    public JTable enzymeTable;
+    public JTable enzymeTable, genesTable;
     private JLabel statusLabel, infoLabel;
     private JButton b3;
     private JScrollPane partsPane;
@@ -286,22 +288,46 @@ public class MainWindow extends BDFrame {
 
         tbp = new JTabbedPane();
         workSpacePanel = new PartsGraph();
-        String[] columnNames = {"Reaction",
+        String[] columnNamesEnzyme = {"Reaction",
                 "Enzyme Origin", "Enzyme Name", "Primary Structure"};
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+        DefaultTableModel enzymeModel = new DefaultTableModel(columnNamesEnzyme, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        enzymeTable = new JTable(tableModel);
+        enzymeTable = new JTable(enzymeModel);
         enzymeTable.addMouseListener(new MouseAdapter(){
             public void mouseClicked(MouseEvent e) {
                 Main.pm.rowClicked(enzymeTable.getSelectedRow(), e.getX(), e.getY()+50);
             }
         });
+        String[] columnNamesGenes = { "Enzyme Name", "Primary Structure", "cDNA"};
+        DefaultTableModel genesModel = new DefaultTableModel(columnNamesGenes, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                if(column==2){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        };
+        genesTable = new JTable(genesModel);
+        genesModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                int row = genesTable.getSelectedRow();
+                int column = genesTable.getSelectedColumn();
+                if(column == 2){
+                    Main.pm.updateCDNA(row, genesTable.getValueAt(row, column).toString());
+                }
+            }
+        });
+
         tbp.addTab("Pathway", workSpacePanel);
         tbp.addTab("Enzyme", new JScrollPane(enzymeTable));
+        tbp.addTab("Genes", new JScrollPane(genesTable));
         dataSelectPanel = new JPanel();
         dataSelectPanel.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         GridLayout blayout = new GridLayout(3, 2);
