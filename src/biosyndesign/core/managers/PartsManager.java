@@ -521,7 +521,7 @@ public class PartsManager {
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
-                dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.enzyme.cDNA});
+                dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.cDNA});
             } else {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
             }
@@ -1039,7 +1039,7 @@ public class PartsManager {
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
                 if(ii == i){
-                    s.reactions.get(ii).enzyme.cDNA = cDNA;
+                    s.reactions.get(ii).cDNA = cDNA;
                     break;
                 }
                 ii++;
