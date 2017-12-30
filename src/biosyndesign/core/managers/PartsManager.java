@@ -433,6 +433,7 @@ public class PartsManager {
                 addParts(new Part[]{r.enzyme}, true);
                 frame.setVisible(false);
                 frame.dispose();
+                updateTable();
             }
         });
         if (r.enzyme != null) {
