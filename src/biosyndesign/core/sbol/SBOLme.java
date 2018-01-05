@@ -286,4 +286,40 @@ public class SBOLme implements SBOLInterface {
         }
         return options;
     }
+
+    @Override
+    public String getCDNA(String sequence, String organism) {
+        StringBuffer result = new StringBuffer();
+        try {
+            CloseableHttpClient httpclient = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_cdna.php");
+            RequestConfig.Builder requestConfig = RequestConfig.custom();
+            requestConfig.setConnectTimeout(20 * 1000);
+            requestConfig.setConnectionRequestTimeout(20 * 1000);
+            requestConfig.setSocketTimeout(20 * 1000);
+            httpPost.setConfig(requestConfig.build());
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("sequence", sequence));
+            nvps.add(new BasicNameValuePair("organism", organism));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            CloseableHttpResponse response = httpclient.execute(httpPost);
+            try {
+                HttpEntity entity = response.getEntity();
+                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+                for (int c; (c = in.read()) >= 0; )
+                    result.append((char) c);
+                EntityUtils.consume(entity);
+            } finally {
+                response.close();
+            }
+            httpclient.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
+        JsonArray a = jsonObject.getAsJsonArray("rows");
+        return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
+    }
 }

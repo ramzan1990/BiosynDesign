@@ -315,6 +315,11 @@ public class LocalRepo implements SBOLInterface {
         return new String[0];
     }
 
+    @Override
+    public String getCDNA(String sequence, String organism) {
+        return "";
+    }
+
 
     public void importParts(String name) {
         if (name.length() == 0) {

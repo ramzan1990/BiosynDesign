@@ -303,27 +303,14 @@ public class MainWindow extends BDFrame {
             }
         });
         String[] columnNamesGenes = { "Enzyme Name", "Primary Structure", "cDNA"};
-        DefaultTableModel genesModel = new DefaultTableModel(columnNamesGenes, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                if(column==2){
-                    return true;
-                }else{
-                    return false;
-                }
-            }
-        };
+        DefaultTableModel genesModel = new DefaultTableModel(columnNamesGenes, 0);
         genesTable = new JTable(genesModel);
-        genesModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                int row = genesTable.getSelectedRow();
-                int column = genesTable.getSelectedColumn();
-                if(column == 2){
-                    Main.pm.updateCDNA(row, genesTable.getValueAt(row, column).toString());
-                }
+        genesTable.addMouseListener(new MouseAdapter(){
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.rowClickedCDNA(genesTable.getSelectedRow(), e.getX(), e.getY()+50);
             }
         });
+
 
         tbp.addTab("Pathway", workSpacePanel);
         tbp.addTab("Enzyme", new JScrollPane(enzymeTable));

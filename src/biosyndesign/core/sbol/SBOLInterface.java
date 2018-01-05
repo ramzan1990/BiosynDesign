@@ -19,4 +19,6 @@ public interface SBOLInterface {
     public boolean isNative(String reaction, String organism);
 
     String[] getOrganisms(String ecNumber);
+
+    String getCDNA(String sequence, String organism);
 }

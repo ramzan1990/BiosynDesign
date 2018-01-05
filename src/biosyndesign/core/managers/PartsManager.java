@@ -6,14 +6,12 @@ import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.graphics.ImageComponent;
-import biosyndesign.core.ui.popups.CompoundCellPopUp;
-import biosyndesign.core.ui.popups.EnzymeCellPopUp;
-import biosyndesign.core.ui.popups.ReactionCellPopUp;
-import biosyndesign.core.ui.popups.TablePopUp;
+import biosyndesign.core.ui.popups.*;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import org.jdesktop.swingx.JXTextArea;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
@@ -93,7 +91,7 @@ public class PartsManager {
         }.start();
     }
 
-    private void addPartsS(Part[] p, boolean update) {
+    public void addPartsS(Part[] p, boolean update) {
         for (int i = 0; i < p.length; i++) {
             try {
                 if (!p[i].local) {
@@ -182,6 +180,7 @@ public class PartsManager {
                             r.enzymeType = "Native";
                             r.nativeEnzyme = true;
                             addPartsS(new Part[]{prots[0]}, false);
+                            r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
                         } else {
                             r.enzymeType = "Foreign";
                         }
@@ -430,7 +429,8 @@ public class PartsManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 r.enzyme = prots[partsList.getSelectedIndex()];
-                addParts(new Part[]{r.enzyme}, true);
+                addPartsS(new Part[]{r.enzyme}, true);
+                r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
                 frame.setVisible(false);
                 frame.dispose();
                 updateTable();
@@ -535,6 +535,11 @@ public class PartsManager {
 
     public void rowClicked(int row, int x, int y) {
         TablePopUp pop = new TablePopUp(Main.pm, s.reactions.get(row));
+        pop.show(mainWindow, x, y + 50);
+    }
+
+    public void rowClickedCDNA(int row, int x, int y) {
+        cDNAPopUp pop = new cDNAPopUp(Main.pm, s.reactions.get(row));
         pop.show(mainWindow, x, y + 50);
     }
 
@@ -1046,5 +1051,38 @@ public class PartsManager {
                 ii++;
             }
         }
+    }
+
+    public void editCDNA(Reaction r) {
+        final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        JPanel jp = new JPanel();
+        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        UI.addTo(jp, new JLabel("Sequence "));
+        JTextArea seqTA  = new JTextArea();
+        seqTA.setText(r.enzyme.sequence);
+        seqTA.setLineWrap(true);
+        JScrollPane sc = new JScrollPane(seqTA);
+        sc.setPreferredSize(new Dimension(590, 120));
+        UI.addTo(jp, sc);
+        UI.addTo(jp, new JLabel("cDNA "));
+        JTextArea cDNATA  = new JTextArea();
+        cDNATA.setText(r.cDNA);
+        cDNATA.setLineWrap(true);
+        sc = new JScrollPane(cDNATA);
+        sc.setPreferredSize(new Dimension(590, 120));
+        UI.addTo(jp, sc);
+        UI.addTo(jp, new JLabel("Comment "));
+        JTextArea comTA  = new JTextArea();
+        comTA.setText("");
+        comTA.setLineWrap(true);
+        sc = new JScrollPane(comTA);
+        sc.setPreferredSize(new Dimension(590, 120));
+        UI.addTo(jp, sc);
+
+        frame.setMinimumSize(new Dimension(600, 600));
+        frame.getContentPane().add(jp);
+        frame.pack();
+        frame.setLocationRelativeTo(mainWindow);
+        frame.setVisible(true);
     }
 }
