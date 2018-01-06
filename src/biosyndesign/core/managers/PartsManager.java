@@ -11,6 +11,7 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import javafx.scene.control.ColorPicker;
 import org.jdesktop.swingx.JXTextArea;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdom2.filter.Filters;
@@ -27,7 +28,10 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.DefaultHighlighter;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -413,10 +417,10 @@ public class PartsManager {
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!r.nativeEnzyme && cmb1.getSelectedIndex()==0){
+                if (!r.nativeEnzyme && cmb1.getSelectedIndex() == 0) {
                     cmb1.setSelectedIndex(1);
                     JOptionPane.showMessageDialog(null, "Native enzyme for this enzyme class doesn't exist!");
-                }else {
+                } else {
                     r.enzymeType = cmb1.getSelectedItem().toString();
                     prepareEnzymeDialog(r, null, cmb2, partsList);
                 }
@@ -1044,7 +1048,7 @@ public class PartsManager {
         int ii = 0;
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
-                if(ii == i){
+                if (ii == i) {
                     s.reactions.get(ii).cDNA = cDNA;
                     break;
                 }
@@ -1058,21 +1062,53 @@ public class PartsManager {
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         UI.addTo(jp, new JLabel("Sequence "));
-        JTextArea seqTA  = new JTextArea();
+        JTextArea seqTA = new JTextArea();
         seqTA.setText(r.enzyme.sequence);
         seqTA.setLineWrap(true);
         JScrollPane sc = new JScrollPane(seqTA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
         UI.addTo(jp, new JLabel("cDNA "));
-        JTextArea cDNATA  = new JTextArea();
+        JTextArea cDNATA = new JTextArea();
         cDNATA.setText(r.cDNA);
         cDNATA.setLineWrap(true);
+        JButton b1 = new JButton("Highlight");
+        b1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Color c = JColorChooser.showDialog(null, "Choose Color", Color.RED);
+                    cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
+                            new DefaultHighlighter.DefaultHighlightPainter(c));
+                } catch (Exception ee) {
+                    ee.printStackTrace();
+                }
+            }
+        });
+
+        cDNATA.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                r.cDNA = cDNATA.getText();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                r.cDNA = cDNATA.getText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                r.cDNA = cDNATA.getText();
+            }
+        });
         sc = new JScrollPane(cDNATA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
+        UI.addTo(jp, b1);
         UI.addTo(jp, new JLabel("Comment "));
-        JTextArea comTA  = new JTextArea();
+        JTextArea comTA = new JTextArea();
         comTA.setText("");
         comTA.setLineWrap(true);
         sc = new JScrollPane(comTA);
