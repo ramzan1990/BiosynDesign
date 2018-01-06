@@ -7,6 +7,7 @@ import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.graphics.ImageComponent;
 import biosyndesign.core.ui.popups.*;
+import biosyndesign.core.utils.Comment;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
@@ -28,6 +29,8 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -1072,19 +1075,57 @@ public class PartsManager {
         JTextArea cDNATA = new JTextArea();
         cDNATA.setText(r.cDNA);
         cDNATA.setLineWrap(true);
-        JButton b1 = new JButton("Highlight");
+        JButton b1 = new JButton("Comment");
+        JPanel bp = new JPanel();
+        bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
         b1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    for(Comment c: r.comments) {
+                        if(c.start <=  cDNATA.getSelectionEnd() && cDNATA.getSelectionStart() <= c.end){
+                            JOptionPane.showMessageDialog(null, "Comments are not allowed to overlap!");
+                            return;
+                        }
+                    }
                     Color c = JColorChooser.showDialog(null, "Choose Color", Color.RED);
-                    cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
+                    Object tag = cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
                             new DefaultHighlighter.DefaultHighlightPainter(c));
+                    String comment = JOptionPane.showInputDialog("Enter your comment:");
+                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), comment, c, tag));
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
             }
         });
+        JButton b2 = new JButton("Uncomment");
+        b2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    for(Comment c: r.comments){
+                        if(cDNATA.getCaretPosition() > c.start && cDNATA.getCaretPosition() < c.end){
+                            cDNATA.getHighlighter().removeHighlight(c.tag);
+                            r.comments.remove(c);
+                            break;
+                        }
+                    }
+                } catch (Exception ee) {
+                    ee.printStackTrace();
+                }
+            }
+        });
+        bp.add(b1);
+        bp.add(Box.createRigidArea(new Dimension(5,0)));
+        bp.add(b2);
+        for(Comment c: r.comments){
+            try {
+            cDNATA.getHighlighter().addHighlight(c.start, c.end,
+                    new DefaultHighlighter.DefaultHighlightPainter(c.c));
+            } catch (Exception ee) {
+                ee.printStackTrace();
+            }
+        }
 
         cDNATA.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -1103,10 +1144,11 @@ public class PartsManager {
                 r.cDNA = cDNATA.getText();
             }
         });
+
         sc = new JScrollPane(cDNATA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
-        UI.addTo(jp, b1);
+        UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Comment "));
         JTextArea comTA = new JTextArea();
         comTA.setText("");
@@ -1114,6 +1156,23 @@ public class PartsManager {
         sc = new JScrollPane(comTA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
+
+        cDNATA.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                for(Comment c: r.comments){
+                    if(e.getDot() > c.start && e.getDot() < c.end){
+                        comTA.setText(c.message);
+                    }
+                }
+            }
+        });
+
+        frame.addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                updateTable();
+            }
+        });
 
         frame.setMinimumSize(new Dimension(600, 600));
         frame.getContentPane().add(jp);

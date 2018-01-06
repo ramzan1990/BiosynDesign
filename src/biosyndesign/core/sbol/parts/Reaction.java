@@ -1,5 +1,7 @@
 package biosyndesign.core.sbol.parts;
 
+import biosyndesign.core.utils.Comment;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,6 +24,7 @@ public class Reaction extends Part{
     public boolean reverse;
     public boolean nativeEnzyme;
     public String cDNA;
+    public ArrayList<Comment> comments;
 
     public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);
@@ -31,6 +34,7 @@ public class Reaction extends Part{
         products=new ArrayList();
         partialEC="";
         this.energy=energy;
+        comments = new ArrayList<>();
     }
 
     public String getEName() {
