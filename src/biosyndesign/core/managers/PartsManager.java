@@ -35,6 +35,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -1060,19 +1061,22 @@ public class PartsManager {
         }
     }
 
+    Comment cc;
+    JTextArea comTA = null, cDNATA=null, seqTA=null;
+    boolean update = true;
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         UI.addTo(jp, new JLabel("Sequence "));
-        JTextArea seqTA = new JTextArea();
+        seqTA = new JTextArea();
         seqTA.setText(r.enzyme.sequence);
         seqTA.setLineWrap(true);
         JScrollPane sc = new JScrollPane(seqTA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
         UI.addTo(jp, new JLabel("cDNA "));
-        JTextArea cDNATA = new JTextArea();
+        cDNATA = new JTextArea();
         cDNATA.setText(r.cDNA);
         cDNATA.setLineWrap(true);
         JButton b1 = new JButton("Comment");
@@ -1089,10 +1093,10 @@ public class PartsManager {
                         }
                     }
                     Color c = JColorChooser.showDialog(null, "Choose Color", Color.RED);
-                    Object tag = cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
+                    cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
                             new DefaultHighlighter.DefaultHighlightPainter(c));
                     String comment = JOptionPane.showInputDialog("Enter your comment:");
-                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), comment, c, tag));
+                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), comment, c));
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
@@ -1105,8 +1109,14 @@ public class PartsManager {
                 try {
                     for(Comment c: r.comments){
                         if(cDNATA.getCaretPosition() > c.start && cDNATA.getCaretPosition() < c.end){
-                            cDNATA.getHighlighter().removeHighlight(c.tag);
+                            for(Highlighter.Highlight h : cDNATA.getHighlighter().getHighlights()){
+                                if(h.getStartOffset()==c.start && h.getEndOffset() == c.end){
+                                    cDNATA.getHighlighter().removeHighlight(h);
+                                    break;
+                                }
+                            }
                             r.comments.remove(c);
+                            disableCom();
                             break;
                         }
                     }
@@ -1150,9 +1160,26 @@ public class PartsManager {
         UI.addTo(jp, sc);
         UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Comment "));
-        JTextArea comTA = new JTextArea();
-        comTA.setText("");
+        comTA = new JTextArea();
         comTA.setLineWrap(true);
+        comTA.setEnabled(false);
+        comTA.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateComment();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateComment();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateComment();
+            }
+        });
         sc = new JScrollPane(comTA);
         sc.setPreferredSize(new Dimension(590, 120));
         UI.addTo(jp, sc);
@@ -1162,9 +1189,15 @@ public class PartsManager {
             public void caretUpdate(CaretEvent e) {
                 for(Comment c: r.comments){
                     if(e.getDot() > c.start && e.getDot() < c.end){
+                        update=false;
                         comTA.setText(c.message);
+                        comTA.setEnabled(true);
+                        update = true;
+                        cc = c;
+                        return;
                     }
                 }
+                disableCom();
             }
         });
 
@@ -1179,5 +1212,18 @@ public class PartsManager {
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
         frame.setVisible(true);
+    }
+
+    private void disableCom() {
+        update = false;
+        comTA.setText("");
+        comTA.setEnabled(false);
+        update = true;
+    }
+
+    private void updateComment() {
+        if(cc!=null && update){
+            cc.message = comTA.getText();
+        }
     }
 }

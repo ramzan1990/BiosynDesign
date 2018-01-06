@@ -130,6 +130,7 @@ public class ProjectIO {
             mainWindow.setStatusLabel("Project Saved");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error While Saving!", "Error", JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace();
         }
 
     }
