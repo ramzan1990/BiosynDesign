@@ -12,6 +12,7 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import com.sun.deploy.panel.JSmartTextArea;
 import javafx.scene.control.ColorPicker;
 import org.jdesktop.swingx.JXTextArea;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
@@ -42,6 +43,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.TextAttribute;
 import java.io.*;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -1074,28 +1076,58 @@ public class PartsManager {
     }
 
     Comment cc;
-    JTextArea comTA = null, cDNATA = null, seqTA = null;
+    JTextArea comTA = null, cDNATA = null;
+    JTextArea seqTA = null;
     boolean update = true;
     JLabel count;
 
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        int wd = 800;
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         UI.addTo(jp, new JLabel("Sequence "));
         seqTA = new JTextArea();
-        seqTA.setText(r.enzyme.sequence);
+        seqTA.setText(breakString(r.enzyme.sequence, 20));
         seqTA.setLineWrap(true);
-        seqTA.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
+        Font font = new Font(Font.MONOSPACED, Font.PLAIN, 22);
+        Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
+        attributes.put(TextAttribute.TRACKING, 1.20);
+        Font font2 = font.deriveFont(attributes);
+        seqTA.setFont(font2);
         seqTA.setEditable(false);
+        //seqTA.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         JScrollPane sc = new JScrollPane(seqTA);
-        sc.setPreferredSize(new Dimension(590, 200));
-        UI.addTo(jp, sc);
+        JLabel columnheader = new JLabel() {
+
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                double step = 39.5;
+                for (int i = 0; i < 20; i++) {
+                    int v = (int)Math.round(i*step);
+                    g.drawLine(v, 0, v, 3);
+                    g.drawString("" + (i+1), v, 16);
+                }
+            }
+
+            public Dimension getPreferredSize() {
+                return new Dimension((int) seqTA.getPreferredSize().getWidth(), 20);
+            }
+        };
+        columnheader.setBackground(Color.white);
+        columnheader.setOpaque(true);
+        sc.setColumnHeaderView(columnheader);
+        sc.setPreferredSize(new Dimension(wd, 200));
+        jp.add(sc);
         UI.addTo(jp, new JLabel("cDNA "));
         cDNATA = new JTextArea();
-        cDNATA.setText(r.cDNA);
+        cDNATA.setText(breakString(r.cDNA, 60));
         cDNATA.setLineWrap(true);
-        cDNATA.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
+        font = new Font(Font.MONOSPACED, Font.PLAIN, 21);
+        attributes = new HashMap<TextAttribute, Object>();
+        //attributes.put(TextAttribute.TRACKING, 0.038);
+        font2 = font.deriveFont(attributes);
+        cDNATA.setFont(font2);
         JButton b1 = new JButton("Comment");
         JPanel bp = new JPanel();
         bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
@@ -1182,8 +1214,29 @@ public class PartsManager {
             }
         });
         sc = new JScrollPane(cDNATA);
-        sc.setPreferredSize(new Dimension(590, 200));
-        UI.addTo(jp, sc);
+        columnheader = new JLabel() {
+
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                double step = 13.1;
+                for (int i = 0; i < 60; i++) {
+                    int v = (int)Math.round(i*step);
+                    g.drawLine(v, 0, v, 3);
+                    if(i==0 || (i+1)%4==0) {
+                        g.drawString("" + (i + 1), v, 16);
+                    }
+                }
+            }
+
+            public Dimension getPreferredSize() {
+                return new Dimension((int) cDNATA.getPreferredSize().getWidth(), 20);
+            }
+        };
+        columnheader.setBackground(Color.white);
+        columnheader.setOpaque(true);
+        sc.setColumnHeaderView(columnheader);
+        sc.setPreferredSize(new Dimension(wd, 200));
+        jp.add(sc);
         UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Comment "));
         comTA = new JTextArea();
@@ -1207,7 +1260,7 @@ public class PartsManager {
             }
         });
         sc = new JScrollPane(comTA);
-        sc.setPreferredSize(new Dimension(590, 120));
+        sc.setPreferredSize(new Dimension(wd, 120));
         UI.addTo(jp, sc);
 
         cDNATA.addCaretListener(new CaretListener() {
@@ -1215,19 +1268,38 @@ public class PartsManager {
             public void caretUpdate(CaretEvent e) {
                 int dot = e.getDot();
                 int mark = e.getMark();
-                if (dot != mark) {
+                int start = Math.min(dot, mark);
+                int end = Math.max(dot, mark);
+                if (start != end) {
                     try {
+                        int startC = change(start, 60, true);
+                        int endC = change(end, 60, true);
                         seqTA.getHighlighter().removeAllHighlights();
-                        int end = (dot - (dot % 3)) / 3;
-                        int start = (mark - (mark % 3)) / 3;
-                        seqTA.getHighlighter().addHighlight(start, end, new DefaultHighlighter.DefaultHighlightPainter(new Color(155, 225, 255)));
-                        count.setText("Selected "+ (dot - mark));
+                        int ep = 0;
+                        if(endC % 3==1){
+                            ep = 2;
+                        }else if(endC % 3==2){
+                            ep = 1;
+                        }
+                        int endS = change((endC + ep) / 3, 20, false);
+                        int sp = 0;
+                        if(startC % 3==1){
+                            sp = 1;
+                        }else if(startC % 3==2){
+                            sp = 2;
+                        }
+                        int startS = change((startC - sp) / 3, 20, false);
+                        seqTA.getHighlighter().addHighlight(startS, endS, new DefaultHighlighter.DefaultHighlightPainter(new Color(155, 225, 255)));
+                        count.setText("Selected " + (endC - startC));
                     } catch (Exception ex) {
 
                     }
+                }else{
+                    seqTA.getHighlighter().removeAllHighlights();
+                    count.setText("");
                 }
                 for (Comment c : r.comments) {
-                    if (dot > c.start && dot < c.end) {
+                    if (start >= c.start && end <= c.end) {
                         update = false;
                         comTA.setText(c.message);
                         comTA.setEnabled(true);
@@ -1240,17 +1312,40 @@ public class PartsManager {
             }
         });
 
+        seqTA.setCaretPosition(0);
+        cDNATA.setCaretPosition(0);
+
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
                 updateTable();
             }
         });
-
         //frame.setMinimumSize(new Dimension(600, 600));
+        frame.setResizable(false);
         frame.getContentPane().add(jp);
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
         frame.setVisible(true);
+    }
+
+    private String breakString(String sequence, int c) {
+        sequence = sequence.replaceAll("\\s","");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < sequence.length(); i++) {
+            if (i != 0 && i % c == 0) {
+                sb.append("\n");
+            }
+            sb.append(sequence.charAt(i));
+        }
+        return sb.toString();
+    }
+
+    private int change(int n, int i, boolean r) {
+        if (r) {
+            return n - (n /  (i+1));
+        } else {
+            return n + (n / i);
+        }
     }
 
     private void disableCom() {
