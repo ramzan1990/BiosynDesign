@@ -22,7 +22,7 @@ import java.util.Hashtable;
 public class GraphManager {
     private ProjectState s;
     private MainWindow mainWindow;
-    private int scale = 1;
+    private int scale = 2;
 
     public GraphManager(ProjectState s, MainWindow mainWindow) {
         this.s = s;

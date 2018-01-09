@@ -29,6 +29,7 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -547,7 +548,18 @@ public class PartsManager {
     }
 
     public void rowClickedCDNA(int row, int x, int y) {
-        cDNAPopUp pop = new cDNAPopUp(Main.pm, s.reactions.get(row));
+        int c = 0;
+        Reaction cr = null;
+        for (Reaction r : s.reactions) {
+            if (r.enzyme != null) {
+                if (row == c) {
+                    cr = r;
+                    break;
+                }
+                c++;
+            }
+        }
+        cDNAPopUp pop = new cDNAPopUp(Main.pm, cr);
         pop.show(mainWindow, x, y + 50);
     }
 
@@ -1062,8 +1074,10 @@ public class PartsManager {
     }
 
     Comment cc;
-    JTextArea comTA = null, cDNATA=null, seqTA=null;
+    JTextArea comTA = null, cDNATA = null, seqTA = null;
     boolean update = true;
+    JLabel count;
+
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         JPanel jp = new JPanel();
@@ -1072,13 +1086,16 @@ public class PartsManager {
         seqTA = new JTextArea();
         seqTA.setText(r.enzyme.sequence);
         seqTA.setLineWrap(true);
+        seqTA.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
+        seqTA.setEditable(false);
         JScrollPane sc = new JScrollPane(seqTA);
-        sc.setPreferredSize(new Dimension(590, 120));
+        sc.setPreferredSize(new Dimension(590, 200));
         UI.addTo(jp, sc);
         UI.addTo(jp, new JLabel("cDNA "));
         cDNATA = new JTextArea();
         cDNATA.setText(r.cDNA);
         cDNATA.setLineWrap(true);
+        cDNATA.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 18));
         JButton b1 = new JButton("Comment");
         JPanel bp = new JPanel();
         bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
@@ -1086,17 +1103,16 @@ public class PartsManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    for(Comment c: r.comments) {
-                        if(c.start <=  cDNATA.getSelectionEnd() && cDNATA.getSelectionStart() <= c.end){
+                    for (Comment c : r.comments) {
+                        if (c.start <= cDNATA.getSelectionEnd() && cDNATA.getSelectionStart() <= c.end) {
                             JOptionPane.showMessageDialog(null, "Comments are not allowed to overlap!");
                             return;
                         }
                     }
-                    Color c = JColorChooser.showDialog(null, "Choose Color", Color.RED);
+                    Color c = showDialog();
                     cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
                             new DefaultHighlighter.DefaultHighlightPainter(c));
-                    String comment = JOptionPane.showInputDialog("Enter your comment:");
-                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), comment, c));
+                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), newComment, c));
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
@@ -1107,10 +1123,10 @@ public class PartsManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    for(Comment c: r.comments){
-                        if(cDNATA.getCaretPosition() > c.start && cDNATA.getCaretPosition() < c.end){
-                            for(Highlighter.Highlight h : cDNATA.getHighlighter().getHighlights()){
-                                if(h.getStartOffset()==c.start && h.getEndOffset() == c.end){
+                    for (Comment c : r.comments) {
+                        if (cDNATA.getCaretPosition() > c.start && cDNATA.getCaretPosition() < c.end) {
+                            for (Highlighter.Highlight h : cDNATA.getHighlighter().getHighlights()) {
+                                if (h.getStartOffset() == c.start && h.getEndOffset() == c.end) {
                                     cDNATA.getHighlighter().removeHighlight(h);
                                     break;
                                 }
@@ -1125,13 +1141,16 @@ public class PartsManager {
                 }
             }
         });
+        count = new JLabel();
         bp.add(b1);
-        bp.add(Box.createRigidArea(new Dimension(5,0)));
+        bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(b2);
-        for(Comment c: r.comments){
+        bp.add(Box.createRigidArea(new Dimension(10, 0)));
+        bp.add(count);
+        for (Comment c : r.comments) {
             try {
-            cDNATA.getHighlighter().addHighlight(c.start, c.end,
-                    new DefaultHighlighter.DefaultHighlightPainter(c.c));
+                cDNATA.getHighlighter().addHighlight(c.start, c.end,
+                        new DefaultHighlighter.DefaultHighlightPainter(c.c));
             } catch (Exception ee) {
                 ee.printStackTrace();
             }
@@ -1154,9 +1173,16 @@ public class PartsManager {
                 r.cDNA = cDNATA.getText();
             }
         });
-
+        cDNATA.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if (c != 'a' && c != 't' && c != 'g' && c != 'c') {
+                    e.consume();  // ignore event
+                }
+            }
+        });
         sc = new JScrollPane(cDNATA);
-        sc.setPreferredSize(new Dimension(590, 120));
+        sc.setPreferredSize(new Dimension(590, 200));
         UI.addTo(jp, sc);
         UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Comment "));
@@ -1187,9 +1213,22 @@ public class PartsManager {
         cDNATA.addCaretListener(new CaretListener() {
             @Override
             public void caretUpdate(CaretEvent e) {
-                for(Comment c: r.comments){
-                    if(e.getDot() > c.start && e.getDot() < c.end){
-                        update=false;
+                int dot = e.getDot();
+                int mark = e.getMark();
+                if (dot != mark) {
+                    try {
+                        seqTA.getHighlighter().removeAllHighlights();
+                        int end = (dot - (dot % 3)) / 3;
+                        int start = (mark - (mark % 3)) / 3;
+                        seqTA.getHighlighter().addHighlight(start, end, new DefaultHighlighter.DefaultHighlightPainter(new Color(155, 225, 255)));
+                        count.setText("Selected "+ (dot - mark));
+                    } catch (Exception ex) {
+
+                    }
+                }
+                for (Comment c : r.comments) {
+                    if (dot > c.start && dot < c.end) {
+                        update = false;
                         comTA.setText(c.message);
                         comTA.setEnabled(true);
                         update = true;
@@ -1201,13 +1240,13 @@ public class PartsManager {
             }
         });
 
-        frame.addWindowListener(new WindowAdapter(){
-            public void windowClosing(WindowEvent e){
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
                 updateTable();
             }
         });
 
-        frame.setMinimumSize(new Dimension(600, 600));
+        //frame.setMinimumSize(new Dimension(600, 600));
         frame.getContentPane().add(jp);
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
@@ -1222,8 +1261,56 @@ public class PartsManager {
     }
 
     private void updateComment() {
-        if(cc!=null && update){
+        if (cc != null && update) {
             cc.message = comTA.getText();
         }
+    }
+
+    String newComment;
+
+    private Color showDialog() {
+        newComment = "";
+        JColorChooser chooser = new JColorChooser(Color.RED);
+        JPanel jp = new JPanel();
+        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        JTextArea ta = new JTextArea();
+        ta.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                newComment = ta.getText();
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                newComment = ta.getText();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                newComment = ta.getText();
+            }
+        });
+        JScrollPane sc = new JScrollPane(ta);
+        sc.setPreferredSize(new Dimension(590, 120));
+        UI.addTo(jp, new JLabel("Enter the comment here:"));
+        UI.addTo(jp, sc);
+
+        chooser.setPreviewPanel(jp);
+        JDialog dialog = JColorChooser.createDialog(
+                null,
+                "Choose a color for the comment",
+                true,
+                chooser,
+                null,
+                null);
+        try {
+            JPanel p = (JPanel) jp.getParent();
+            p.setBorder(new EmptyBorder(0, 0, 0, 0));
+        } catch (Exception e) {
+
+        }
+        dialog.setVisible(true);
+        return chooser.getColor();
     }
 }

@@ -715,6 +715,7 @@ public class MainWindow extends BDFrame {
                 }
             }
         });
+
         UI.addTo(dataPanel, cmb1);
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         UI.addTo(dataPanel, l2);
@@ -738,7 +739,35 @@ public class MainWindow extends BDFrame {
                 Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
             }
         });
+        cmb2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cmb1.getSelectedIndex() == 0) {
+                    if(cmb2.getSelectedIndex() == 0){
+                        qValueTF.setText("Pyruvate");
+                    }else  if(cmb2.getSelectedIndex() == 1){
+                        qValueTF.setText("DB00119");
+                    }else  if(cmb2.getSelectedIndex() == 2){
+                        qValueTF.setText("ME_R00006");
+                    }else  if(cmb2.getSelectedIndex() == 3){
+                        qValueTF.setText("Pyruvate");
+                    }else  if(cmb2.getSelectedIndex() == 4){
+                        qValueTF.setText("2.3.1.74");
+                    }else  if(cmb2.getSelectedIndex() == 5){
+                        qValueTF.setText("C(C=CC1)=CC=1");
+                    }
 
+                } else if (cmb1.getSelectedIndex() == 1) {
+                    if(cmb2.getSelectedIndex() == 0){
+                        qValueTF.setText("ME_R00006");
+                    }else  if(cmb2.getSelectedIndex() == 1){
+                        qValueTF.setText("Pyruvate");
+                    }else  if(cmb2.getSelectedIndex() == 2){
+                        qValueTF.setText("2.3.1.74");
+                    }
+                }
+            }
+        });
         partsList = new JList();
         partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
