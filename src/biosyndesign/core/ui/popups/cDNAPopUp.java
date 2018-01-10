@@ -14,7 +14,7 @@ public class cDNAPopUp extends JPopupMenu {
         item1 = new JMenuItem("Edit");
         item1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                pm.editCDNA(r);
+                pm.cm.editCDNA(r);
             }
         });
 
