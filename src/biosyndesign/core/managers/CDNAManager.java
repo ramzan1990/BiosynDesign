@@ -11,11 +11,11 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.DefaultHighlighter;
-import javax.swing.text.Highlighter;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.font.TextAttribute;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,10 +39,11 @@ public class CDNAManager {
     }
 
 
-
+    private ArrayList<Comment> comments;
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         int wd = 800;
+        this.comments = r.comments;
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
         UI.addTo(jp, new JLabel("Sequence "));
@@ -57,10 +58,12 @@ public class CDNAManager {
         seqTA.setEditable(false);
         //seqTA.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         JScrollPane sc = new JScrollPane(seqTA);
+        sc.setBorder(new EmptyBorder(0,0,0,0));
         JLabel columnheader = new JLabel() {
 
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                g.drawLine(0, 0, this.getWidth(), 0);
                 double step = 39.5;
                 for (int i = 0; i < 20; i++) {
                     int v = (int)Math.round(i*step);
@@ -138,33 +141,37 @@ public class CDNAManager {
         bp.add(b2);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(count);
-        for (Comment c : r.comments) {
-            try {
-                cDNATA.getHighlighter().addHighlight(c.start, c.end,
-                        new DefaultHighlighter.DefaultHighlightPainter(c.c));
-            } catch (Exception ee) {
-                ee.printStackTrace();
-            }
-        }
+        paintComments();
 
+        ((AbstractDocument) cDNATA.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String str, AttributeSet attr)
+                    throws BadLocationException {
+                    super.replace(fb, offset, length, str, attr);
+                    check(cDNATA);
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string,
+                                     AttributeSet attr) throws BadLocationException {
+                super.insertString(fb, offset, string, attr);
+                check(cDNATA);
+            }
+        });
         cDNATA.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void removeUpdate(DocumentEvent e) {
                 r.cDNA = cDNATA.getText();
-                check(cDNATA);
             }
 
             @Override
             public void insertUpdate(DocumentEvent e) {
                 r.cDNA = cDNATA.getText();
-                check(cDNATA);
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                r.cDNA = cDNATA.getText();
-                check(cDNATA);
             }
         });
         cDNATA.addKeyListener(new KeyAdapter() {
@@ -176,10 +183,12 @@ public class CDNAManager {
             }
         });
         sc = new JScrollPane(cDNATA);
+        sc.setBorder(new EmptyBorder(0,0,0,0));
         columnheader = new JLabel() {
 
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
+                g.drawLine(0, 0, this.getWidth(), 0);
                 double step = 13.1;
                 for (int i = 0; i < 60; i++) {
                     int v = (int)Math.round(i*step);
@@ -290,6 +299,18 @@ public class CDNAManager {
         frame.setVisible(true);
     }
 
+    private void paintComments() {
+        cDNATA.getHighlighter().removeAllHighlights();
+        for (Comment c : comments) {
+            try {
+                cDNATA.getHighlighter().addHighlight(c.start, c.end,
+                        new DefaultHighlighter.DefaultHighlightPainter(c.c));
+            } catch (Exception ee) {
+                ee.printStackTrace();
+            }
+        }
+    }
+
     boolean updatecDNATA = true;
     int caretPosition;
     private void check(JTextArea cDNATA) {
@@ -298,9 +319,7 @@ public class CDNAManager {
         }
         updatecDNATA = false;
         String text = cDNATA.getText().replaceAll("\\s","");
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
+
                 caretPosition = cDNATA.getCaretPosition();
                 cDNATA.setText(breakString(text, 60));
                 try {
@@ -308,9 +327,9 @@ public class CDNAManager {
                 }catch (Exception e){
 
                 }
+                paintComments();
                 updatecDNATA = true;
-            }
-        });
+
     }
 
     private String breakString(String sequence, int c) {
