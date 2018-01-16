@@ -429,7 +429,7 @@ public class PartsManager {
             public void actionPerformed(ActionEvent e) {
                 r.enzyme = prots[partsList.getSelectedIndex()];
                 addPartsS(new Part[]{r.enzyme}, true);
-                r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+                r.cDNA = getCDNA(r);
                 frame.setVisible(false);
                 frame.dispose();
                 updateTable();
@@ -444,6 +444,9 @@ public class PartsManager {
         frame.setVisible(true);
     }
 
+    public String getCDNA(Reaction r){
+        return cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+    }
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb1, JComboBox cmb2, JList partsList) {
         ArrayList<String> names = new ArrayList<>();
         if (r.enzymeType.equals("Native")) {

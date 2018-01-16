@@ -3,7 +3,7 @@ package biosyndesign.core.utils;
 import java.awt.*;
 import java.io.Serializable;
 
-public class Comment implements Serializable {
+public class Comment implements Serializable, Cloneable {
 
     public int start;
     public int end;
@@ -17,5 +17,9 @@ public class Comment implements Serializable {
         this.message = message;
         this.c = c;
         //this.tag = tag;
+    }
+
+    public Comment clone(){
+        return new Comment(start, end, message,  c) ;
     }
 }
