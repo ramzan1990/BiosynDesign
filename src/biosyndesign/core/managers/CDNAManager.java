@@ -252,13 +252,13 @@ public class CDNAManager {
                     //ProcessBuilder builder = new ProcessBuilder(exe.getAbsolutePath(), "-f", "temp" + File.separator + "opt.txt", "-q");
                     //builder.redirectErrorStream(true);
                     //Process process = builder.start();
-                    Process proc = Runtime.getRuntime().exec("java -jar "+exe.getAbsolutePath() + " -f temp" + File.separator + "opt.txt -q");
+                    Process proc = Runtime.getRuntime().exec("java -jar " + exe.getAbsolutePath() + " -f temp" + File.separator + "opt.txt -q");
                     InputStream is = proc.getInputStream();
                     //InputStream is = process.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     String line = null;
                     while ((line = reader.readLine()) != null) {
-                        if(line.startsWith("Creating")){
+                        if (line.startsWith("Creating")) {
                             continue;
                         }
                         line = line.toLowerCase();
@@ -274,11 +274,11 @@ public class CDNAManager {
         });
         JButton b5 = new JButton("Check");
         b5.addActionListener(new ActionListener() {
-                                 @Override
-                                 public void actionPerformed(ActionEvent e) {
-checkCDNA();
-                                 }
-                             });
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkCDNA();
+            }
+        });
         count = new JLabel();
         bp.add(b1);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -307,6 +307,14 @@ checkCDNA();
                 super.insertString(fb, offset, string, attr);
                 check(cDNATA);
             }
+
+            @Override
+            public void remove(final FilterBypass fb, final int offset, final int length) throws BadLocationException
+            {
+                super.remove(fb, offset, length);
+                check(cDNATA);
+            }
+
         });
         cDNATA.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
@@ -455,7 +463,7 @@ checkCDNA();
         });
         jp.add(new JSeparator());
         bp2.add(Box.createHorizontalGlue());
-        bp2.setComponentOrientation( ComponentOrientation.RIGHT_TO_LEFT );
+        bp2.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         bp2.add(ok);
         bp2.add(Box.createRigidArea(new Dimension(10, 0)));
         bp2.add(apply);
@@ -479,22 +487,22 @@ checkCDNA();
     private void checkCDNA() {
         String[] s = seqTA.getText().split("\\s+");
         String text = cDNATA.getText();
-        text = text.replaceAll("\\s+","");
+        text = text.replaceAll("\\s+", "");
         ArrayList<String> c = new ArrayList<String>();
         int index = 0;
         while (index < text.length()) {
-            c.add(text.substring(index, Math.min(index + 3,text.length())));
+            c.add(text.substring(index, Math.min(index + 3, text.length())));
             index += 3;
         }
-        int i =0;
-        for(String m:s){
-            if(!codons.get(c.get(i).toUpperCase()).equals(m)){
+        int i = 0;
+        for (String m : s) {
+            if (!codons.get(c.get(i).toUpperCase()).equals(m)) {
                 JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
                 return;
             }
             i++;
         }
-        if(!codons.get(c.get(i).toUpperCase()).equals("STOP")){
+        if (!codons.get(c.get(i).toUpperCase()).equals("STOP")) {
             JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
             return;
         }
