@@ -272,6 +272,13 @@ public class CDNAManager {
                 }
             }
         });
+        JButton b5 = new JButton("Check");
+        b5.addActionListener(new ActionListener() {
+                                 @Override
+                                 public void actionPerformed(ActionEvent e) {
+checkCDNA();
+                                 }
+                             });
         count = new JLabel();
         bp.add(b1);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -280,6 +287,8 @@ public class CDNAManager {
         bp.add(b3);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(b4);
+        bp.add(Box.createRigidArea(new Dimension(10, 0)));
+        bp.add(b5);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(count);
         paintComments();
@@ -465,6 +474,31 @@ public class CDNAManager {
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
         frame.setVisible(true);
+    }
+
+    private void checkCDNA() {
+        String[] s = seqTA.getText().split("\\s+");
+        String text = cDNATA.getText();
+        text = text.replaceAll("\\s+","");
+        ArrayList<String> c = new ArrayList<String>();
+        int index = 0;
+        while (index < text.length()) {
+            c.add(text.substring(index, Math.min(index + 3,text.length())));
+            index += 3;
+        }
+        int i =0;
+        for(String m:s){
+            if(!codons.get(c.get(i).toUpperCase()).equals(m)){
+                JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+                return;
+            }
+            i++;
+        }
+        if(!codons.get(c.get(i).toUpperCase()).equals("STOP")){
+            JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+            return;
+        }
+        JOptionPane.showMessageDialog(null, "cDNA sequence is correct!");
     }
 
     private String extendSeq(String sequence) {
