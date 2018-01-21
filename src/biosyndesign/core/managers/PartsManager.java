@@ -85,7 +85,9 @@ public class PartsManager {
         System.out.println("Adding Parts");
         new Thread() {
             public void run() {
+                mainWindow.setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 addPartsS(p, update);
+                mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         }.start();
     }
@@ -374,6 +376,7 @@ public class PartsManager {
     }
 
     public void chooseEnzyme(Reaction r) {
+        mainWindow.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -442,6 +445,7 @@ public class PartsManager {
         frame.pack();
         frame.setLocationRelativeTo(mainWindow);
         frame.setVisible(true);
+        mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
     public String getCDNA(Reaction r){

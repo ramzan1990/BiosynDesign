@@ -36,6 +36,7 @@ public class CDNAManager {
     private HashMap<String, String> name;
     private HashMap<String, String> codons;
     private ArrayList<Comment> comments;
+    private JDialog thisFrame;
 
     public CDNAManager(PartsManager pm, MainWindow mainWindow) {
         this.pm = pm;
@@ -130,6 +131,7 @@ public class CDNAManager {
 
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
+        thisFrame = frame;
         int wd = 815;
         this.comments = cloneList(r.comments);
         JPanel jp = new JPanel();
@@ -240,6 +242,7 @@ public class CDNAManager {
         b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                thisFrame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 try {
                     File directory = new File("temp");
                     if (!directory.exists()) {
@@ -266,10 +269,12 @@ public class CDNAManager {
                         cDNATA.setText(line);
                         seqTA.setCaretPosition(0);
                         cDNATA.setCaretPosition(0);
+                        paintComments();
                     }
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
+                thisFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
         });
         JButton b5 = new JButton("Check");

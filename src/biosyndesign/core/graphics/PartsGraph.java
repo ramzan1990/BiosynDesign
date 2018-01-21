@@ -142,6 +142,7 @@ public class PartsGraph extends JPanel implements Serializable {
                 Main.pm.edgeAdded(edge, source, target);
             }
         });
+        graphComponent.setPanning(true);
 
         this.add(graphComponent, BorderLayout.CENTER);
         this.setBorder(BorderFactory.createEmptyBorder(1, 1, 1,1));
