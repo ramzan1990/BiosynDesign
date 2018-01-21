@@ -395,13 +395,14 @@ public class PartsManager {
         AutoCompleteDecorator.decorate(cmb2);
         UI.addTo(jp, cmb2);
 
+        int  ww= (int)cmb2.getPreferredSize().getWidth();
         UI.addTo(jp, new JLabel("Enzyme "));
         DefaultListModel model = new DefaultListModel();
         JList partsList = new JList(model);
         JScrollPane partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
-        partsPane.setPreferredSize(new Dimension(400, 200));
-        partsPane.setMaximumSize(new Dimension(400, 200));
+        partsPane.setPreferredSize(new Dimension(ww, 200));
+        partsPane.setMaximumSize(new Dimension(ww, 200));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         UI.addTo(jp, partsPane);
 
