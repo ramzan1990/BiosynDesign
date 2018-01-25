@@ -41,6 +41,16 @@ public class ProjectIO {
         saveProjectAs();
     }
 
+    public String openFile() {
+        FileDialog fd = new FileDialog((Frame) null, "Open File", FileDialog.LOAD);
+        fd.setVisible(true);
+        if (fd.getFiles().length > 0) {
+            File f = fd.getFiles()[0];
+            return f.getAbsolutePath();
+        }
+        return null;
+    }
+
     public boolean openProject() {
         FileDialog fd = new FileDialog((Frame) null, "Open Project", FileDialog.LOAD);
         fd.setVisible(true);

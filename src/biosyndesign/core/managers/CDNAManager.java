@@ -132,7 +132,7 @@ public class CDNAManager {
     public void editCDNA(Reaction r) {
         final JDialog frame = new JDialog(mainWindow, "Choose Enzyme", true);
         thisFrame = frame;
-        int wd = 815;
+        int wd = 845;
         this.comments = cloneList(r.comments);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
@@ -172,8 +172,30 @@ public class CDNAManager {
         };
         columnheader.setBackground(Color.white);
         columnheader.setOpaque(true);
+        JLabel rowheader = new JLabel() {
+
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                //          g.drawLine(0, 0, this.getWidth(), 0);
+                double step = 22;
+                int c = r.enzyme.sequence.length()/20 + 10;
+                for (int i = 0; i < c; i++) {
+                    int v = (int) Math.round(i * step) + 14;
+                    g.drawLine(0, v, 3, v);
+                    g.drawString("" + (i + 1), 10, v+5);
+                }
+            }
+
+            public Dimension getPreferredSize() {
+                return new Dimension( 30, (int)seqTA.getPreferredSize().getHeight());
+            }
+        };
+        rowheader.setBackground(Color.white);
+        rowheader.setOpaque(true);
         sc.setColumnHeaderView(columnheader);
+        sc.setRowHeaderView(rowheader);
         sc.setPreferredSize(new Dimension(wd, 200));
+        sc.setBackground(Color.WHITE);
         UI.addTo(jp, sc);
         UI.addTo(jp, new JLabel("cDNA "));
         cDNATA = new JTextArea();
@@ -191,7 +213,7 @@ public class CDNAManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    for (Comment c : r.comments) {
+                    for (Comment c : comments) {
                         if (c.start <= cDNATA.getSelectionEnd() && cDNATA.getSelectionStart() <= c.end) {
                             JOptionPane.showMessageDialog(null, "Comments are not allowed to overlap!");
                             return;
@@ -200,7 +222,7 @@ public class CDNAManager {
                     Color c = showDialog();
                     cDNATA.getHighlighter().addHighlight(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(),
                             new DefaultHighlighter.DefaultHighlightPainter(c));
-                    r.comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), newComment, c));
+                    comments.add(new Comment(cDNATA.getSelectionStart(), cDNATA.getSelectionEnd(), newComment, c));
                 } catch (Exception ee) {
                     ee.printStackTrace();
                 }
@@ -211,7 +233,7 @@ public class CDNAManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    for (Comment c : r.comments) {
+                    for (Comment c : comments) {
                         if (cDNATA.getCaretPosition() > c.start && cDNATA.getCaretPosition() < c.end) {
                             for (Highlighter.Highlight h : cDNATA.getHighlighter().getHighlights()) {
                                 if (h.getStartOffset() == c.start && h.getEndOffset() == c.end) {
@@ -219,7 +241,7 @@ public class CDNAManager {
                                     break;
                                 }
                             }
-                            r.comments.remove(c);
+                            comments.remove(c);
                             disableCom();
                             break;
                         }
@@ -356,8 +378,30 @@ public class CDNAManager {
         };
         columnheader.setBackground(Color.white);
         columnheader.setOpaque(true);
+        rowheader = new JLabel() {
+
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                //          g.drawLine(0, 0, this.getWidth(), 0);
+                double step = 30;
+                int c = r.enzyme.sequence.length()/20 + 10;
+                for (int i = 0; i < c; i++) {
+                    int v = (int) Math.round(i * step) + 18;
+                    g.drawLine(0, v, 3, v);
+                    g.drawString("" + (i + 1), 10, v+5);
+                }
+            }
+
+            public Dimension getPreferredSize() {
+                return new Dimension( 30, (int)cDNATA.getPreferredSize().getHeight());
+            }
+        };
+        rowheader.setBackground(Color.white);
+        rowheader.setOpaque(true);
         sc.setColumnHeaderView(columnheader);
+        sc.setRowHeaderView(rowheader);
         sc.setPreferredSize(new Dimension(wd, 200));
+        sc.setBackground(Color.WHITE);
         UI.addTo(jp, sc);
         UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Annotation "));
@@ -419,7 +463,7 @@ public class CDNAManager {
                     seqTA.getHighlighter().removeAllHighlights();
                     count.setText("");
                 }
-                for (Comment c : r.comments) {
+                for (Comment c : comments) {
                     if (start >= c.start && end <= c.end) {
                         update = false;
                         comTA.setText(c.message);
@@ -490,28 +534,33 @@ public class CDNAManager {
     }
 
     private void checkCDNA() {
-        String[] s = seqTA.getText().split("\\s+");
-        String text = cDNATA.getText();
-        text = text.replaceAll("\\s+", "");
-        ArrayList<String> c = new ArrayList<String>();
-        int index = 0;
-        while (index < text.length()) {
-            c.add(text.substring(index, Math.min(index + 3, text.length())));
-            index += 3;
-        }
-        int i = 0;
-        for (String m : s) {
-            if (!codons.get(c.get(i).toUpperCase()).equals(m)) {
-                JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
-                return;
+        try {
+            String[] s = seqTA.getText().split("\\s+");
+            String text = cDNATA.getText();
+            text = text.replaceAll("\\s+", "");
+            ArrayList<String> c = new ArrayList<String>();
+            int index = 0;
+            while (index < text.length()) {
+                c.add(text.substring(index, Math.min(index + 3, text.length())));
+                index += 3;
             }
-            i++;
-        }
-        if (!codons.get(c.get(i).toUpperCase()).equals("STOP")) {
+            int i = 0;
+            for (String m : s) {
+                if (!codons.get(c.get(i++).toUpperCase()).equals(m)) {
+                    JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+                    return;
+                }
+            }
+            do {
+                if (!codons.get(c.get(i++).toUpperCase()).equals("STOP")) {
+                    JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+                    return;
+                }
+            } while (i < c.size());
+            JOptionPane.showMessageDialog(null, "cDNA sequence is correct!");
+        }catch (Exception e){
             JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
-            return;
         }
-        JOptionPane.showMessageDialog(null, "cDNA sequence is correct!");
     }
 
     private String extendSeq(String sequence) {

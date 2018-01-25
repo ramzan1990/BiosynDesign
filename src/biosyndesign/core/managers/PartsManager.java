@@ -25,12 +25,14 @@ import org.openscience.cdk.similarity.Tanimoto;
 import org.openscience.cdk.smiles.SmilesParser;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.namespace.QName;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -42,6 +44,9 @@ import java.util.List;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.sbolstandard.core2.ComponentDefinition;
+import org.sbolstandard.core2.SBOLDocument;
+import org.sbolstandard.core2.SBOLWriter;
 
 /**
  * Created by Umarov on 2/21/2017.
@@ -1056,5 +1061,24 @@ public class PartsManager {
         for (Compound c : needAlign) {
             align(c, exclude, n, isTarget);
         }
+    }
+
+    public void exportPathway() {
+        String file = Main.projectIO.openFile();
+        try {
+            SBOLDocument doc = new SBOLDocument();
+            //s.compounds;
+            //s.reactions;
+            //s.ecNumbers;
+            //s.target;
+            //s.source;
+            //s.organism;
+            //s.proteins;
+
+            SBOLWriter.write(doc, file);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

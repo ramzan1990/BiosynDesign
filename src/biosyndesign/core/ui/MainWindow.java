@@ -23,9 +23,10 @@ import javax.swing.table.TableModel;
 public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, Parts, HelpM, repoOptions, Window;
-    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository;
-    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo;
+    private JMenu File, Parts, options,  export, HelpM, repoOptions, Window;
+    private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository,
+    exportCDNA, exportAA, exportPathway;
+    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, hideCompounds;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
@@ -58,8 +59,11 @@ public class MainWindow extends BDFrame {
         Parts = new JMenu("Parts");
         HelpM = new JMenu("Help");
         repoOptions = new JMenu("Repository");
+        options = new JMenu("Options");
+        export =  new JMenu("Export");
         chooseRepository = new JMenuItem("Choose Repository");
         useLocalRepo = new JCheckBoxMenuItem("Use Local Repository");
+        hideCompounds =  new JCheckBoxMenuItem("Hide Compounds");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -72,6 +76,9 @@ public class MainWindow extends BDFrame {
         addReaction = new JMenuItem("Add Reaction");
         addECNumber = new JMenuItem("Add EC Number");
         addEnzyme = new JMenuItem("Add Enzyme");
+        exportCDNA= new JMenuItem("Export cDNA");
+        exportAA= new JMenuItem("Export AA Sequences");
+        exportPathway= new JMenuItem("Export pathway");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
 
         NewProject.addActionListener(new ActionListener() {
@@ -263,7 +270,23 @@ public class MainWindow extends BDFrame {
 
             }
         });
-
+        export.add(exportPathway);
+        export.add(exportAA);
+        export.add(exportCDNA);
+        exportPathway.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.pm.exportPathway();
+            }
+        });
+        options.add(hideCompounds);
+        hideCompounds.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.gm.remove = hideCompounds.isSelected();
+                Main.gm.updateGraph();
+            }
+        });
         repoOptions.add(chooseRepository);
         repoOptions.add(useLocalRepo);
         chooseRepository.addActionListener(new ActionListener() {
@@ -281,6 +304,8 @@ public class MainWindow extends BDFrame {
         menu.add(File);
         menu.add(Parts);
         menu.add(repoOptions);
+        menu.add(export);
+        menu.add(options);
         menu.add(Window);
         menu.add(HelpM);
         // </editor-fold>

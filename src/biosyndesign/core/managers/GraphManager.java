@@ -11,10 +11,7 @@ import com.mxgraph.view.mxGraph;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.*;
 
 /**
  * Created by Umarov on 2/21/2017.
@@ -23,6 +20,7 @@ public class GraphManager {
     private ProjectState s;
     private MainWindow mainWindow;
     private int scale = 2;
+    public boolean remove;
 
     public GraphManager(ProjectState s, MainWindow mainWindow) {
         this.s = s;
@@ -31,6 +29,7 @@ public class GraphManager {
 
     public void updateGraph() {
         s.graphNodes = new Hashtable<>();
+        ArrayList<Object> toRemove = new ArrayList<>();
         Collections.sort(s.reactions, new Comparator<Part>() {
             public int compare(Part left, Part right) {
                 return left.id.compareTo(right.id);
@@ -153,6 +152,7 @@ public class GraphManager {
                         } else {
                             graph.insertEdge(parent, null, stoichiometry, objects.get(usedParts.indexOf(c.id)), v1, "EDGE");
                         }
+                        toRemove.remove(objects.get(usedParts.indexOf(c.id)));
                     } else {
                         cc++;
                         ms.move();
@@ -172,6 +172,7 @@ public class GraphManager {
                         }
                         usedParts.add(c.id);
                         objects.add(v2);
+                        toRemove.add(v2);
                     }
 
                 }
@@ -203,6 +204,12 @@ public class GraphManager {
                     s.graphNodes.put(v2, c);
                     usedParts.add(c.id);
                     objects.add(v2);
+                }
+            }
+            if(remove) {
+                graph.removeCells(toRemove.toArray());
+                for (Object o : toRemove) {
+                    s.graphNodes.remove(o);
                 }
             }
         } catch (Exception ex) {
