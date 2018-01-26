@@ -25,6 +25,7 @@ public class Reaction extends Part{
     public boolean nativeEnzyme;
     public String cDNA;
     public ArrayList<Comment> comments;
+    public String baseCDNA;
 
     public Reaction(String id, String name, String url, double energy) {
         super(id, name, url);

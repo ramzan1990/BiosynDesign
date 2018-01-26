@@ -37,6 +37,8 @@ public class CDNAManager {
     private HashMap<String, String> codons;
     private ArrayList<Comment> comments;
     private JDialog thisFrame;
+    private String newCDNA;
+    JScrollPane seqTASC, cDNATASC;
 
     public CDNAManager(PartsManager pm, MainWindow mainWindow) {
         this.pm = pm;
@@ -147,7 +149,7 @@ public class CDNAManager {
         seqTA.setFont(font2);
         seqTA.setEditable(false);
         //seqTA.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        JScrollPane sc = new JScrollPane(seqTA);
+        seqTASC = new JScrollPane(seqTA);
         //sc.setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, Color.BLACK));
         JLabel columnheader = new JLabel() {
 
@@ -192,11 +194,11 @@ public class CDNAManager {
         };
         rowheader.setBackground(Color.white);
         rowheader.setOpaque(true);
-        sc.setColumnHeaderView(columnheader);
-        sc.setRowHeaderView(rowheader);
-        sc.setPreferredSize(new Dimension(wd, 200));
-        sc.setBackground(Color.WHITE);
-        UI.addTo(jp, sc);
+        seqTASC.setColumnHeaderView(columnheader);
+        seqTASC.setRowHeaderView(rowheader);
+        seqTASC.setPreferredSize(new Dimension(wd, 200));
+        seqTASC.setBackground(Color.WHITE);
+        UI.addTo(jp, seqTASC);
         UI.addTo(jp, new JLabel("cDNA "));
         cDNATA = new JTextArea();
         cDNATA.setText(breakString(r.cDNA, 60));
@@ -288,6 +290,7 @@ public class CDNAManager {
                         }
                         line = line.toLowerCase();
                         line = line.replaceAll("u", "t");
+                        r.baseCDNA = line;
                         cDNATA.setText(line);
                         seqTA.setCaretPosition(0);
                         cDNATA.setCaretPosition(0);
@@ -306,6 +309,49 @@ public class CDNAManager {
                 checkCDNA();
             }
         });
+        JButton b6 = new JButton("Base cDNA");
+        b6.addMouseListener(new MouseListener() {
+            int cp;
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                newCDNA = cDNATA.getText();
+                cp = cDNATASC.getVerticalScrollBar().getValue();
+                cDNATA.setText(r.baseCDNA);
+                setScroll();
+            }
+
+            private void setScroll() {
+                final Runnable run1 = new Runnable(){
+                    public void run(){
+                        cDNATASC.getVerticalScrollBar().setValue(cp);
+                    }
+                };
+                SwingUtilities.invokeLater(run1);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                cp = cDNATASC.getVerticalScrollBar().getValue();
+                cDNATA.setText(newCDNA);
+                setScroll();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+
+            }
+        });
         count = new JLabel();
         bp.add(b1);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -316,6 +362,8 @@ public class CDNAManager {
         bp.add(b4);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(b5);
+        bp.add(Box.createRigidArea(new Dimension(10, 0)));
+        bp.add(b6);
         bp.add(Box.createRigidArea(new Dimension(10, 0)));
         bp.add(count);
         paintComments();
@@ -351,7 +399,7 @@ public class CDNAManager {
                 }
             }
         });
-        sc = new JScrollPane(cDNATA);
+        cDNATASC = new JScrollPane(cDNATA);
         //sc.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
         columnheader = new JLabel() {
 
@@ -398,11 +446,11 @@ public class CDNAManager {
         };
         rowheader.setBackground(Color.white);
         rowheader.setOpaque(true);
-        sc.setColumnHeaderView(columnheader);
-        sc.setRowHeaderView(rowheader);
-        sc.setPreferredSize(new Dimension(wd, 200));
-        sc.setBackground(Color.WHITE);
-        UI.addTo(jp, sc);
+        cDNATASC.setColumnHeaderView(columnheader);
+        cDNATASC.setRowHeaderView(rowheader);
+        cDNATASC.setPreferredSize(new Dimension(wd, 200));
+        cDNATASC.setBackground(Color.WHITE);
+        UI.addTo(jp, cDNATASC);
         UI.addTo(jp, bp);
         UI.addTo(jp, new JLabel("Annotation "));
         comTA = new JTextArea();
@@ -425,7 +473,7 @@ public class CDNAManager {
                 updateComment();
             }
         });
-        sc = new JScrollPane(comTA);
+        JScrollPane sc = new JScrollPane(comTA);
         sc.setPreferredSize(new Dimension(wd, 120));
         UI.addTo(jp, sc);
 

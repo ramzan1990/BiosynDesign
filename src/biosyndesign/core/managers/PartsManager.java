@@ -187,6 +187,7 @@ public class PartsManager {
                             r.nativeEnzyme = true;
                             addPartsS(new Part[]{prots[0]}, false);
                             r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+                            r.baseCDNA = r.cDNA;
                         } else {
                             r.enzymeType = "Foreign";
                         }
