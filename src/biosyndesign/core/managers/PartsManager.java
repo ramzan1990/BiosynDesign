@@ -63,9 +63,9 @@ public class PartsManager {
     private static SBOLInterface lInt;
 
 
-    public PartsManager(ProjectState s, MainWindow mainWindow, GraphManager gm) {
+    public PartsManager(ProjectState s, MainWindow mainWindow, GraphManager gm, LocalRepo lp) {
         sInt = new SBOLme(s.prefix);
-        lInt = new LocalRepo();
+        lInt = lp;
         cInt = sInt;
         this.s = s;
         this.mainWindow = mainWindow;
@@ -515,7 +515,7 @@ public class PartsManager {
             }
             cmb2.setEnabled(false);
             cmb2.setSelectedIndex(-1);
-            prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber, "");
+            prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
 
             int pick = -1;
             for (int i = 0; i < prots.length; i++) {

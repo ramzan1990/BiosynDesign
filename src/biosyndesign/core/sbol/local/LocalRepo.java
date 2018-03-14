@@ -275,7 +275,7 @@ public class LocalRepo implements SBOLInterface {
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ECNumber);
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), ECNumber);
         }
         return p;
     }

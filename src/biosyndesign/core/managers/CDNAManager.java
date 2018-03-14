@@ -257,7 +257,8 @@ public class CDNAManager {
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                cDNATA.setText(pm.getCDNA(r));
+                r.baseCDNA = pm.getCDNA(r);
+                cDNATA.setText(r.baseCDNA);
                 seqTA.setCaretPosition(0);
                 cDNATA.setCaretPosition(0);
             }
