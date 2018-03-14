@@ -207,6 +207,15 @@ public class GraphManager {
                 }
             }
             if(remove) {
+                try{
+                    if(usedParts.contains(s.target.id)){
+                        toRemove.remove(objects.get(usedParts.indexOf(s.target.id)));
+                    }
+                    if(usedParts.contains(s.source.id)){
+                        toRemove.remove(objects.get(usedParts.indexOf(s.source.id)));
+                    }
+                }catch (Exception e){
+                }
                 graph.removeCells(toRemove.toArray());
                 for (Object o : toRemove) {
                     s.graphNodes.remove(o);

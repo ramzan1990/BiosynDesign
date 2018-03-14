@@ -97,7 +97,8 @@ public class PartsManager {
         }.start();
     }
 
-    public void addPartsS(Part[] p, boolean update) {
+    public Part[] addPartsS(Part[] p, boolean update) {
+        Part[] np = new Part[p.length];
         for (int i = 0; i < p.length; i++) {
             try {
                 if (!p[i].local) {
@@ -138,7 +139,7 @@ public class PartsManager {
                             System.out.println("need to add compound");
                             op = (Compound) cInt.findParts(0, 0, id)[0];
                             System.out.println("compound added");
-                            addPartsS(new Part[]{op}, false);
+                            op = (Compound) addPartsS(new Part[]{op}, false)[0];
                         }
                         r.compounds.add(op);
                         int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
@@ -193,7 +194,9 @@ public class PartsManager {
                         }
                     }
                 } else if (p[i] instanceof Compound) {
-                    if (s.compounds.contains(p[i])) {
+                    int index = s.compounds.indexOf(p[i]);
+                    if (index!=-1) {
+                        np[i] = s.compounds.get(index);
                         continue;
                     }
                     p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
@@ -215,6 +218,7 @@ public class PartsManager {
                         } catch (Exception ex) {
                         }
                     }
+                    np[i] = p[i];
                 } else if (p[i] instanceof Protein) {
                     Protein pr = (Protein) p[i];
                     pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
@@ -232,6 +236,7 @@ public class PartsManager {
             updateTable();
             mainWindow.setStatusLabel("Parts Added");
         }
+        return np;
     }
 
     public void showInfo(Part c) {
@@ -535,7 +540,9 @@ public class PartsManager {
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
-                dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.cDNA});
+                if(!r.enzymeType.equals("Native")) {
+                    dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.cDNA});
+                }
             } else {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
             }
@@ -555,7 +562,7 @@ public class PartsManager {
         int c = 0;
         Reaction cr = null;
         for (Reaction r : s.reactions) {
-            if (r.enzyme != null) {
+            if (r.enzyme != null && !r.enzymeType.equals("Native")) {
                 if (row == c) {
                     cr = r;
                     break;
