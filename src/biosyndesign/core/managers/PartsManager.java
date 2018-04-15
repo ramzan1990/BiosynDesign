@@ -23,6 +23,7 @@ import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
 import org.openscience.cdk.similarity.Tanimoto;
 import org.openscience.cdk.smiles.SmilesParser;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.xml.namespace.QName;
@@ -195,7 +196,7 @@ public class PartsManager {
                     }
                 } else if (p[i] instanceof Compound) {
                     int index = s.compounds.indexOf(p[i]);
-                    if (index!=-1) {
+                    if (index != -1) {
                         np[i] = s.compounds.get(index);
                         continue;
                     }
@@ -403,17 +404,19 @@ public class PartsManager {
         UI.addTo(jp, new JLabel("Organism Filter "));
         String[] options = cInt.getOrganisms(r.ec.get(r.pickedEC).ecNumber);
         JComboBox cmb2 = new JComboBox(options);
+        int hh = (int) cmb2.getPreferredSize().getHeight();
+        cmb2.setPreferredSize(new Dimension(450, hh));
         AutoCompleteDecorator.decorate(cmb2);
         UI.addTo(jp, cmb2);
 
-        int  ww= (int)cmb2.getPreferredSize().getWidth();
+
         UI.addTo(jp, new JLabel("Enzyme "));
         DefaultListModel model = new DefaultListModel();
         JList partsList = new JList(model);
         JScrollPane partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
-        partsPane.setPreferredSize(new Dimension(ww, 200));
-        partsPane.setMaximumSize(new Dimension(ww, 200));
+        partsPane.setPreferredSize(new Dimension(450, 200));
+        partsPane.setMaximumSize(new Dimension(450, 200));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         UI.addTo(jp, partsPane);
 
@@ -422,20 +425,24 @@ public class PartsManager {
         //ta.setPreferredSize(new Dimension(400, 140));
         //ta.setMaximumSize(new Dimension(400, 140));
         //UI.addTo(jp, ta);
-
-        prepareEnzymeDialog(r, cmb1, cmb2, partsList);
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (cmb1.getSelectedIndex() == 1 && cmb2.getItemCount() < 1) {
+                    JOptionPane.showMessageDialog(null, "Foreign enzyme for this enzyme class doesn't exist!");
+                }
                 if (!r.nativeEnzyme && cmb1.getSelectedIndex() == 0) {
-                    cmb1.setSelectedIndex(1);
                     JOptionPane.showMessageDialog(null, "Native enzyme for this enzyme class doesn't exist!");
+                    cmb1.setSelectedIndex(1);
                 } else {
                     r.enzymeType = cmb1.getSelectedItem().toString();
-                    prepareEnzymeDialog(r, null, cmb2, partsList);
+                    prepareEnzymeDialog(r, cmb2, partsList);
                 }
             }
         });
+
+        cmb1.setSelectedItem(r.enzymeType);
+
         JButton b1 = new JButton("Done");
         UI.addToRight(jp, b1, false);
         b1.addActionListener(new ActionListener() {
@@ -455,21 +462,20 @@ public class PartsManager {
             cmb2.setSelectedItem(r.enzyme.organism);
         }
         frame.getContentPane().add(jp);
-        frame.pack();
+        //frame.pack();
+        frame.setSize(new Dimension(480, 480));
         frame.setLocationRelativeTo(mainWindow);
         frame.setVisible(true);
         mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
-    public String getCDNA(Reaction r){
+    public String getCDNA(Reaction r) {
         return cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
     }
-    private void prepareEnzymeDialog(Reaction r, JComboBox cmb1, JComboBox cmb2, JList partsList) {
+
+    private void prepareEnzymeDialog(Reaction r, JComboBox cmb2, JList partsList) {
         ArrayList<String> names = new ArrayList<>();
         if (r.enzymeType.equals("Native")) {
-            if (cmb1 != null) {
-                cmb1.setSelectedIndex(0);
-            }
             prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
             int pick = -1;
             for (int i = 0; i < prots.length; i++) {
@@ -485,9 +491,6 @@ public class PartsManager {
             cmb2.setEnabled(false);
             cmb2.setSelectedItem(s.organism);
         } else if (r.enzymeType.equals("Foreign")) {
-            if (cmb1 != null) {
-                cmb1.setSelectedIndex(1);
-            }
             cmb2.setSelectedIndex(-1);
             cmb2.setEnabled(true);
             cmb2.addActionListener(new ActionListener() {
@@ -511,9 +514,6 @@ public class PartsManager {
                 }
             });
         } else {
-            if (cmb1 != null) {
-                cmb1.setSelectedIndex(2);
-            }
             cmb2.setEnabled(false);
             cmb2.setSelectedIndex(-1);
             prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
@@ -541,7 +541,7 @@ public class PartsManager {
         for (Reaction r : s.reactions) {
             if (r.enzyme != null) {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
-                if(!r.enzymeType.equals("Native")) {
+                if (!r.enzymeType.equals("Native")) {
                     dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.cDNA});
                 }
             } else {

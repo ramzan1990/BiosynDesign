@@ -779,7 +779,7 @@ public class MainWindow extends BDFrame {
                     }else  if(cmb2.getSelectedIndex() == 4){
                         qValueTF.setText("2.3.1.74");
                     }else  if(cmb2.getSelectedIndex() == 5){
-                        qValueTF.setText("C(C=CC1)=CC=1");
+                        qValueTF.setText("CC(=O)C(=O)O");
                     }
 
                 } else if (cmb1.getSelectedIndex() == 1) {

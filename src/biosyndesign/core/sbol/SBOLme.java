@@ -5,16 +5,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -23,15 +24,20 @@ import java.util.List;
 
 public class SBOLme implements SBOLInterface {
     public String prefix;
+    HttpClient httpclient;
+
 
     public SBOLme(String prefix) {
         this.prefix = prefix;
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(6 * 1000).build();
+        httpclient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
     }
 
+
+
     public Part[] findParts(int type, int filter, String value) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost;
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             if (type == 0 && filter == 5) {
@@ -46,18 +52,7 @@ public class SBOLme implements SBOLInterface {
                 nvps.add(new BasicNameValuePair("max", "25"));
             }
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,9 +89,8 @@ public class SBOLme implements SBOLInterface {
     }
 
     public Protein[] getProteins(String ecNumber, String organism) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
@@ -106,18 +100,7 @@ public class SBOLme implements SBOLInterface {
             nvps.add(new BasicNameValuePair("page", "1"));
             nvps.add(new BasicNameValuePair("max", "300"));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,26 +115,14 @@ public class SBOLme implements SBOLInterface {
     }
 
     public Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/competing.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("compound", compound));
             nvps.add(new BasicNameValuePair("organism", organism));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -179,26 +150,14 @@ public class SBOLme implements SBOLInterface {
 
     @Override
     public Reaction[] commonReactions(String id1, String id2) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/common_reaction.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("compound1", id1));
             nvps.add(new BasicNameValuePair("compound2", id2));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -219,26 +178,14 @@ public class SBOLme implements SBOLInterface {
 
     @Override
     public boolean isNative(String reaction, String organism) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/is_native.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("reaction", reaction));
             nvps.add(new BasicNameValuePair("organism", organism));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
             JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
             return jsonObject.get("native").getAsBoolean();
         } catch (Exception e) {
@@ -249,9 +196,8 @@ public class SBOLme implements SBOLInterface {
 
     @Override
     public String[] getOrganisms(String ecNumber) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_organisms.php");
             RequestConfig.Builder requestConfig = RequestConfig.custom();
             requestConfig.setConnectTimeout(20 * 1000);
@@ -261,18 +207,7 @@ public class SBOLme implements SBOLInterface {
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("ec", ecNumber));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -289,9 +224,8 @@ public class SBOLme implements SBOLInterface {
 
     @Override
     public String getCDNA(String sequence, String organism) {
-        StringBuffer result = new StringBuffer();
+        String result = null;
         try {
-            CloseableHttpClient httpclient = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_cdna.php");
             RequestConfig.Builder requestConfig = RequestConfig.custom();
             requestConfig.setConnectTimeout(20 * 1000);
@@ -302,18 +236,7 @@ public class SBOLme implements SBOLInterface {
             nvps.add(new BasicNameValuePair("sequence", sequence));
             nvps.add(new BasicNameValuePair("organism", organism));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
-            CloseableHttpResponse response = httpclient.execute(httpPost);
-            try {
-                HttpEntity entity = response.getEntity();
-                Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
-                for (int c; (c = in.read()) >= 0; )
-                    result.append((char) c);
-                EntityUtils.consume(entity);
-            } finally {
-                response.close();
-            }
-            httpclient.close();
-
+            result = getResponse(httpPost);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -321,5 +244,20 @@ public class SBOLme implements SBOLInterface {
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
         return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
+    }
+
+    private String getResponse(HttpPost httpPost) {
+        StringBuffer result = new StringBuffer();
+        try {
+            HttpResponse response = httpclient.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            Reader in = new BufferedReader(new InputStreamReader(entity.getContent()));
+            for (int c; (c = in.read()) >= 0; )
+                result.append((char) c);
+            EntityUtils.consume(entity);
+        }  catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
+        }
+        return result.toString();
     }
 }
