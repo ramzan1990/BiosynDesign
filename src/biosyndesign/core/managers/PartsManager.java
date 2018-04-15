@@ -445,6 +445,7 @@ public class PartsManager {
                 r.enzyme = prots[partsList.getSelectedIndex()];
                 addPartsS(new Part[]{r.enzyme}, true);
                 r.cDNA = getCDNA(r);
+                r.baseCDNA = r.cDNA;
                 frame.setVisible(false);
                 frame.dispose();
                 updateTable();
