@@ -2,6 +2,7 @@ package biosyndesign.core.ui.popups;
 
 import biosyndesign.core.sbol.parts.Compound;
 import biosyndesign.core.Main;
+import biosyndesign.core.sbol.parts.Part;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -32,7 +33,7 @@ public class CompoundCellPopUp extends JPopupMenu {
         item2= new JMenuItem("Delete");
         item2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.pm.delete(new Object[]{cell});
+                Main.pm.delete(new Part[]{cell});
             }
         });
         item3= new JMenuItem("Find Reactions");
@@ -45,6 +46,6 @@ public class CompoundCellPopUp extends JPopupMenu {
         add(item1);
         add(item4);
         add(item3);
-        //add(item2);
+        add(item2);
     }
 }

@@ -29,7 +29,7 @@ public class SBOLme implements SBOLInterface {
 
     public SBOLme(String prefix) {
         this.prefix = prefix;
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(6 * 1000).build();
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(4 * 1000).setSocketTimeout(15 * 1000).setConnectionRequestTimeout(1*1000).build();
         httpclient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
     }
 

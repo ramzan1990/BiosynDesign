@@ -441,12 +441,12 @@ public class LocalRepo implements SBOLInterface {
                 //Protein
                 String oID = definition.getChildText("organismkegg_id");
                 String oName = definition.getChildText("organismname");
-                String ECNumber = definition.getChildText("ecnumid");
+                String ECNumber = definition.getChildText("enzyme_classid");
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
                 execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, ECNumber, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
             } else {
                 //EC Number
-                String ECNumber = definition.getChildText("ecnumid");
+                String ECNumber = definition.getChildText("enzyme_classid");
                 execute("INSERT INTO ecnum(ID, ECNumber, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
@@ -463,7 +463,7 @@ public class LocalRepo implements SBOLInterface {
                 Element fc = e.getChild("sbolFunctionalComponent");
                 String fcName = fc.getChildText("sboldisplayId");
                 if (fcName.endsWith("enzyme")) {
-                    enzymes.add(fc.getChildText("ecnumid"));
+                    enzymes.add(fc.getChildText("enzyme_classid"));
                 } else {
                     compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
                 }

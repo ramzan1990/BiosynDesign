@@ -123,9 +123,6 @@ public class PartsGraph extends JPanel implements Serializable {
         graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(graph.getSelectionCells().length>1){
-                    return;
-                }
                 if(SwingUtilities.isRightMouseButton(e)){
                     mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
                     if (cell != null) {

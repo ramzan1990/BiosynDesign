@@ -33,7 +33,7 @@ public class MainWindow extends BDFrame {
     private JMenuBar menu;
     public JTextArea consoleArea;
     private JScrollPane consoleScroll;
-    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity, zoomIn, zoomOut, alignArrows;
+    private JLabel newProject, openProject, saveProject, snapShotLabel, update, delete, view, edit, similarity, zoomIn, zoomOut, alignArrows, commonReaction;
     JComboBox cmb1, cmb2;
     JTextField qValueTF;
     Part[] parts;
@@ -564,6 +564,32 @@ public class MainWindow extends BDFrame {
             }
         });
 
+
+
+        commonReaction = new JLabel();
+        commonReaction.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-1.png")));
+        commonReaction.setToolTipText("Similarity");
+        commonReaction.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                Main.pm.commonReaction();
+            }
+
+            public void mousePressed(MouseEvent e) {
+            }
+
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            public void mouseEntered(MouseEvent e) {
+                commonReaction.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-2.png")));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                commonReaction.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-1.png")));
+            }
+        });
+
+
         delete = new JLabel();
         delete.setIcon(new ImageIcon(Main.class.getResource("ui/images/delete.png")));
         delete.setToolTipText("Delete cells");
@@ -664,26 +690,13 @@ public class MainWindow extends BDFrame {
         toolsPanel.add(alignArrows);
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
         toolsPanel.add(similarity);
+        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+        toolsPanel.add(commonReaction);
+
         toolsPanel.add(Box.createHorizontalGlue());
-        JLabel lt = new JLabel("Info");
+        JLabel lt = new JLabel("Project Info");
         lt.setIcon(new ImageIcon(Main.class.getResource("ui/images/project-info.png")));
         toolsPanel.add(lt);
-        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        toolsPanel.addSeparator();
-        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        JLabel tb1 = new JLabel("Common Reaction");
-        tb1.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-1.png")));
-        tb1.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Main.pm.commonReaction();
-            }
-
-        });
-        toolsPanel.add(tb1);
-
-        toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
-        toolsPanel.addSeparator();
         toolsPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
         lt.addMouseListener(new MouseAdapter() {

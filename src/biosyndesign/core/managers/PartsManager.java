@@ -11,6 +11,7 @@ import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
+import org.apache.commons.io.FileUtils;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
@@ -78,12 +79,14 @@ public class PartsManager {
         try {
             System.out.println("saving...");
             URL website = new URL(s.prefix + "/" + p.url);
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            //ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+            //FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
+            //fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+            File f = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
+            FileUtils.copyURLToFile(website, f, 5*1000, 5*1000);
             System.out.println("saving done");
         } catch (Exception e) {
-
+            JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
         }
     }
 
@@ -152,7 +155,7 @@ public class PartsManager {
                         r.stoichiometry.put(op, s);
                     }
                     //adding reactions ec numbers
-                    expr = xFactory.compile("//ecnumid", Filters.element());
+                    expr = xFactory.compile("//enzyme_classid", Filters.element());
                     links = expr.evaluate(jdomDocument);
                     for (Element e : links) {
                         String id = e.getText();
@@ -374,16 +377,35 @@ public class PartsManager {
     }
 
     public void cellClicked(mxCell cell, int x, int y) {
+        mxGraph graph = mainWindow.workSpacePanel.graph;
         Part p = s.graphNodes.get(cell);
-        if (p instanceof Reaction) {
-            ReactionCellPopUp pop = new ReactionCellPopUp((Reaction) p);
-            pop.show(mainWindow, x, y);
-        } else if (p instanceof Compound) {
-            CompoundCellPopUp pop = new CompoundCellPopUp((Compound) p);
-            pop.show(mainWindow, x, y);
-        } else if (p instanceof Protein) {
-            EnzymeCellPopUp pop = new EnzymeCellPopUp((Protein) p);
-            pop.show(mainWindow, x, y);
+        if(graph.getSelectionCells().length>1){
+            boolean allCompound = true;
+            Part[] pp = new Part[graph.getSelectionCells().length];
+            for(int i =0;i<graph.getSelectionCells().length; i++){
+                if(!(s.graphNodes.get(graph.getSelectionCells()[i]) instanceof  Compound)){
+                    allCompound = false;
+                }
+                pp[i] = s.graphNodes.get(graph.getSelectionCells()[i]);
+            }
+            if(allCompound && graph.getSelectionCells().length==2){
+                CompoundsCellPopUp pop = new CompoundsCellPopUp(pp);
+                pop.show(mainWindow, x, y);
+            }else{
+               DeleteCellPopUp pop = new DeleteCellPopUp(pp);
+               pop.show(mainWindow, x, y);
+            }
+        }else {
+            if (p instanceof Reaction) {
+                ReactionCellPopUp pop = new ReactionCellPopUp((Reaction) p);
+                pop.show(mainWindow, x, y);
+            } else if (p instanceof Compound) {
+                CompoundCellPopUp pop = new CompoundCellPopUp((Compound) p);
+                pop.show(mainWindow, x, y);
+            } else if (p instanceof Protein) {
+                EnzymeCellPopUp pop = new EnzymeCellPopUp((Protein) p);
+                pop.show(mainWindow, x, y);
+            }
         }
     }
 
@@ -682,6 +704,10 @@ public class PartsManager {
     public void commonReaction() {
         Part c1 = s.graphNodes.get(gm.getSelected()[0]);
         Part c2 = s.graphNodes.get(gm.getSelected()[1]);
+        commonReaction(c1, c2);
+    }
+
+    public void commonReaction(Part c1, Part c2){
         if (c1 instanceof Compound && c2 instanceof Compound) {
             final JDialog frame = new JDialog(mainWindow, "Common Reactions", true);
             JPanel jp = new JPanel();
@@ -719,7 +745,6 @@ public class PartsManager {
             frame.setLocationRelativeTo(mainWindow);
             frame.setVisible(true);
         }
-
     }
 
     public void structSimilarity(Reaction r) {
@@ -827,7 +852,25 @@ public class PartsManager {
         Object[] cells = gm.getSelected();
         delete(cells);
     }
-
+    public void delete(Part[] parts) {
+        mxGraph graph = mainWindow.workSpacePanel.graph;
+        graph.getModel().beginUpdate();
+        //remove reactions
+        for (Object part : parts) {
+            if (part instanceof Reaction) {
+                delete((Reaction) part);
+            } else if (part instanceof Compound) {
+                delete((Compound) part);
+            } else if (part instanceof Protein) {
+                delete((Protein) part);
+            }
+        }
+        graph.refresh();
+        graph.getModel().endUpdate();
+        graph.refresh();
+        gm.updateGraph();
+        updateTable();
+    }
     public void delete(Object[] cells) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();

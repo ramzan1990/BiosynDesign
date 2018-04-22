@@ -1,5 +1,6 @@
 package biosyndesign.core.ui.popups;
 
+import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.Main;
 
@@ -38,7 +39,7 @@ public class ReactionCellPopUp extends JPopupMenu {
         item4= new JMenuItem("Delete");
         item4.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.pm.delete(new Object[]{cell});
+                Main.pm.delete(new Part[]{cell});
             }
         });
         item5= new JMenuItem("Reverse");
@@ -51,7 +52,7 @@ public class ReactionCellPopUp extends JPopupMenu {
         add(item1);
         //add(item2);
         add(item3);
-        //add(item4);
         add(item5);
+        add(item4);
     }
 }
