@@ -16,11 +16,12 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public class SBOLme implements SBOLInterface {
     public String prefix;
@@ -199,11 +200,6 @@ public class SBOLme implements SBOLInterface {
         String result = null;
         try {
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_organisms.php");
-            RequestConfig.Builder requestConfig = RequestConfig.custom();
-            requestConfig.setConnectTimeout(20 * 1000);
-            requestConfig.setConnectionRequestTimeout(20 * 1000);
-            requestConfig.setSocketTimeout(20 * 1000);
-            httpPost.setConfig(requestConfig.build());
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("ec", ecNumber));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
@@ -227,11 +223,6 @@ public class SBOLme implements SBOLInterface {
         String result = null;
         try {
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_cdna.php");
-            RequestConfig.Builder requestConfig = RequestConfig.custom();
-            requestConfig.setConnectTimeout(20 * 1000);
-            requestConfig.setConnectionRequestTimeout(20 * 1000);
-            requestConfig.setSocketTimeout(20 * 1000);
-            httpPost.setConfig(requestConfig.build());
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("sequence", sequence));
             nvps.add(new BasicNameValuePair("organism", organism));
@@ -244,6 +235,36 @@ public class SBOLme implements SBOLInterface {
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
         return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
+    }
+
+    public void getZip(String reaction, String organism, String ecNumber, String output) {
+        ZipInputStream zin = null;
+        try {
+            HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_zip.php");
+            List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+            nvps.add(new BasicNameValuePair("reaction", reaction));
+            nvps.add(new BasicNameValuePair("organism", organism));
+            nvps.add(new BasicNameValuePair("ec_number", ecNumber));
+            httpPost.setEntity(new UrlEncodedFormEntity(nvps));
+            HttpResponse response = httpclient.execute(httpPost);
+            HttpEntity entity = response.getEntity();
+            if (entity != null) {
+                zin = new ZipInputStream(entity.getContent());
+            }
+            ZipEntry ze = null;
+            while ((ze = zin.getNextEntry()) != null) {
+                FileOutputStream fout = new FileOutputStream(output +ze.getName());
+                for (int c = zin.read(); c != -1; c = zin.read()) {
+                    fout.write(c);
+                }
+                zin.closeEntry();
+                fout.close();
+            }
+            zin.close();
+            EntityUtils.consume(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private String getResponse(HttpPost httpPost) {

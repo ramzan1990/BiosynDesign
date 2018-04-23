@@ -27,26 +27,23 @@ import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.xml.namespace.QName;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.URI;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.sbolstandard.core2.ComponentDefinition;
 import org.sbolstandard.core2.SBOLDocument;
 import org.sbolstandard.core2.SBOLWriter;
 
@@ -77,14 +74,25 @@ public class PartsManager {
 
     private void saveXML(Part p) {
         try {
-            System.out.println("saving...");
+            //System.out.println("saving...");
             URL website = new URL(s.prefix + "/" + p.url);
             //ReadableByteChannel rbc = Channels.newChannel(website.openStream());
             //FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             //fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             File f = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             FileUtils.copyURLToFile(website, f, 5*1000, 5*1000);
-            System.out.println("saving done");
+            //System.out.println("saving done");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
+        }
+    }
+
+    private  void saveReaction(String reaction, String ec){
+        try {
+            long startTime = System.currentTimeMillis();
+            cInt.getZip(reaction, s.organism, ec, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
+            long finishTime = System.currentTimeMillis();
+            System.out.println("That took: " + (finishTime - startTime) + " ms");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
         }
@@ -95,18 +103,21 @@ public class PartsManager {
         new Thread() {
             public void run() {
                 mainWindow.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                addPartsS(p, update);
+                addPartsS(p, update, true);
                 mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
             }
         }.start();
     }
 
-    public Part[] addPartsS(Part[] p, boolean update) {
+    public Part[] addPartsS(Part[] p, boolean update, boolean save) {
         Part[] np = new Part[p.length];
         for (int i = 0; i < p.length; i++) {
             try {
                 if (!p[i].local) {
-                    saveXML(p[i]);
+                    if(save) {
+                        saveXML(p[i]);
+                    }
                 } else {
                     Common.copy(p[i].url, s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id);
                 }
@@ -122,38 +133,9 @@ public class PartsManager {
                     XPathFactory xFactory = XPathFactory.instance();
                     Reaction r = (Reaction) p[i];
                     s.reactions.add(r);
-                    //adding reactions compounds
-                    XPathExpression<Element> expr = xFactory.compile("//sbolParticipation", Filters.element());
-                    List<Element> links = expr.evaluate(jdomDocument);
-                    for (Element e : links) {
-                        String id = e.getChildText("sboldisplayId");
-                        if (!(id.contains("product") || id.contains("reactant"))) {
-                            continue;
-                        }
-                        boolean prod = id.contains("product");
-                        id = id.substring(0, id.lastIndexOf("_"));
-                        Compound op = null;
-                        for (Compound c : s.compounds) {
-                            if (c.id.equals(id)) {
-                                op = c;
-                                break;
-                            }
-                        }
-                        if (op == null) {
-                            System.out.println("need to add compound");
-                            op = (Compound) cInt.findParts(0, 0, id)[0];
-                            System.out.println("compound added");
-                            op = (Compound) addPartsS(new Part[]{op}, false)[0];
-                        }
-                        r.compounds.add(op);
-                        int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
-                        if (prod) {
-                            r.products.add(op);
-                        } else {
-                            r.reactants.add(op);
-                        }
-                        r.stoichiometry.put(op, s);
-                    }
+
+                    XPathExpression<Element> expr;
+                    List<Element> links;
                     //adding reactions ec numbers
                     expr = xFactory.compile("//enzyme_classid", Filters.element());
                     links = expr.evaluate(jdomDocument);
@@ -173,7 +155,7 @@ public class PartsManager {
                                 op = (ECNumber) temp[0];
                                 if (op != null) {
                                     s.ecNumbers.add(op);
-                                    saveXML(op);
+                                    //saveXML(op);
                                 }
                             }
                         }
@@ -183,6 +165,10 @@ public class PartsManager {
                             r.partialEC = id;
                         }
                     }
+                    //Downloading ZIPed Reaction XMLs
+                    //-----------------------------------------------------
+                    saveReaction(p[i].id, r.ec.get(r.pickedEC).ecNumber);
+                    //-----------------------------------------------------
                     r.nat = cInt.isNative(r.id, s.organism);
                     if (r.ec.size() > 0) {
                         Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
@@ -190,13 +176,45 @@ public class PartsManager {
                             r.enzyme = prots[0];
                             r.enzymeType = "Native";
                             r.nativeEnzyme = true;
-                            addPartsS(new Part[]{prots[0]}, false);
+                            addPartsS(new Part[]{prots[0]}, false, false);
                             r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
                             r.baseCDNA = r.cDNA;
                         } else {
                             r.enzymeType = "Foreign";
                         }
                     }
+
+                    //adding reactions compounds
+                    expr = xFactory.compile("//sbolParticipation", Filters.element());
+                    links = expr.evaluate(jdomDocument);
+                    for (Element e : links) {
+                        String id = e.getChildText("sboldisplayId");
+                        if (!(id.contains("product") || id.contains("reactant"))) {
+                            continue;
+                        }
+                        boolean prod = id.contains("product");
+                        id = id.substring(0, id.lastIndexOf("_"));
+                        Compound op = null;
+                        for (Compound c : s.compounds) {
+                            if (c.id.equals(id)) {
+                                op = c;
+                                break;
+                            }
+                        }
+                        if (op == null) {
+                            //op = (Compound) cInt.findParts(0, 0, id)[0];
+                            op = (Compound) addPartsS(new Part[]{new Compound(id, "", "")}, false, false)[0];
+                        }
+                        r.compounds.add(op);
+                        int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
+                        if (prod) {
+                            r.products.add(op);
+                        } else {
+                            r.reactants.add(op);
+                        }
+                        r.stoichiometry.put(op, s);
+                    }
+
                 } else if (p[i] instanceof Compound) {
                     int index = s.compounds.indexOf(p[i]);
                     if (index != -1) {
@@ -204,6 +222,7 @@ public class PartsManager {
                         continue;
                     }
                     p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                    p[i].url = Common.between(xml, "<sbol:persistentIdentity rdf:resource=\"", "\"/>");
                     try {
                         ((Compound) p[i]).smiles = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
                     } catch (Exception e) {
@@ -379,23 +398,23 @@ public class PartsManager {
     public void cellClicked(mxCell cell, int x, int y) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         Part p = s.graphNodes.get(cell);
-        if(graph.getSelectionCells().length>1){
+        if (graph.getSelectionCells().length > 1) {
             boolean allCompound = true;
             Part[] pp = new Part[graph.getSelectionCells().length];
-            for(int i =0;i<graph.getSelectionCells().length; i++){
-                if(!(s.graphNodes.get(graph.getSelectionCells()[i]) instanceof  Compound)){
+            for (int i = 0; i < graph.getSelectionCells().length; i++) {
+                if (!(s.graphNodes.get(graph.getSelectionCells()[i]) instanceof Compound)) {
                     allCompound = false;
                 }
                 pp[i] = s.graphNodes.get(graph.getSelectionCells()[i]);
             }
-            if(allCompound && graph.getSelectionCells().length==2){
+            if (allCompound && graph.getSelectionCells().length == 2) {
                 CompoundsCellPopUp pop = new CompoundsCellPopUp(pp);
                 pop.show(mainWindow, x, y);
-            }else{
-               DeleteCellPopUp pop = new DeleteCellPopUp(pp);
-               pop.show(mainWindow, x, y);
+            } else {
+                DeleteCellPopUp pop = new DeleteCellPopUp(pp);
+                pop.show(mainWindow, x, y);
             }
-        }else {
+        } else {
             if (p instanceof Reaction) {
                 ReactionCellPopUp pop = new ReactionCellPopUp((Reaction) p);
                 pop.show(mainWindow, x, y);
@@ -472,7 +491,7 @@ public class PartsManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 r.enzyme = prots[partsList.getSelectedIndex()];
-                addPartsS(new Part[]{r.enzyme}, true);
+                addPartsS(new Part[]{r.enzyme}, true, true);
                 r.cDNA = getCDNA(r);
                 r.baseCDNA = r.cDNA;
                 frame.setVisible(false);
@@ -707,7 +726,7 @@ public class PartsManager {
         commonReaction(c1, c2);
     }
 
-    public void commonReaction(Part c1, Part c2){
+    public void commonReaction(Part c1, Part c2) {
         if (c1 instanceof Compound && c2 instanceof Compound) {
             final JDialog frame = new JDialog(mainWindow, "Common Reactions", true);
             JPanel jp = new JPanel();
@@ -852,6 +871,7 @@ public class PartsManager {
         Object[] cells = gm.getSelected();
         delete(cells);
     }
+
     public void delete(Part[] parts) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
@@ -871,6 +891,7 @@ public class PartsManager {
         gm.updateGraph();
         updateTable();
     }
+
     public void delete(Object[] cells) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();

@@ -24,6 +24,7 @@ import java.sql.*;
 
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipInputStream;
 
 
 public class LocalRepo implements SBOLInterface {
@@ -318,6 +319,10 @@ public class LocalRepo implements SBOLInterface {
     @Override
     public String getCDNA(String sequence, String organism) {
         return "";
+    }
+
+    @Override
+    public void getZip(String reaction, String organism, String ecNumber, String output) {
     }
 
 
