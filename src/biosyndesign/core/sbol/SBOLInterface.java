@@ -4,8 +4,7 @@ import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Protein;
 import biosyndesign.core.sbol.parts.Reaction;
 
-import java.io.File;
-import java.util.zip.ZipInputStream;
+import java.util.ArrayList;
 
 public interface SBOLInterface {
 
@@ -25,5 +24,5 @@ public interface SBOLInterface {
 
     String getCDNA(String sequence, String organism);
 
-    void getZip(String reaction, String organism, String ecNumber, String output);
+    ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output);
 }

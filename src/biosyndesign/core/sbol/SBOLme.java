@@ -20,7 +20,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class SBOLme implements SBOLInterface {
@@ -237,8 +236,9 @@ public class SBOLme implements SBOLInterface {
         return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
     }
 
-    public void getZip(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output) {
         ZipInputStream zin = null;
+        ArrayList<String> prots = new ArrayList<>();
         try {
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_zip.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -257,6 +257,9 @@ public class SBOLme implements SBOLInterface {
                 for (int c = zin.read(); c != -1; c = zin.read()) {
                     fout.write(c);
                 }
+                if(ze.getName().length() - ze.getName().replace("_", "").length() == 3){
+                    prots.add(ze.getName());
+                }
                 zin.closeEntry();
                 fout.close();
             }
@@ -265,6 +268,7 @@ public class SBOLme implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return prots;
     }
 
     private String getResponse(HttpPost httpPost) {

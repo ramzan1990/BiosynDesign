@@ -87,15 +87,17 @@ public class PartsManager {
         }
     }
 
-    private  void saveReaction(String reaction, String ec){
+    private  ArrayList<String> saveReaction(String reaction, String ec){
+        ArrayList<String> zp = new ArrayList<>();
         try {
             long startTime = System.currentTimeMillis();
-            cInt.getZip(reaction, s.organism, ec, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
+            zp = cInt.getZip(reaction, s.organism, ec, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
             long finishTime = System.currentTimeMillis();
             System.out.println("That took: " + (finishTime - startTime) + " ms");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
         }
+        return zp;
     }
 
     public void addParts(Part[] p, boolean update) {
@@ -122,20 +124,20 @@ public class PartsManager {
                     Common.copy(p[i].url, s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id);
                 }
                 String xml = new String(Files.readAllBytes(Paths.get(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p[i].id)));
-
+                xml = xml.replaceAll(":", "");
+                SAXBuilder jdomBuilder = new SAXBuilder();
+                Document jdomDocument = jdomBuilder.build(new StringReader(xml));
+                XPathFactory xFactory = XPathFactory.instance();
+                XPathExpression<Element> expr;
+                List<Element> links;
                 if (p[i] instanceof Reaction) {
                     if (s.reactions.contains(p[i])) {
                         continue;
                     }
-                    xml = xml.replaceAll(":", "");
-                    SAXBuilder jdomBuilder = new SAXBuilder();
-                    Document jdomDocument = jdomBuilder.build(new StringReader(xml));
-                    XPathFactory xFactory = XPathFactory.instance();
+
                     Reaction r = (Reaction) p[i];
                     s.reactions.add(r);
 
-                    XPathExpression<Element> expr;
-                    List<Element> links;
                     //adding reactions ec numbers
                     expr = xFactory.compile("//enzyme_classid", Filters.element());
                     links = expr.evaluate(jdomDocument);
@@ -167,22 +169,22 @@ public class PartsManager {
                     }
                     //Downloading ZIPed Reaction XMLs
                     //-----------------------------------------------------
-                    saveReaction(p[i].id, r.ec.get(r.pickedEC).ecNumber);
-                    //-----------------------------------------------------
-                    r.nat = cInt.isNative(r.id, s.organism);
+                    String ecToSend = "no_ec";
                     if (r.ec.size() > 0) {
-                        Protein prots[] = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
-                        if (prots.length > 0) {
-                            r.enzyme = prots[0];
-                            r.enzymeType = "Native";
-                            r.nativeEnzyme = true;
-                            addPartsS(new Part[]{prots[0]}, false, false);
-                            r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
-                            r.baseCDNA = r.cDNA;
-                        } else {
-                            r.enzymeType = "Foreign";
-                        }
+                        ecToSend = r.ec.get(r.pickedEC).ecNumber;
                     }
+                    ArrayList<String> zp = saveReaction(p[i].id, ecToSend);
+                    if (zp.size() > 0) {
+                        r.nat = true;
+                        r.enzyme =(Protein)addPartsS(new Part[]{new Protein(zp.get(0), "", "", "")}, false, false)[0];
+                        r.enzymeType = "Native";
+                        r.nativeEnzyme = true;
+                        r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+                        r.baseCDNA = r.cDNA;
+                    } else {
+                        r.enzymeType = "Foreign";
+                    }
+                    //-----------------------------------------------------
 
                     //adding reactions compounds
                     expr = xFactory.compile("//sbolParticipation", Filters.element());
@@ -221,10 +223,10 @@ public class PartsManager {
                         np[i] = s.compounds.get(index);
                         continue;
                     }
-                    p[i].name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
-                    p[i].url = Common.between(xml, "<sbol:persistentIdentity rdf:resource=\"", "\"/>");
+                    p[i].name =  xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    p[i].url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
                     try {
-                        ((Compound) p[i]).smiles = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
+                        ((Compound) p[i]).smiles = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     } catch (Exception e) {
                     }
                     s.compounds.add((Compound) p[i]);
@@ -243,11 +245,20 @@ public class PartsManager {
                     }
                     np[i] = p[i];
                 } else if (p[i] instanceof Protein) {
+                    int index = s.proteins.indexOf(p[i]);
+                    if (index != -1) {
+                        np[i] = s.proteins.get(index);
+                        continue;
+                    }
                     Protein pr = (Protein) p[i];
-                    pr.sequence = Common.between(xml, "<sbol:elements>", "</sbol:elements>");
-                    pr.name = Common.between(xml, "<dcterms:title>", "</dcterms:title>");
+                    pr.sequence = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    pr.name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    pr.organism = xFactory.compile("//organismname", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    pr.url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
+                    pr.ecNumber = xFactory.compile("//enzyme_classid", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.nat = pr.organism.equals(s.organism);
                     s.proteins.add(pr);
+                    np[i] = p[i];
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();

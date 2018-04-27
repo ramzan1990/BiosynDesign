@@ -14,7 +14,6 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +23,6 @@ import java.sql.*;
 
 import java.util.*;
 import java.util.List;
-import java.util.zip.ZipInputStream;
 
 
 public class LocalRepo implements SBOLInterface {
@@ -322,7 +320,8 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
-    public void getZip(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output) {
+        return null;
     }
 
 
