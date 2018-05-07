@@ -2,10 +2,7 @@ package biosyndesign.core.ui;
 
 import biosyndesign.core.Main;
 import biosyndesign.core.graphics.PartsGraph;
-import biosyndesign.core.sbol.parts.Compound;
 import biosyndesign.core.sbol.parts.Part;
-import biosyndesign.core.ui.popups.CompoundCellPopUp;
-import biosyndesign.core.ui.popups.TablePopUp;
 import biosyndesign.core.utils.UI;
 
 import java.awt.*;
@@ -15,10 +12,7 @@ import java.time.LocalDateTime;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
 
 public class MainWindow extends BDFrame {
 
@@ -176,7 +170,7 @@ public class MainWindow extends BDFrame {
         });
         addEnzyme.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.lpm.addEnzyme();
+                Main.lpm.addProtein();
             }
         });
         competingReactions.addActionListener(new ActionListener() {

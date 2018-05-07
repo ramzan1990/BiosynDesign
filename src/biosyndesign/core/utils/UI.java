@@ -73,4 +73,20 @@ public class UI {
         panel.add(c);
         jp.add(panel);
     }
+
+    public static void addTATo(JPanel jp, JTextArea ta, int i, int m) {
+        ta.setPreferredSize(new Dimension(i, m));
+        ta.setMaximumSize(new Dimension(i, m));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(ta);
+        jp.add(panel);
+    }
+
+    public static void addCBTo(JPanel jp, JComboBox c, int i, int m) {
+        c.setPreferredSize(new Dimension(i, m));
+        c.setMaximumSize(new Dimension(i, m));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(c);
+        jp.add(panel);
+    }
 }

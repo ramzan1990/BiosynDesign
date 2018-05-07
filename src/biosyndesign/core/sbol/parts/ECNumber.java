@@ -5,6 +5,8 @@ package biosyndesign.core.sbol.parts;
  */
 public class ECNumber extends Part{
     public String ecNumber;
+    public String classSheme;
+    public String classID;
 
 
     public ECNumber(String id, String name, String url, String ecNumber) {

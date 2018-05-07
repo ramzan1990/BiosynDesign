@@ -38,8 +38,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -1036,7 +1034,7 @@ public class PartsManager {
             } else if (p instanceof ECNumber) {
                 Main.lpm.editECNumber((ECNumber) p);
             } else if (p instanceof Protein) {
-                Main.lpm.editEnzyme((Protein) p);
+                Main.lpm.editProtein((Protein) p);
             }
         }
         gm.updateGraph();
