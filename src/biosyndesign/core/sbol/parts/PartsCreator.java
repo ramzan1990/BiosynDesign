@@ -192,6 +192,57 @@ public class PartsCreator {
 
 
     private static void testReactionCreation() {
+/*<<<<<<< HEAD
+    	String f;
+    	String prefixURI;
+    	String reactionID;
+    	String sourceURI;
+    	String[] reactants;
+    	String[] products;
+    	double[] reactantsStoichiometry;
+    	double[] productsStoichiometry;
+		String [] enzymeClassSchemes;
+		String [] enzymeClassIDs;
+		String [] annotationPrefixURIs;
+		String [] annotationPrefixes;
+		String [] annotationKeys;
+		String [] annotationValues;
+
+
+		f = System.getProperty("user.home") + "/reaction1.xml";
+		System.out.println(f);
+		prefixURI = "http://www.aaa.bbb";
+		reactionID = "R00209";
+		sourceURI = "http://www.genome.jp/dbget-bin/www_bget?R00209";
+		reactants = new String [] {
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00003",
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00010",
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00022"
+		};
+		reactantsStoichiometry = new double [] {1, 1, 1};
+		products = new String [] {
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00011",
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00024",
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00004",
+				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00080"
+		};
+		productsStoichiometry = new double [] {1, 1, 1, 1};
+		enzymeClassSchemes = new String [] {"ec", "ec", "ec"};
+		enzymeClassIDs = new String [] {"1.2.4.1", "1.8.1.4", "2.3.1.12"};
+		annotationPrefixURIs = new String [] {"http://test.test#", "http://test.test#"};
+		annotationPrefixes = new String [] {"test", "test"};
+		annotationKeys = new String [] {"key1", "key2"};
+		annotationValues = new String []{"val1", "val2"};
+
+		try {
+			createReaction(f, prefixURI, reactionID, sourceURI, reactants, products, reactantsStoichiometry, productsStoichiometry,
+					enzymeClassSchemes, enzymeClassIDs,  annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
+		} catch(PartsCreationException e) {
+			System.out.println("error");
+			e.printStackTrace();
+		}
+=======
+*/
         String f;
         String prefixURI;
         String reactionID;
@@ -206,6 +257,7 @@ public class PartsCreator {
         String[] annotationPrefixes;
         String[] annotationKeys;
         String[] annotationValues;
+//>>>>>>> branch 'master' of https://github.com/ramzan1990/BiosynDesign
 
 
         f = System.getProperty("user.home") + "/reaction1.xml";

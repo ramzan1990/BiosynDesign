@@ -160,7 +160,7 @@ public class MainWindow extends BDFrame {
         });
         addReaction.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.lpm.addReaction();
+                Main.lpm.addReaction(null);
             }
         });
         addECNumber.addActionListener(new ActionListener() {

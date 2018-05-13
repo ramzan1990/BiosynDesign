@@ -89,4 +89,26 @@ public class UI {
         panel.add(c);
         jp.add(panel);
     }
+
+    public static void addJLTo(JPanel jp, JList<String> l, int i, int m) {
+        l.setPreferredSize(new Dimension(i, m));
+        l.setMaximumSize(new Dimension(i, m));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(l);
+        jp.add(panel);
+    }
+
+    public static void addTo(JPanel jp, JComponent l, int i, int m) {
+        l.setPreferredSize(new Dimension(i, m));
+        l.setMaximumSize(new Dimension(i, m));
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(l);
+        jp.add(panel);
+    }
+
+    public static void addTo(JPanel jp, JComponent l) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(l);
+        jp.add(panel);
+    }
 }

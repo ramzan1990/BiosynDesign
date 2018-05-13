@@ -1030,7 +1030,7 @@ public class PartsManager {
             if (p instanceof Compound) {
                 Main.lpm.editCompound((Compound) p);
             } else if (p instanceof Reaction) {
-                Main.lpm.editReaction((Reaction) p);
+                Main.lpm.addReaction((Reaction) p);
             } else if (p instanceof ECNumber) {
                 Main.lpm.editECNumber((ECNumber) p);
             } else if (p instanceof Protein) {

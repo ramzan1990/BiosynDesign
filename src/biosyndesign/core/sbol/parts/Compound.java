@@ -39,4 +39,8 @@ public class Compound extends Part {
         }
     }
 
+    public String toString(){
+        return name;
+    }
+
 }

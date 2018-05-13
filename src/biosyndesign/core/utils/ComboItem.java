@@ -1,15 +1,17 @@
 package biosyndesign.core.utils;
 
+import biosyndesign.core.sbol.parts.Compound;
+
 public class ComboItem {
-    private String value;
+    private Compound value;
     private String label;
 
-    public ComboItem(String value, String label) {
+    public ComboItem(Compound value, String label) {
         this.value = value;
         this.label = label;
     }
 
-    public String getValue() {
+    public Compound getValue() {
         return this.value;
     }
 

@@ -12,6 +12,7 @@ public class Part implements Serializable {
     public String id;
     public boolean local;
     public ArrayList<String> info;
+    public ArrayList<Annotation> annotations;
 
     public Part(String id, String name, String url) {
         this.id = id;
