@@ -19,6 +19,7 @@ public class Part implements Serializable {
         this.name = name;
         this.url = url;
         info = new ArrayList<>();
+        annotations = new ArrayList<>();
     }
 
     public Part(String id) {

@@ -417,7 +417,7 @@ public class NewPartsManager {
             for (Compound c : oldReaction.products) {
                 reactantsModel.addElement(new ReactionCompound(c, oldReaction.stoichiometry.get(c)));
             }
-            for(Annotation a:oldReaction.annotations){
+            for (Annotation a : oldReaction.annotations) {
                 annotationModel.addElement(a);
             }
         }
@@ -466,20 +466,22 @@ public class NewPartsManager {
                             reactants, products, rStoichiometry, pStoichiometry, enzymeClassSchemes, enzymeClassIDs,
                             annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
                 } catch (Exception ex) {
-
+                    ex.printStackTrace();
                 }
 
                 Reaction r = new Reaction(id.field.getText(), "", path, Double.parseDouble(freeEnergy.field.getText()));
                 r.setLocal(true);
                 r.info.add(prefixURI.field.getText());
                 r.info.add(sourceURI.field.getText());
-                r.annotations.addAll(Arrays.asList((Annotation[]) annotationModel.toArray()));
+                for (int i = 0; i < annotationModel.size(); i++) {
+                    r.annotations.add((Annotation) annotationModel.getElementAt(i));
+                }
                 Main.pm.addParts(new Part[]{r}, true);
 
                 frame.setVisible(false);
                 frame.dispose();
 
-                if (!r.id.equals(oldReaction.id)) {
+                if (oldReaction != null && !r.id.equals(oldReaction.id)) {
                     File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + oldReaction.id);
                     file.delete();
                 }
@@ -953,15 +955,15 @@ public class NewPartsManager {
             //scan2.useDelimiter("\\Z");
             //String content2 = scan.next();
             int i = 1;
-            while(scan1.hasNextLine()){
+            while (scan1.hasNextLine()) {
                 String line1 = scan1.nextLine();
                 String line2 = scan2.nextLine();
-                if(!line1.equals(line2)){
+                if (!line1.equals(line2)) {
                     System.out.println("Error at " + i);
                 }
                 i++;
             }
-            if(scan2.hasNextLine()){
+            if (scan2.hasNextLine()) {
                 System.out.println("Second one is bigger!");
             }
             System.out.println("Done!");
