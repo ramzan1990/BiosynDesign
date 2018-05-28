@@ -54,7 +54,7 @@ public class Main {
         gm = new GraphManager(s, mainWindow);
         pm = new PartsManager(s, mainWindow, gm, lp);
         lpm = new NewPartsManager(s, mainWindow);
-        guim = new GUIManager(s, pm);
+        guim = new GUIManager(s, pm, mainWindow);
 
         gm.updateGraph();
         pm.updateTable();

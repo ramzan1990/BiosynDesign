@@ -1,0 +1,40 @@
+<component name="libraryTable">
+  <library name="batik">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/batik-rasterizer-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/batik-slideshow-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/batik-squiggle-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/batik-svgpp-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/batik-ttf2svg-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-all-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-anim-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-awt-util-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-bridge-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-codec-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-css-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-dom-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-ext-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-extension-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-gui-util-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-gvt-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-parser-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-script-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-svg-dom-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-svggen-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-swing-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-transcoder-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-util-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/batik-xml-1.10.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/fop-transcoder-allinone-2.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/js.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/serializer-2.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/xalan-2.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/xercesImpl-2.9.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/xml-apis-1.3.04.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/xml-apis-ext-1.3.04.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/batik-1.10/lib/xmlgraphics-commons-2.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

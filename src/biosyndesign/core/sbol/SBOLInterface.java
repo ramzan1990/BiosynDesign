@@ -24,5 +24,5 @@ public interface SBOLInterface {
 
     String getCDNA(String sequence, String organism);
 
-    ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output);
+    ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output);
 }

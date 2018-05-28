@@ -9,6 +9,16 @@ public class LabelField extends JPanel {
 
     public LabelField(String label){
         super();
+        init(label);
+    }
+
+    public LabelField(String label, String s) {
+        super();
+        init(label);
+        field.setText(s);
+    }
+
+    private void init(String label) {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel1.add(new JLabel(label));

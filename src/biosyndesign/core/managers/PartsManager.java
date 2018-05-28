@@ -85,11 +85,11 @@ public class PartsManager {
         }
     }
 
-    private  ArrayList<String> saveReaction(String reaction, String ec){
+    private  ArrayList<String> saveReactionAndReturnProteins(String reaction, String ec){
         ArrayList<String> zp = new ArrayList<>();
         try {
             long startTime = System.currentTimeMillis();
-            zp = cInt.getZip(reaction, s.organism, ec, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
+            zp = cInt.getZipAndReturnProteins(reaction, s.organism, ec, s.projectPath + s.projectName + File.separator + "parts" + File.separator);
             long finishTime = System.currentTimeMillis();
             System.out.println("That took: " + (finishTime - startTime) + " ms");
         } catch (Exception e) {
@@ -140,7 +140,7 @@ public class PartsManager {
                     expr = xFactory.compile("//enzyme_classid", Filters.element());
                     links = expr.evaluate(jdomDocument);
                     for (Element e : links) {
-                        String id = e.getText();
+                        String id = Common.ltrim("ec", e.getText());
                         ECNumber op = null;
                         for (ECNumber c : s.ecNumbers) {
                             if (c.id.equals(id)) {
@@ -171,7 +171,7 @@ public class PartsManager {
                     if (r.ec.size() > 0) {
                         ecToSend = r.ec.get(r.pickedEC).ecNumber;
                     }
-                    ArrayList<String> zp = saveReaction(p[i].id, ecToSend);
+                    ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
                     if (zp.size() > 0) {
                         r.nat = true;
                         r.enzyme =(Protein)addPartsS(new Part[]{new Protein(zp.get(0), "", "", "")}, false, false)[0];
@@ -189,11 +189,12 @@ public class PartsManager {
                     links = expr.evaluate(jdomDocument);
                     for (Element e : links) {
                         String id = e.getChildText("sboldisplayId");
-                        if (!(id.contains("product") || id.contains("reactant"))) {
+                        String toCheck = e.getChild("sbolparticipant").getAttributeValue("rdfresource");
+                        if (!(toCheck.contains("product") || toCheck.contains("reactant"))) {
                             continue;
                         }
-                        boolean prod = id.contains("product");
-                        id = id.substring(0, id.lastIndexOf("_"));
+                        boolean prod = toCheck.contains("product");
+                        //id = id.substring(0, id.lastIndexOf("_"));
                         Compound op = null;
                         for (Compound c : s.compounds) {
                             if (c.id.equals(id)) {
@@ -206,7 +207,7 @@ public class PartsManager {
                             op = (Compound) addPartsS(new Part[]{new Compound(id, "", "")}, false, false)[0];
                         }
                         r.compounds.add(op);
-                        int s = Integer.parseInt(e.getChildText("reactionstoichiometry"));
+                        int s = (int)Double.parseDouble(e.getChildText("reactionstoichiometry"));
                         if (prod) {
                             r.products.add(op);
                         } else {
@@ -1143,24 +1144,5 @@ public class PartsManager {
         for (Compound c : needAlign) {
             align(c, exclude, n, isTarget);
         }
-    }
-
-    public void exportPathway() {
-        String file = Main.projectIO.openFile();
-        try {
-            SBOLDocument doc = new SBOLDocument();
-            //s.compounds;
-            //s.reactions;
-            //s.ecNumbers;
-            //s.target;
-            //s.source;
-            //s.organism;
-            //s.proteins;
-
-            SBOLWriter.write(doc, file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 }

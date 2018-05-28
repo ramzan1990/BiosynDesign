@@ -236,7 +236,7 @@ public class SBOLme implements SBOLInterface {
         return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
     }
 
-    public ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output) {
         ZipInputStream zin = null;
         ArrayList<String> prots = new ArrayList<>();
         try {

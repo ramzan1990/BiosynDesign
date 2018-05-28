@@ -9,12 +9,17 @@ import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxEventSource;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
+import org.apache.batik.anim.dom.SVGDOMImplementation;
+import org.apache.batik.svggen.*;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.Serializable;
+import java.io.*;
 import java.util.Hashtable;
 
 /**
@@ -34,8 +39,6 @@ public class PartsGraph extends JPanel implements Serializable {
             }
         };
         Object parent = graph.getDefaultParent();
-
-
 
 
         mxStylesheet stylesheet = graph.getStylesheet();
@@ -93,7 +96,7 @@ public class PartsGraph extends JPanel implements Serializable {
         style4.put(mxConstants.STYLE_EDITABLE, "0");
         stylesheet.putCellStyle("ENZYME_NAT", style4);
 
-        Hashtable<String, Object>  edge = new Hashtable<String, Object>();
+        Hashtable<String, Object> edge = new Hashtable<String, Object>();
         //edge.put(mxConstants.STYLE_ROUNDED, true);
         //edge.put(mxConstants.STYLE_ORTHOGONAL, false);
         //edge.put(mxConstants.STYLE_EDGE, "elbowEdgeStyle");
@@ -105,7 +108,7 @@ public class PartsGraph extends JPanel implements Serializable {
         //edge.put(mxConstants.STYLE_FONTCOLOR, "#446299");
         stylesheet.putCellStyle("ENZYME_EDGE", edge);
 
-        Hashtable<String, Object>  edge1 = new Hashtable<String, Object>();
+        Hashtable<String, Object> edge1 = new Hashtable<String, Object>();
         edge1.put(mxConstants.STYLE_FONTSIZE, 20);
         edge1.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_RIGHT);
         edge1.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP);
@@ -123,7 +126,7 @@ public class PartsGraph extends JPanel implements Serializable {
         graphComponent.getGraphControl().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(SwingUtilities.isRightMouseButton(e)){
+                if (SwingUtilities.isRightMouseButton(e)) {
                     mxCell cell = (mxCell) graphComponent.getCellAt(e.getX(), e.getY());
                     if (cell != null) {
                         Main.pm.cellClicked(cell, e.getXOnScreen(), e.getYOnScreen());
@@ -133,7 +136,7 @@ public class PartsGraph extends JPanel implements Serializable {
         });
         graphComponent.getConnectionHandler().addListener(mxEvent.CONNECT, new mxEventSource.mxIEventListener() {
             public void invoke(Object sender, mxEventObject evt) {
-                mxCell edge = (mxCell)evt.getProperty("cell");
+                mxCell edge = (mxCell) evt.getProperty("cell");
                 mxCell source = (mxCell) edge.getSource();
                 mxCell target = (mxCell) edge.getTarget();
                 Main.pm.edgeAdded(edge, source, target);
@@ -142,8 +145,48 @@ public class PartsGraph extends JPanel implements Serializable {
         graphComponent.setPanning(true);
 
         this.add(graphComponent, BorderLayout.CENTER);
-        this.setBorder(BorderFactory.createEmptyBorder(1, 1, 1,1));
+        this.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
     }
 
+    public void generateSVGGraphImage(String path) throws IOException {
+        //Get the Graph component from the mxGraph to create an image out of this Graph
+        mxGraphComponent graphComponent = new mxGraphComponent(graph);
+        //Create an instance of org.w3c.dom.Document
+        String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
+        DOMImplementation domImpl = SVGDOMImplementation.getDOMImplementation();
+        Document document = domImpl.createDocument(svgNS, "svg", null);
 
+        // Create an instance of the SVG Generator
+        SVGGeneratorContext ctx = SVGGeneratorContext.createDefault(document);
+
+        // Reuse our embedded base64-encoded image data.
+        GenericImageHandler ihandler = new CachedImageHandlerBase64Encoder();
+        ctx.setGenericImageHandler(ihandler);
+
+        //Create SVG graphics2d Generator similar to the Graphich2d
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(ctx, false);
+
+        //First draw Graph to the SVGGrapgics2D object using graphcomponent objects draw method
+        graphComponent.getGraphControl().drawGraph(svgGenerator, true);
+
+        //Once every thing is drawn on graphics find root element and update this by adding additional values for the required fields.
+        Element root = svgGenerator.getRoot();
+        root.setAttributeNS(null, "width", graphComponent.getGraphControl().getPreferredSize().width + "");
+        root.setAttributeNS(null, "height", graphComponent.getGraphControl().getPreferredSize().height + "");
+        root.setAttributeNS(null, "viewBox", "0 0 " + graphComponent.getGraphControl().getPreferredSize().width + " " + graphComponent.getGraphControl().getPreferredSize().height);
+
+        // Print to the SVG Graphics2D object
+        boolean useCSS = true; // we want to use CSS style attributes
+        if(!path.toLowerCase().endsWith(".svg")){
+            path += ".svg";
+        }
+        Writer out = new FileWriter(new File(path));
+        try {
+            svgGenerator.stream(root, out, useCSS, false);
+        } catch (SVGGraphics2DIOException e) {
+            e.printStackTrace();
+        }finally {
+            out.close();
+        }
+    }
 }

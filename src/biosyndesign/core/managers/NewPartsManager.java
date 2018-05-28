@@ -228,14 +228,12 @@ public class NewPartsManager {
         gl.setHgap(31);
         pNorth.setBorder(getBorder("General"));
         pNorth.setLayout(gl);
-        LabelField prefixURI = new LabelField("Prefix URI");
-        LabelField id = new LabelField("Reaction ID");
+        LabelField prefixURI = new LabelField("Prefix URI", "http://www.aaa.bbb");
+        LabelField id = new LabelField("Reaction ID", "R00209");
         pNorth.add(prefixURI);
         pNorth.add(id);
-        LabelField sourceURI = new LabelField("Source URI");
+        LabelField sourceURI = new LabelField("Source URI", "http://www.genome.jp/dbget-bin/www_bget?R00209");
         pNorth.add(sourceURI);
-        LabelField freeEnergy = new LabelField("Free Energy");
-        pNorth.add(freeEnergy);
 
         base.add(pNorth);
         base.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -251,7 +249,7 @@ public class NewPartsManager {
         }
         UI.addTo(pCompounds, cmps, 300, m);
 
-        LabelField stoichiometry = new LabelField("Stoichiometry");
+        LabelField stoichiometry = new LabelField("Stoichiometry", "1");
         pCompounds.add(stoichiometry);
 
         UI.addTo(pCompounds, new JLabel("Reactants"));
@@ -317,10 +315,10 @@ public class NewPartsManager {
         pEnzymes.setLayout(new BoxLayout(pEnzymes, BoxLayout.Y_AXIS));
         pEnzymes.setBorder(getBorder("Enzymes"));
 
-        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme");
+        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme", "ec");
         pEnzymes.add(enzymeClassScheme);
 
-        LabelField enzymeClassID = new LabelField("Enzyme Class ID");
+        LabelField enzymeClassID = new LabelField("Enzyme Class ID", "1.2.3.4");
         pEnzymes.add(enzymeClassID);
 
         DefaultListModel enzymeModel = new DefaultListModel();
@@ -355,16 +353,16 @@ public class NewPartsManager {
         pAnnotations.setLayout(new BoxLayout(pAnnotations, BoxLayout.Y_AXIS));
         pAnnotations.setBorder(getBorder("Annotations"));
 
-        LabelField annotationPrefixURI = new LabelField("Annotation Prefix URI");
+        LabelField annotationPrefixURI = new LabelField("Annotation Prefix URI", "a1");
         pAnnotations.add(annotationPrefixURI);
 
-        LabelField annotationPrefix = new LabelField("Annotation Prefix");
+        LabelField annotationPrefix = new LabelField("Annotation Prefix", "a2");
         pAnnotations.add(annotationPrefix);
 
-        LabelField annotationKey = new LabelField("Annotation Key");
+        LabelField annotationKey = new LabelField("Annotation Key", "a3");
         pAnnotations.add(annotationKey);
 
-        LabelField annotationValue = new LabelField("Annotation Value");
+        LabelField annotationValue = new LabelField("Annotation Value", "a4");
         pAnnotations.add(annotationValue);
 
         DefaultListModel annotationModel = new DefaultListModel();
@@ -408,7 +406,6 @@ public class NewPartsManager {
 
         if (oldReaction != null) {
             id.field.setText(oldReaction.id);
-            freeEnergy.field.setText(oldReaction.energy + "");
             prefixURI.field.setText(oldReaction.info.get(0));
             sourceURI.field.setText(oldReaction.info.get(1));
             for (Compound c : oldReaction.reactants) {
@@ -469,7 +466,7 @@ public class NewPartsManager {
                     ex.printStackTrace();
                 }
 
-                Reaction r = new Reaction(id.field.getText(), "", path, Double.parseDouble(freeEnergy.field.getText()));
+                Reaction r = new Reaction(id.field.getText(), "", path, -1);
                 r.setLocal(true);
                 r.info.add(prefixURI.field.getText());
                 r.info.add(sourceURI.field.getText());

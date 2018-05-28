@@ -19,7 +19,7 @@ public class MainWindow extends BDFrame {
     private static final int panelMargin = 0;
     private JMenu File, Parts, options,  export, HelpM, repoOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository,
-    exportCDNA, exportAA, exportPathway;
+    exportCDNA, exportAA, exportPathway, exportGraph;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, hideCompounds;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
@@ -74,6 +74,7 @@ public class MainWindow extends BDFrame {
         exportAA= new JMenuItem("Export AA Sequences");
         exportPathway= new JMenuItem("Export pathway");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
+        exportGraph= new JMenuItem("Export graph as SVG");
 
         NewProject.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -270,7 +271,27 @@ public class MainWindow extends BDFrame {
         exportPathway.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.pm.exportPathway();
+                Main.guim.exportPathway();
+            }
+        });
+        exportAA.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.guim.exportAA();
+            }
+        });
+        exportCDNA.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.guim.exportCDNA();
+            }
+        });
+        export.addSeparator();
+        export.add(exportGraph);
+        exportGraph.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Main.guim.exportGraph();
             }
         });
         options.add(hideCompounds);
@@ -562,7 +583,7 @@ public class MainWindow extends BDFrame {
 
         commonReaction = new JLabel();
         commonReaction.setIcon(new ImageIcon(Main.class.getResource("ui/images/common-1.png")));
-        commonReaction.setToolTipText("Similarity");
+        commonReaction.setToolTipText("Common Reaction");
         commonReaction.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
                 Main.pm.commonReaction();

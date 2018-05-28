@@ -320,7 +320,7 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
-    public ArrayList<String> getZip(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output) {
         return null;
     }
 
@@ -445,12 +445,12 @@ public class LocalRepo implements SBOLInterface {
                 //Protein
                 String oID = definition.getChildText("organismkegg_id");
                 String oName = definition.getChildText("organismname");
-                String ECNumber = definition.getChildText("enzyme_classid");
+                String ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
                 execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, ECNumber, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
             } else {
                 //EC Number
-                String ECNumber = definition.getChildText("enzyme_classid");
+                String ECNumber = Common.ltrim("ec",definition.getChildText("enzyme_classid"));
                 execute("INSERT INTO ecnum(ID, ECNumber, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
@@ -467,7 +467,7 @@ public class LocalRepo implements SBOLInterface {
                 Element fc = e.getChild("sbolFunctionalComponent");
                 String fcName = fc.getChildText("sboldisplayId");
                 if (fcName.endsWith("enzyme")) {
-                    enzymes.add(fc.getChildText("enzyme_classid"));
+                    enzymes.add(Common.ltrim("ec",fc.getChildText("enzyme_classid")));
                 } else {
                     compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
                 }

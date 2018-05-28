@@ -150,4 +150,11 @@ public class Common {
             }
         }
     }
+
+    public static String ltrim(String p, String s) {
+        if (s.startsWith(p)) {
+            s = s.substring(p.length(), s.length());
+        }
+        return s;
+    }
 }
