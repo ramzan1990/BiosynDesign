@@ -2,13 +2,15 @@ package biosyndesign.core.managers;
 
 
 import biosyndesign.core.Main;
+import biosyndesign.core.sbol.parts.Compound;
+import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.ui.MainWindow;
-import com.mxgraph.view.mxGraph;
+import biosyndesign.core.utils.CompoundReaction;
 import org.sbolstandard.core2.SBOLDocument;
 import org.sbolstandard.core2.SBOLWriter;
 
 import javax.swing.*;
-import java.io.File;
+import java.util.ArrayList;
 
 public class GUIManager {
     private ProjectState s;
@@ -41,7 +43,7 @@ public class GUIManager {
         try {
             String file = Main.projectIO.saveFile();
             mainWindow.workSpacePanel.generateSVGGraphImage(file);
-        }catch (Exception e){
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Could not export SVG!");
         }
     }
@@ -52,7 +54,7 @@ public class GUIManager {
             SBOLDocument doc = new SBOLDocument();
             //s.compounds;
             //s.reactions;
-            //s.ecNumbers;
+            //s.enzymes;
             //s.target;
             //s.source;
             //s.organism;
@@ -72,7 +74,7 @@ public class GUIManager {
             SBOLDocument doc = new SBOLDocument();
             //s.compounds;
             //s.reactions;
-            //s.ecNumbers;
+            //s.enzymes;
             //s.target;
             //s.source;
             //s.organism;
@@ -90,7 +92,7 @@ public class GUIManager {
             SBOLDocument doc = new SBOLDocument();
             //s.compounds;
             //s.reactions;
-            //s.ecNumbers;
+            //s.enzymes;
             //s.target;
             //s.source;
             //s.organism;
@@ -99,6 +101,48 @@ public class GUIManager {
             SBOLWriter.write(doc, file);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void showPathway(boolean selected) {
+        Main.gm.showPathway = selected;
+        ArrayList<CompoundReaction> path = new ArrayList<>();
+        path.add(new CompoundReaction(s.source, null));
+        findPath(s.source, new ArrayList<Reaction>(), s.reactions.size(), path);
+        Main.gm.updateGraph();
+    }
+
+    private void findPath(Compound start, ArrayList<Reaction> exclude, int n, ArrayList<CompoundReaction> path) {
+        if (n <= 0) {
+            return;
+        }
+        n--;
+        ArrayList<CompoundReaction> nextToInvestigate = new ArrayList<>();
+        for (Reaction r : s.reactions) {
+            if (exclude.contains(r)) {
+                continue;
+            }
+            if (r.getReactants().contains(start)) {
+                for(Compound p : r.getProducts()) {
+                    nextToInvestigate.add(new CompoundReaction(p, r));
+                }
+                exclude.add(r);
+            }
+        }
+        for (CompoundReaction c : nextToInvestigate) {
+            if (c.c.equals(s.target)) {
+                ArrayList<CompoundReaction> newPath = new ArrayList<>();
+                newPath.addAll(path);
+                newPath.add(c);
+                Main.gm.finalPath = newPath;
+                return;
+            }
+        }
+        for (CompoundReaction c : nextToInvestigate) {
+            ArrayList<CompoundReaction> newPath = new ArrayList<>();
+            newPath.addAll(path);
+            newPath.add(c);
+            findPath(c.c, exclude, n, newPath);
         }
     }
 }

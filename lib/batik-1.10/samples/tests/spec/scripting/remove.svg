@@ -24,7 +24,7 @@
 <!-- append child test                                                      -->
 <!--                                                                        -->
 <!-- @author tkormann@ilog.fr                                               -->
-<!-- @version $Id: remove.svg 1733420 2016-03-03 07:41:59Z gadams $ -->
+<!-- @version $Id: showPathway.svg 1733420 2016-03-03 07:41:59Z gadams $ -->
 <!-- ====================================================================== -->
 
 <?xml-stylesheet type="text/css" href="../../resources/style/test.css" ?>  

@@ -7,8 +7,10 @@ import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.graphics.ImageComponent;
 import biosyndesign.core.ui.popups.*;
+import biosyndesign.core.utils.Bio;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
+import biosyndesign.core.utils.svg2xml.Svg2XmlGui;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 import org.apache.commons.io.FileUtils;
@@ -42,8 +44,6 @@ import java.util.List;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.sbolstandard.core2.SBOLDocument;
-import org.sbolstandard.core2.SBOLWriter;
 
 /**
  * Created by Umarov on 2/21/2017.
@@ -78,14 +78,14 @@ public class PartsManager {
             //FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             //fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
             File f = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
-            FileUtils.copyURLToFile(website, f, 5*1000, 5*1000);
+            FileUtils.copyURLToFile(website, f, 5 * 1000, 5 * 1000);
             //System.out.println("saving done");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
         }
     }
 
-    private  ArrayList<String> saveReactionAndReturnProteins(String reaction, String ec){
+    private ArrayList<String> saveReactionAndReturnProteins(String reaction, String ec) {
         ArrayList<String> zp = new ArrayList<>();
         try {
             long startTime = System.currentTimeMillis();
@@ -115,7 +115,7 @@ public class PartsManager {
         for (int i = 0; i < p.length; i++) {
             try {
                 if (!p[i].local) {
-                    if(save) {
+                    if (save) {
                         saveXML(p[i]);
                     }
                 } else {
@@ -141,8 +141,8 @@ public class PartsManager {
                     links = expr.evaluate(jdomDocument);
                     for (Element e : links) {
                         String id = Common.ltrim("ec", e.getText());
-                        ECNumber op = null;
-                        for (ECNumber c : s.ecNumbers) {
+                        Enzyme op = null;
+                        for (Enzyme c : s.enzymes) {
                             if (c.id.equals(id)) {
                                 op = c;
                                 break;
@@ -152,9 +152,9 @@ public class PartsManager {
                             Part[] temp = cInt.findParts(2, 0, id);
                             if (temp.length == 0) {
                             } else {
-                                op = (ECNumber) temp[0];
+                                op = (Enzyme) temp[0];
                                 if (op != null) {
-                                    s.ecNumbers.add(op);
+                                    s.enzymes.add(op);
                                     //saveXML(op);
                                 }
                             }
@@ -174,10 +174,10 @@ public class PartsManager {
                     ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
                     if (zp.size() > 0) {
                         r.nat = true;
-                        r.enzyme =(Protein)addPartsS(new Part[]{new Protein(zp.get(0), "", "", "")}, false, false)[0];
+                        r.enzyme = (Protein) addPartsS(new Part[]{new Protein(zp.get(0), "", "", "")}, false, false)[0];
                         r.enzymeType = "Native";
                         r.nativeEnzyme = true;
-                        r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+                        r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism.name);
                         r.baseCDNA = r.cDNA;
                     } else {
                         r.enzymeType = "Foreign";
@@ -207,7 +207,7 @@ public class PartsManager {
                             op = (Compound) addPartsS(new Part[]{new Compound(id, "", "")}, false, false)[0];
                         }
                         r.compounds.add(op);
-                        int s = (int)Double.parseDouble(e.getChildText("reactionstoichiometry"));
+                        int s = (int) Double.parseDouble(e.getChildText("reactionstoichiometry"));
                         if (prod) {
                             r.products.add(op);
                         } else {
@@ -222,26 +222,13 @@ public class PartsManager {
                         np[i] = s.compounds.get(index);
                         continue;
                     }
-                    p[i].name =  xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    p[i].name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     p[i].url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
                     try {
                         ((Compound) p[i]).smiles = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     } catch (Exception e) {
                     }
                     s.compounds.add((Compound) p[i]);
-                    String smiles = ((Compound) p[i]).smiles;
-                    if (smiles != null) {
-                        try {
-                            IChemObjectBuilder bldr
-                                    = SilentChemObjectBuilder.getInstance();
-                            SmilesParser smipar = new SmilesParser(bldr);
-                            IAtomContainer mol = smipar.parseSmiles(smiles);
-                            ImageComponent ic = new ImageComponent(mol);
-                            ic.setText(p[i].name);
-                            Main.projectIO.saveComponentImage(ic, p[i].id);
-                        } catch (Exception ex) {
-                        }
-                    }
                     np[i] = p[i];
                 } else if (p[i] instanceof Protein) {
                     int index = s.proteins.indexOf(p[i]);
@@ -252,9 +239,9 @@ public class PartsManager {
                     Protein pr = (Protein) p[i];
                     pr.sequence = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
-                    pr.organism = xFactory.compile("//organismname", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    pr.organism = new Organism(xFactory.compile("//organismname", Filters.element()).evaluate(jdomDocument).get(0).getValue());
                     pr.url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
-                    pr.ecNumber = xFactory.compile("//enzyme_classid", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    pr.enzymeID = xFactory.compile("//enzyme_classid", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.nat = pr.organism.equals(s.organism);
                     s.proteins.add(pr);
                     np[i] = p[i];
@@ -265,11 +252,25 @@ public class PartsManager {
             System.out.println("Part Added");
         }
         if (update) {
+            updateStencils();
             gm.updateGraph();
             updateTable();
             mainWindow.setStatusLabel("Parts Added");
         }
         return np;
+    }
+
+    public void updateStencils() {
+        for(Compound c:s.compounds){
+            String smiles = c.smiles;
+            if (smiles != null) {
+                try {
+                    Main.projectIO.saveSVG(Bio.getSVG(smiles, c.name, gm.scale), c.id);
+                    Svg2XmlGui.convert(s.projectPath + s.projectName + File.separator + "ci", s.projectPath + s.projectName + File.separator + "stencils.xml");
+                } catch (Exception ex) {
+                }
+            }
+        }
     }
 
     public void showInfo(Part c) {
@@ -294,7 +295,7 @@ public class PartsManager {
             } else if (c instanceof Reaction) {
                 template = factory.newTemplates(new StreamSource(
                         new FileInputStream("xsl" + File.separator + "reaction.xsl")));
-            } else if (c instanceof ECNumber) {
+            } else if (c instanceof Enzyme) {
                 template = factory.newTemplates(new StreamSource(
                         new FileInputStream("xsl" + File.separator + "enzyme.xsl")));
             } else if (c instanceof Protein) {
@@ -521,7 +522,7 @@ public class PartsManager {
     }
 
     public String getCDNA(Reaction r) {
-        return cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism);
+        return cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism.name);
     }
 
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb2, JList partsList) {
@@ -885,7 +886,7 @@ public class PartsManager {
     public void delete(Part[] parts) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
-        //remove reactions
+        //showPathway reactions
         for (Object part : parts) {
             if (part instanceof Reaction) {
                 delete((Reaction) part);
@@ -905,7 +906,7 @@ public class PartsManager {
     public void delete(Object[] cells) {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         graph.getModel().beginUpdate();
-        //remove reactions
+        //showPathway reactions
         for (Object cell : cells) {
             if (s.graphNodes.get(cell) instanceof Reaction) {
                 delete((Reaction) s.graphNodes.get(cell));
@@ -944,7 +945,7 @@ public class PartsManager {
                     delete((Compound) c);
                 }
             }
-            for (ECNumber ec : r.ec) {
+            for (Enzyme ec : r.ec) {
                 boolean remove = true;
                 for (Reaction or : s.reactions) {
                     if (or.ec.contains(ec)) {
@@ -980,7 +981,7 @@ public class PartsManager {
         if (key != null) {
             for (Reaction r : s.reactions) {
                 if (r.compounds.contains(c) && !r.local) {
-                    JOptionPane.showMessageDialog(null, "Cannot remove compound because it is used in reaction.");
+                    JOptionPane.showMessageDialog(null, "Cannot showPathway compound because it is used in reaction.");
                     return;
                 }
             }
@@ -995,8 +996,8 @@ public class PartsManager {
         }
     }
 
-    public void delete(ECNumber ec) {
-        s.ecNumbers.remove(ec);
+    public void delete(Enzyme ec) {
+        s.enzymes.remove(ec);
         try {
             new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + ec.id).delete();
         } catch (Exception e) {
@@ -1029,13 +1030,13 @@ public class PartsManager {
         Part p = (Part) s.graphNodes.get(cell);
         if (p.local) {
             if (p instanceof Compound) {
-                Main.lpm.editCompound((Compound) p);
+                Main.lpm.addCompound((Compound) p);
             } else if (p instanceof Reaction) {
                 Main.lpm.addReaction((Reaction) p);
-            } else if (p instanceof ECNumber) {
-                Main.lpm.editECNumber((ECNumber) p);
+            } else if (p instanceof Enzyme) {
+                Main.lpm.addEnzyme((Enzyme) p);
             } else if (p instanceof Protein) {
-                Main.lpm.editProtein((Protein) p);
+                Main.lpm.addProtein((Protein) p);
             }
         }
         gm.updateGraph();

@@ -78,7 +78,7 @@ public class SBOLme implements SBOLInterface {
                 }
                 parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString(), energy);
             } else  if (type == 2) {
-                parts[i] = new ECNumber(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
+                parts[i] = new Enzyme(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
             }
         }
         return parts;

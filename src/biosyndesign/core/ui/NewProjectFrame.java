@@ -72,7 +72,8 @@ public class NewProjectFrame extends BDFrame {
         JPanel organismPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         organismPanel.setMaximumSize(new Dimension(w, 100));
         JLabel l2 = new JLabel("Organism:");
-        int m = l2.getPreferredSize().width;
+        JLabel ll3 = new JLabel("Local prefix:");
+        int m = ll3.getPreferredSize().width;
         if(m<50){
             m = 50;
         }
@@ -92,6 +93,16 @@ public class NewProjectFrame extends BDFrame {
         prefixPanel.add(prefixField);
         topPanel.add(prefixPanel);
 
+        JPanel prefixPanelLocal = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        prefixPanelLocal.setMaximumSize(new Dimension(w, 100));
+
+        ll3.setPreferredSize(new Dimension(m, h));
+        prefixPanelLocal.add(ll3);
+        JTextField prefixFieldLocal = new JTextField("http://www.aaa.bbb");
+        prefixFieldLocal.setPreferredSize(new Dimension(340, h));
+        prefixPanelLocal.add(prefixFieldLocal);
+        topPanel.add(prefixPanelLocal);
+
 
         this.setLayout(new BorderLayout());
         JPanel lowerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -104,7 +115,7 @@ public class NewProjectFrame extends BDFrame {
         b2.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 if (locationTF.getText().trim().length() != 0){
-                    io.newProjectSelected(textField.getSelectedItem().toString(), prefixField.getText(), f);
+                    io.newProjectSelected(textField.getSelectedItem().toString(), prefixField.getText(), prefixFieldLocal.getText(), f);
                 }
             }
         });

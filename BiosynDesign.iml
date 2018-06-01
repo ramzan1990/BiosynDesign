@@ -14,10 +14,11 @@
     <orderEntry type="library" name="cdk-1.5.13" level="project" />
     <orderEntry type="library" name="gson-2.8.0" level="project" />
     <orderEntry type="library" name="guhautils" level="project" />
-    <orderEntry type="library" name="jgraphx" level="project" />
     <orderEntry type="library" name="libSBOLj-2.1.1-withDependencies" level="project" />
     <orderEntry type="library" name="swingx-all-1.6.4" level="project" />
     <orderEntry type="library" name="http" level="project" />
     <orderEntry type="library" name="batik" level="project" />
+    <orderEntry type="library" name="jgraphx" level="project" />
+    <orderEntry type="library" name="mxgraph-core" level="project" />
   </component>
 </module>

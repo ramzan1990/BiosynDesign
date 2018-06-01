@@ -13,7 +13,7 @@ public class Reaction extends Part{
     public ArrayList<Compound> compounds;
     public ArrayList<Compound> reactants;
     public ArrayList<Compound> products;
-    public ArrayList<ECNumber> ec;
+    public ArrayList<Enzyme> ec;
     public HashMap<Compound, Integer> stoichiometry = new HashMap<Compound, Integer>();
     public int pickedEC;
     public Protein enzyme;

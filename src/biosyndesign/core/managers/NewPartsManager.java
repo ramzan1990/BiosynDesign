@@ -3,20 +3,15 @@ package biosyndesign.core.managers;
 import biosyndesign.core.Main;
 import biosyndesign.core.sbol.parts.*;
 import biosyndesign.core.ui.MainWindow;
-import biosyndesign.core.utils.ComboItem;
 import biosyndesign.core.utils.LabelField;
 import biosyndesign.core.utils.UI;
-import com.hp.hpl.jena.rdf.model.AnonId;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -32,56 +27,33 @@ public class NewPartsManager {
         this.s = s;
     }
 
-    public void addCompound() {
+    public void addCompound(Compound oldCompound) {
         final JDialog frame = new JDialog(mainWindow, "New Compound", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
 
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
+        LabelField id = new LabelField("Compound ID", "R00209");
+        jp.add(id);
+        LabelField synonyms = new LabelField("Synonyms", "Pyruvate");
+        jp.add(synonyms);
+        LabelField formula = new LabelField("Formula", "");
+        jp.add(formula);
+        LabelField smiles = new LabelField("SMILES", "");
+        jp.add(smiles);
+        LabelField sourceURI = new LabelField("Source URI", "http://www.genome.jp/dbget-bin/www_bget?R00209");
+        jp.add(sourceURI);
+        AnnotationsPanel annotationsPanel = new AnnotationsPanel(m);
+        jp.add(annotationsPanel);
 
-        UI.addTo(jp, new JLabel("Compound ID"));
-        JTextField id = new JTextField();
-        UI.addTFTo(jp, id, 300, m);
-
-        UI.addTo(jp, new JLabel("Synonyms"));
-        JTextField synonyms = new JTextField();
-        UI.addTFTo(jp, synonyms, 300, m);
-
-        UI.addTo(jp, new JLabel("Formula"));
-        JTextField formula = new JTextField();
-        UI.addTFTo(jp, formula, 300, m);
-
-        UI.addTo(jp, new JLabel("SMILES"));
-        JTextField smiles = new JTextField();
-        UI.addTFTo(jp, smiles, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        UI.addTFTo(jp, annotationValues, 300, m);
-
-        //UI.addTo(jp, new JLabel("Charge"));
-        //JTextField charge = new JTextField();
-        //UI.addTFTo(jp, charge, 300, m);
-
+        if (oldCompound != null) {
+            id.field.setText(oldCompound.id);
+            synonyms.field.setText(oldCompound.info.get(0));
+            formula.field.setText(oldCompound.info.get(1));
+            sourceURI.field.setText(oldCompound.info.get(2));
+            for (Annotation a : oldCompound.annotations) {
+                annotationsPanel.annotations.addElement(a);
+            }
+        }
 
         JButton b1 = new JButton("Add");
         UI.addToRight(jp, b1, false);
@@ -89,121 +61,41 @@ public class NewPartsManager {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.field.getText();
+                String[] annotationPrefixURIs = new String[annotationsPanel.annotations.size()];
+                String[] annotationPrefixes = new String[annotationsPanel.annotations.size()];
+                String[] annotationKeys = new String[annotationsPanel.annotations.size()];
+                String[] annotationValues = new String[annotationsPanel.annotations.size()];
+                for (int i = 0; i < annotationPrefixURIs.length; i++) {
+                    Annotation annotation = (Annotation) annotationsPanel.annotations.getElementAt(i);
+                    annotationPrefixURIs[i] = annotation.annotationPrefixURI;
+                    annotationPrefixes[i] = annotation.annotationPrefix;
+                    annotationKeys[i] = annotation.annotationKey;
+                    annotationValues[i] = annotation.annotationValue;
+                }
                 try {
-                    PartsCreator.createCompound(path, prefixURI.getText(), id.getText(), smiles.getText(), sourceURI.getText(), formula.getText(), split(synonyms),
-                            split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys), split(annotationValues));
+                    PartsCreator.createCompound(path, s.localPrefix, id.field.getText(), smiles.field.getText(), sourceURI.field.getText(), formula.field.getText(), split(synonyms.field),
+                            annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
                 } catch (Exception ex) {
 
                 }
-                Compound c = new Compound(id.getText(), split(synonyms)[0], path);
-                c.smiles = smiles.getText();
+
+                Compound c = new Compound(id.field.getText(), split(synonyms.field)[0], path);
+                for (int i = 0; i < annotationsPanel.annotations.size(); i++) {
+                    c.annotations.add((Annotation) annotationsPanel.annotations.getElementAt(i));
+                }
+                c.smiles = smiles.field.getText();
                 c.setLocal(true);
                 Main.pm.addParts(new Part[]{c}, true);
-                c.info.add(prefixURI.getText());
-                c.info.add(synonyms.getText());
-                c.info.add(formula.getText());
-                c.info.add(sourceURI.getText());
-                c.info.add(annotationPrefixURIs.getText());
-                c.info.add(annotationKeys.getText());
-                c.info.add(annotationValues.getText());
+                c.info.add(synonyms.field.getText());
+                c.info.add(formula.field.getText());
+                c.info.add(sourceURI.field.getText());
                 frame.setVisible(false);
                 frame.dispose();
-            }
-        });
-        frame.getContentPane().add(jp);
-        frame.pack();
-        frame.setLocationRelativeTo(mainWindow);
-        frame.setVisible(true);
-    }
-
-    public void editCompound(Compound c) {
-        final JDialog frame = new JDialog(mainWindow, "Edit Compound", true);
-        JPanel jp = new JPanel();
-        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        prefixURI.setText(c.info.get(0));
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Compound ID"));
-        JTextField id = new JTextField();
-        id.setText(c.id);
-        UI.addTFTo(jp, id, 300, m);
-
-        UI.addTo(jp, new JLabel("Synonyms"));
-        JTextField synonyms = new JTextField();
-        synonyms.setText(c.info.get(1));
-        UI.addTFTo(jp, synonyms, 300, m);
-
-        UI.addTo(jp, new JLabel("Formula"));
-        JTextField formula = new JTextField();
-        formula.setText(c.info.get(2));
-        UI.addTFTo(jp, formula, 300, m);
-
-        UI.addTo(jp, new JLabel("SMILES"));
-        JTextField smiles = new JTextField();
-        smiles.setText(c.smiles);
-        UI.addTFTo(jp, smiles, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        sourceURI.setText(c.info.get(3));
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        annotationPrefixURIs.setText(c.info.get(4));
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        annotationPrefixes.setText(c.info.get(5));
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        annotationKeys.setText(c.info.get(6));
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        annotationValues.setText(c.info.get(7));
-        UI.addTFTo(jp, annotationValues, 300, m);
-
-
-        JButton b1 = new JButton("Done");
-        UI.addToRight(jp, b1, false);
-        b1.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
-                try {
-                    PartsCreator.createCompound(path, prefixURI.getText(), id.getText(), smiles.getText(), sourceURI.getText(), formula.getText(), split(synonyms),
-                            split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys), split(annotationValues));
-                } catch (Exception ex) {
-                }
-                if (!c.id.equals(id.getText())) {
-                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id);
+                if (oldCompound != null && !c.id.equals(oldCompound.id)) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + oldCompound.id);
                     file.delete();
                 }
-                c.id = id.getText();
-                c.name = split(synonyms)[0];
-                c.url = path;
-                c.smiles = smiles.getText();
-                c.info.clear();
-                c.info.add(prefixURI.getText());
-                c.info.add(synonyms.getText());
-                c.info.add(formula.getText());
-                c.info.add(sourceURI.getText());
-                c.info.add(annotationPrefixURIs.getText());
-                c.info.add(annotationKeys.getText());
-                c.info.add(annotationValues.getText());
-                frame.setVisible(false);
-                frame.dispose();
             }
         });
         frame.getContentPane().add(jp);
@@ -228,9 +120,7 @@ public class NewPartsManager {
         gl.setHgap(31);
         pNorth.setBorder(getBorder("General"));
         pNorth.setLayout(gl);
-        LabelField prefixURI = new LabelField("Prefix URI", "http://www.aaa.bbb");
         LabelField id = new LabelField("Reaction ID", "R00209");
-        pNorth.add(prefixURI);
         pNorth.add(id);
         LabelField sourceURI = new LabelField("Source URI", "http://www.genome.jp/dbget-bin/www_bget?R00209");
         pNorth.add(sourceURI);
@@ -311,87 +201,12 @@ public class NewPartsManager {
         JPanel pRight = new JPanel();
         pRight.setLayout(new BoxLayout(pRight, BoxLayout.PAGE_AXIS));
 
-        JPanel pEnzymes = new JPanel();
-        pEnzymes.setLayout(new BoxLayout(pEnzymes, BoxLayout.Y_AXIS));
-        pEnzymes.setBorder(getBorder("Enzymes"));
 
-        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme", "ec");
-        pEnzymes.add(enzymeClassScheme);
+        EnzymesPanel ep = new EnzymesPanel(m);
+        pRight.add(ep);
 
-        LabelField enzymeClassID = new LabelField("Enzyme Class ID", "1.2.3.4");
-        pEnzymes.add(enzymeClassID);
-
-        DefaultListModel enzymeModel = new DefaultListModel();
-        JList enzymes = new JList(enzymeModel);
-        UI.addTo(pEnzymes, enzymes, 300, 120);
-
-        JPanel bpEnzymes = new JPanel();
-        bpEnzymes.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        bpEnzymes.setPreferredSize(new Dimension(300, 2 * m));
-        JButton bAddEnzyme = new JButton("Add");
-        bAddEnzyme.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                enzymeModel.addElement(new Enzyme(enzymeClassScheme.field.getText(), enzymeClassID.field.getText(), "", ""));
-            }
-        });
-        JButton bDeleteEnzyme = new JButton("Delete");
-        bDeleteEnzyme.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                enzymeModel.remove(products.getSelectedIndex());
-            }
-        });
-
-        bpEnzymes.add(bAddEnzyme);
-        bpEnzymes.add(bDeleteEnzyme);
-        pEnzymes.add(bpEnzymes);
-
-        pRight.add(pEnzymes);
-
-        JPanel pAnnotations = new JPanel();
-        pAnnotations.setLayout(new BoxLayout(pAnnotations, BoxLayout.Y_AXIS));
-        pAnnotations.setBorder(getBorder("Annotations"));
-
-        LabelField annotationPrefixURI = new LabelField("Annotation Prefix URI", "a1");
-        pAnnotations.add(annotationPrefixURI);
-
-        LabelField annotationPrefix = new LabelField("Annotation Prefix", "a2");
-        pAnnotations.add(annotationPrefix);
-
-        LabelField annotationKey = new LabelField("Annotation Key", "a3");
-        pAnnotations.add(annotationKey);
-
-        LabelField annotationValue = new LabelField("Annotation Value", "a4");
-        pAnnotations.add(annotationValue);
-
-        DefaultListModel annotationModel = new DefaultListModel();
-        JList annotations = new JList(annotationModel);
-        UI.addTo(pAnnotations, annotations, 300, 120);
-
-        JPanel bpAnnotation = new JPanel();
-        bpAnnotation.setLayout(new FlowLayout(FlowLayout.RIGHT));
-        bpAnnotation.setPreferredSize(new Dimension(300, 2 * m));
-        JButton bAddAnnotation = new JButton("Add");
-        bAddAnnotation.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                annotationModel.addElement(new Annotation(annotationPrefixURI.field.getText(), annotationPrefix.field.getText(),
-                        annotationKey.field.getText(), annotationValue.field.getText()));
-            }
-        });
-        JButton bDeleteAnnotation = new JButton("Delete");
-        bDeleteAnnotation.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                annotationModel.remove(annotations.getSelectedIndex());
-            }
-        });
-
-        bpAnnotation.add(bAddAnnotation);
-        bpAnnotation.add(bDeleteAnnotation);
-        pAnnotations.add(bpAnnotation);
-        pRight.add(pAnnotations);
+        AnnotationsPanel annotationsPanel = new AnnotationsPanel(m);
+        pRight.add(annotationsPanel);
         int v = (int) (pLeft.getPreferredSize().getHeight() - pRight.getPreferredSize().getHeight());
         if (v > 0) {
             pRight.add(Box.createRigidArea(new Dimension(10, v)));
@@ -406,16 +221,18 @@ public class NewPartsManager {
 
         if (oldReaction != null) {
             id.field.setText(oldReaction.id);
-            prefixURI.field.setText(oldReaction.info.get(0));
-            sourceURI.field.setText(oldReaction.info.get(1));
+            sourceURI.field.setText(oldReaction.info.get(0));
             for (Compound c : oldReaction.reactants) {
                 reactantsModel.addElement(new ReactionCompound(c, oldReaction.stoichiometry.get(c)));
+            }
+            for (Enzyme e : oldReaction.ec) {
+                ep.enzymes.addElement(e);
             }
             for (Compound c : oldReaction.products) {
                 reactantsModel.addElement(new ReactionCompound(c, oldReaction.stoichiometry.get(c)));
             }
             for (Annotation a : oldReaction.annotations) {
-                annotationModel.addElement(a);
+                annotationsPanel.annotations.addElement(a);
             }
         }
 
@@ -440,26 +257,26 @@ public class NewPartsManager {
                     products[i] = rc.c.url;
                     pStoichiometry[i] = rc.s;
                 }
-                String[] enzymeClassSchemes = new String[enzymeModel.size()];
-                String[] enzymeClassIDs = new String[enzymeModel.size()];
+                String[] enzymeClassSchemes = new String[ep.enzymes.size()];
+                String[] enzymeClassIDs = new String[ep.enzymes.size()];
                 for (int i = 0; i < enzymeClassSchemes.length; i++) {
-                    Enzyme enzyme = (Enzyme) enzymeModel.getElementAt(i);
+                    Enzyme enzyme = (Enzyme) ep.enzymes.getElementAt(i);
                     enzymeClassSchemes[i] = enzyme.classScheme;
                     enzymeClassIDs[i] = enzyme.classID;
                 }
-                String[] annotationPrefixURIs = new String[annotationModel.size()];
-                String[] annotationPrefixes = new String[annotationModel.size()];
-                String[] annotationKeys = new String[annotationModel.size()];
-                String[] annotationValues = new String[annotationModel.size()];
+                String[] annotationPrefixURIs = new String[annotationsPanel.annotations.size()];
+                String[] annotationPrefixes = new String[annotationsPanel.annotations.size()];
+                String[] annotationKeys = new String[annotationsPanel.annotations.size()];
+                String[] annotationValues = new String[annotationsPanel.annotations.size()];
                 for (int i = 0; i < annotationPrefixURIs.length; i++) {
-                    Annotation annotation = (Annotation) annotationModel.getElementAt(i);
+                    Annotation annotation = (Annotation) annotationsPanel.annotations.getElementAt(i);
                     annotationPrefixURIs[i] = annotation.annotationPrefixURI;
                     annotationPrefixes[i] = annotation.annotationPrefix;
                     annotationKeys[i] = annotation.annotationKey;
                     annotationValues[i] = annotation.annotationValue;
                 }
                 try {
-                    PartsCreator.createReaction(path, prefixURI.field.getText(), id.field.getText(), sourceURI.field.getText(),
+                    PartsCreator.createReaction(path, s.localPrefix, id.field.getText(), sourceURI.field.getText(),
                             reactants, products, rStoichiometry, pStoichiometry, enzymeClassSchemes, enzymeClassIDs,
                             annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
                 } catch (Exception ex) {
@@ -468,16 +285,13 @@ public class NewPartsManager {
 
                 Reaction r = new Reaction(id.field.getText(), "", path, -1);
                 r.setLocal(true);
-                r.info.add(prefixURI.field.getText());
                 r.info.add(sourceURI.field.getText());
-                for (int i = 0; i < annotationModel.size(); i++) {
-                    r.annotations.add((Annotation) annotationModel.getElementAt(i));
+                for (int i = 0; i < annotationsPanel.annotations.size(); i++) {
+                    r.annotations.add((Annotation) annotationsPanel.annotations.getElementAt(i));
                 }
                 Main.pm.addParts(new Part[]{r}, true);
-
                 frame.setVisible(false);
                 frame.dispose();
-
                 if (oldReaction != null && !r.id.equals(oldReaction.id)) {
                     File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + oldReaction.id);
                     file.delete();
@@ -491,204 +305,83 @@ public class NewPartsManager {
         frame.setVisible(true);
     }
 
-    private TitledBorder getBorder(String t) {
+    public static TitledBorder getBorder(String t) {
         TitledBorder b = BorderFactory.createTitledBorder(t);
         b.setTitleJustification(TitledBorder.CENTER);
         return b;
     }
 
-    public void addECNumber() {
+    public void addEnzyme(Enzyme oldEnzyme) {
         final JDialog frame = new JDialog(mainWindow, "New EC Number", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
+        LabelField id = new LabelField("Enzyme ID", "R00209");
+        jp.add(id);
+        LabelField sourceURI = new LabelField("Source URI", "http://www.genome.jp/dbget-bin/www_bget?R00209");
+        jp.add(sourceURI);
+        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme");
+        jp.add(enzymeClassScheme);
+        LabelField enzymeClassID = new LabelField("Enzyme Class ID");
+        jp.add(enzymeClassID);
+        LabelField synonyms = new LabelField("Synonyms", "Pyruvate");
+        jp.add(synonyms);
+        LabelField formulas = new LabelField("Formulas", "");
+        jp.add(formulas);
+        LabelField cofactors = new LabelField("Cofactors");
+        jp.add(cofactors);
 
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
+        AnnotationsPanel annotationsPanel = new AnnotationsPanel(m);
+        jp.add(annotationsPanel);
 
-        UI.addTo(jp, new JLabel("ID"));
-        JTextField id = new JTextField();
-        UI.addTFTo(jp, id, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class Scheme"));
-        JTextField enzymeClassScheme = new JTextField();
-        UI.addTFTo(jp, enzymeClassScheme, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class ID"));
-        JTextField enzymeClassID = new JTextField();
-        UI.addTFTo(jp, enzymeClassID, 300, m);
-
-        UI.addTo(jp, new JLabel("Synonyms"));
-        JTextField synonyms = new JTextField();
-        UI.addTFTo(jp, synonyms, 300, m);
-
-        UI.addTo(jp, new JLabel("Formulas"));
-        JTextField formulas = new JTextField();
-        UI.addTFTo(jp, formulas, 300, m);
-
-        JLabel l5 = new JLabel("Cofactors");
-        UI.addTo(jp, l5);
-        JTextField cofactors = new JTextField();
-        UI.addTFTo(jp, cofactors, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        UI.addTFTo(jp, annotationValues, 300, m);
-
+        if (oldEnzyme != null) {
+            id.field.setText(oldEnzyme.id);
+            enzymeClassScheme.field.setText(oldEnzyme.classScheme);
+            enzymeClassID.field.setText(oldEnzyme.classID);
+            synonyms.field.setText(oldEnzyme.info.get(0));
+            formulas.field.setText(oldEnzyme.info.get(1));
+            cofactors.field.setText(oldEnzyme.info.get(2));
+            sourceURI.field.setText(oldEnzyme.info.get(3));
+            for (Annotation a : oldEnzyme.annotations) {
+                annotationsPanel.annotations.addElement(a);
+            }
+        }
         JButton b1 = new JButton("Add");
         UI.addToRight(jp, b1, false);
         b1.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent ee) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.field.getText();
+                String[] annotationPrefixURIs = new String[annotationsPanel.annotations.size()];
+                String[] annotationPrefixes = new String[annotationsPanel.annotations.size()];
+                String[] annotationKeys = new String[annotationsPanel.annotations.size()];
+                String[] annotationValues = new String[annotationsPanel.annotations.size()];
+                for (int i = 0; i < annotationPrefixURIs.length; i++) {
+                    Annotation annotation = (Annotation) annotationsPanel.annotations.getElementAt(i);
+                    annotationPrefixURIs[i] = annotation.annotationPrefixURI;
+                    annotationPrefixes[i] = annotation.annotationPrefix;
+                    annotationKeys[i] = annotation.annotationKey;
+                    annotationValues[i] = annotation.annotationValue;
+                }
                 try {
-                    PartsCreator.createEnzymeClass(path, prefixURI.getText(), id.getText(), enzymeClassScheme.getText(), enzymeClassID.getText(), sourceURI.getText(), split(synonyms),
-                            split(formulas), split(cofactors), split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys), split(annotationValues));
+                    PartsCreator.createEnzymeClass(path, s.localPrefix, id.field.getText(), enzymeClassScheme.field.getText(), enzymeClassID.field.getText(), sourceURI.field.getText(), split(synonyms.field),
+                            split(formulas.field), split(cofactors.field),  annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
                 } catch (Exception ex) {
 
                 }
-                ECNumber e = new ECNumber(id.getText(), split(synonyms)[0], path, id.getText());
-                e.classSheme = enzymeClassScheme.getText();
-                e.classID = enzymeClassID.getText();
+                Enzyme e = new Enzyme(id.field.getText(), split(synonyms.field)[0], path, enzymeClassScheme.field.getText(), enzymeClassID.field.getText());
                 e.setLocal(true);
                 Main.pm.addParts(new Part[]{e}, true);
-                e.info.add(prefixURI.getText());
-                e.info.add(synonyms.getText());
-                e.info.add(formulas.getText());
-                e.info.add(cofactors.getText());
-                e.info.add(sourceURI.getText());
-                e.info.add(annotationPrefixURIs.getText());
-                e.info.add(annotationKeys.getText());
-                e.info.add(annotationValues.getText());
+                e.info.add(synonyms.field.getText());
+                e.info.add(formulas.field.getText());
+                e.info.add(cofactors.field.getText());
+                e.info.add(sourceURI.field.getText());
                 frame.setVisible(false);
                 frame.dispose();
-            }
-        });
-        frame.getContentPane().add(jp);
-        frame.pack();
-        frame.setLocationRelativeTo(mainWindow);
-        frame.setVisible(true);
-    }
-
-    public void editECNumber(ECNumber e) {
-        final JDialog frame = new JDialog(mainWindow, "Edit EC Number", true);
-        JPanel jp = new JPanel();
-        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        prefixURI.setText(e.info.get(0));
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
-
-        UI.addTo(jp, new JLabel("ID"));
-        JTextField id = new JTextField();
-        id.setText(e.id);
-        UI.addTFTo(jp, id, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class Scheme"));
-        JTextField enzymeClassScheme = new JTextField();
-        enzymeClassScheme.setText(e.classSheme);
-        UI.addTFTo(jp, enzymeClassScheme, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class ID"));
-        JTextField enzymeClassID = new JTextField();
-        enzymeClassID.setText(e.classID);
-        UI.addTFTo(jp, enzymeClassID, 300, m);
-
-        UI.addTo(jp, new JLabel("Synonyms"));
-        JTextField synonyms = new JTextField();
-        synonyms.setText(e.info.get(1));
-        UI.addTFTo(jp, synonyms, 300, m);
-
-        UI.addTo(jp, new JLabel("Formulas"));
-        JTextField formulas = new JTextField();
-        formulas.setText(e.info.get(2));
-        UI.addTFTo(jp, formulas, 300, m);
-
-        JLabel l5 = new JLabel("Cofactors");
-        UI.addTo(jp, l5);
-        JTextField cofactors = new JTextField();
-        cofactors.setText(e.info.get(3));
-        UI.addTFTo(jp, cofactors, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        sourceURI.setText(e.info.get(4));
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        annotationPrefixURIs.setText(e.info.get(5));
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        annotationPrefixes.setText(e.info.get(6));
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        annotationKeys.setText(e.info.get(7));
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        annotationValues.setText(e.info.get(8));
-        UI.addTFTo(jp, annotationValues, 300, m);
-
-
-        JButton b1 = new JButton("Done");
-        UI.addToRight(jp, b1, false);
-        b1.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent ee) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
-                try {
-                    PartsCreator.createEnzymeClass(path, prefixURI.getText(), id.getText(), enzymeClassScheme.getText(), enzymeClassID.getText(), sourceURI.getText(), split(synonyms),
-                            split(formulas), split(cofactors), split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys), split(annotationValues));
-                } catch (Exception ex) {
-
-                }
-                if (!e.id.equals(id.getText())) {
-                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + e.id);
+                if (oldEnzyme != null && !e.id.equals(oldEnzyme.id)) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + oldEnzyme.id);
                     file.delete();
                 }
-                e.classSheme = enzymeClassScheme.getText();
-                e.classID = enzymeClassID.getText();
-                e.id = id.getText();
-                e.ecNumber = id.getText();
-                e.name = split(synonyms)[0];
-                e.url = path;
-                e.info.add(prefixURI.getText());
-                e.info.add(synonyms.getText());
-                e.info.add(formulas.getText());
-                e.info.add(cofactors.getText());
-                e.info.add(sourceURI.getText());
-                e.info.add(annotationPrefixURIs.getText());
-                e.info.add(annotationKeys.getText());
-                e.info.add(annotationValues.getText());
-                frame.setVisible(false);
-                frame.dispose();
             }
         });
         frame.getContentPane().add(jp);
@@ -697,222 +390,114 @@ public class NewPartsManager {
         frame.setVisible(true);
     }
 
-    public void addProtein() {
+    public void addProtein(Protein oldProtein) {
         final JDialog frame = new JDialog(mainWindow, "New Protein", true);
         JPanel jp = new JPanel();
         jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
 
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
+        JPanel pCenter = new JPanel();
+        pCenter.setLayout(new BoxLayout(pCenter, BoxLayout.X_AXIS));
 
-        UI.addTo(jp, new JLabel("Protein ID"));
-        JTextField id = new JTextField();
-        UI.addTFTo(jp, id, 300, m);
+        JPanel pLeft = new JPanel();
+        pLeft.setLayout(new BoxLayout(pLeft, BoxLayout.PAGE_AXIS));
 
-        UI.addTo(jp, new JLabel("Names"));
-        JTextField synonyms = new JTextField();
-        UI.addTFTo(jp, synonyms, 300, m);
+        JPanel pNorth = new JPanel();
+        GridLayout gl = new GridLayout(0, 2);
+        gl.setHgap(31);
+        pNorth.setBorder(getBorder("General"));
+        pNorth.setLayout(gl);
 
-        UI.addTo(jp, new JLabel("Organism ID"));
-        JTextField organismID = new JTextField();
-        UI.addTFTo(jp, organismID, 300, m);
+        LabelField id = new LabelField("Protein ID");
+        pNorth.add(id);
+        LabelField sourceURI = new LabelField("Source URI");
+        pNorth.add(sourceURI);
 
-        UI.addTo(jp, new JLabel("Organism Name"));
-        JTextField organismName = new JTextField();
-        UI.addTFTo(jp, organismName, 300, m);
+        LabelField synonyms = new LabelField("Names");
+        pLeft.add(synonyms);
+        LabelField aaSeq = new LabelField("AA_SEQ");
+        pLeft.add(aaSeq);
+        JPanel pOrganisms = new JPanel();
+        pOrganisms.setLayout(new BoxLayout(pOrganisms, BoxLayout.Y_AXIS));
+        pOrganisms.setBorder(getBorder("Organisms"));
 
-        UI.addTo(jp, new JLabel("Organism URL"));
-        JTextField organismURL = new JTextField();
-        UI.addTFTo(jp, organismURL, 300, m);
+        LabelField organismID = new LabelField("Organism ID", "aaa");
+        pOrganisms.add(organismID);
+        LabelField organismName = new LabelField("Organism Name", "1.2.3.4");
+        pOrganisms.add(organismName);
+        LabelField organismURL = new LabelField("Organism URL", "1.2.3.4");
+        pOrganisms.add(organismURL);
+        pLeft.add(pOrganisms);
 
-        UI.addTo(jp, new JLabel("AA_SEQ"));
-        JTextField aaSeq = new JTextField();
-        UI.addTFTo(jp, aaSeq, 300, m);
+        JPanel pRight = new JPanel();
+        pRight.setLayout(new BoxLayout(pRight, BoxLayout.PAGE_AXIS));
+        JPanel pEnzymes = new JPanel();
+        pEnzymes.setLayout(new BoxLayout(pEnzymes, BoxLayout.Y_AXIS));
+        pEnzymes.setBorder(getBorder("Enzymes"));
 
-        UI.addTo(jp, new JLabel("Enzyme Class Schemes"));
-        JTextField enzymeClassSchemes = new JTextField();
-        UI.addTFTo(jp, enzymeClassSchemes, 300, m);
+        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme", "ec");
+        pEnzymes.add(enzymeClassScheme);
 
-        UI.addTo(jp, new JLabel("Enzyme Class IDs"));
-        JTextField enzymeClassIDs = new JTextField();
-        UI.addTFTo(jp, enzymeClassIDs, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        UI.addTFTo(jp, annotationValues, 300, m);
-
+        LabelField enzymeClassID = new LabelField("Enzyme Class ID", "1.2.3.4");
+        pEnzymes.add(enzymeClassID);
+        pRight.add(pEnzymes);
+        AnnotationsPanel annotationsPanel = new AnnotationsPanel(m);
+        pRight.add(annotationsPanel);
+        jp.add(pNorth);
+        jp.add(Box.createRigidArea(new Dimension(0, 10)));
+        pCenter.add(pLeft);
+        pCenter.add(Box.createRigidArea(new Dimension(20, 0)));
+        pCenter.add(pRight);
+        jp.add(pCenter);
+        if(oldProtein != null){
+            id.field.setText(oldProtein.id);
+            enzymeClassScheme.field.setText(oldProtein.enzymeClassScheme);
+            enzymeClassID.field.setText(oldProtein.enzymeID);
+            synonyms.field.setText(oldProtein.info.get(0));
+            sourceURI.field.setText(oldProtein.info.get(1));
+            for (Annotation a : oldProtein.annotations) {
+                annotationsPanel.annotations.addElement(a);
+            }
+        }
         JButton b1 = new JButton("Add");
         UI.addToRight(jp, b1, false);
         b1.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
+                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.field.getText();
+                String[] annotationPrefixURIs = new String[annotationsPanel.annotations.size()];
+                String[] annotationPrefixes = new String[annotationsPanel.annotations.size()];
+                String[] annotationKeys = new String[annotationsPanel.annotations.size()];
+                String[] annotationValues = new String[annotationsPanel.annotations.size()];
+                for (int i = 0; i < annotationPrefixURIs.length; i++) {
+                    Annotation annotation = (Annotation) annotationsPanel.annotations.getElementAt(i);
+                    annotationPrefixURIs[i] = annotation.annotationPrefixURI;
+                    annotationPrefixes[i] = annotation.annotationPrefix;
+                    annotationKeys[i] = annotation.annotationKey;
+                    annotationValues[i] = annotation.annotationValue;
+                }
                 try {
-                    PartsCreator.createProtein(path, prefixURI.getText(), id.getText(), sourceURI.getText(), split(synonyms),
-                            organismID.getText(), organismName.getText(), organismURL.getText(), aaSeq.getText(), split(enzymeClassSchemes),
-                            split(enzymeClassIDs), split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys),
-                            split(annotationValues));
+                    PartsCreator.createProtein(path, s.localPrefix, id.field.getText(), sourceURI.field.getText(), split(synonyms.field),
+                            organismID.field.getText(), organismName.field.getText(), organismURL.field.getText(), aaSeq.field.getText(),
+                            new String[]{enzymeClassScheme.field.getText()},new String[]{enzymeClassID.field.getText()},
+                            annotationPrefixURIs, annotationPrefixes,annotationKeys, annotationValues);
                 } catch (Exception ex) {
 
                 }
-                Protein p = new Protein(id.getText(), split(synonyms)[0], path, split(enzymeClassIDs)[0]);
-                p.sequence = aaSeq.getText();
-                p.organism = organismName.getText();
+                Protein p = new Protein(id.field.getText(), split(synonyms.field)[0], path, enzymeClassID.field.getText());
+                p.sequence = aaSeq.field.getText();
+                p.organism = new Organism(organismID.field.getText(), organismName.field.getText(), organismURL.field.getText());
                 p.setLocal(true);
-                p.info.add(prefixURI.getText());
-                p.info.add(synonyms.getText());
-                p.info.add(organismID.getText());
-                p.info.add(organismURL.getText());
-                p.info.add(enzymeClassSchemes.getText());
-                p.info.add(enzymeClassIDs.getText());
-                p.info.add(sourceURI.getText());
-                p.info.add(annotationPrefixURIs.getText());
-                p.info.add(annotationKeys.getText());
-                p.info.add(annotationValues.getText());
+                p.info.add(synonyms.field.getText());
+                p.info.add(sourceURI.field.getText());
                 Main.pm.addParts(new Part[]{p}, true);
                 Main.getLocalRepo().importCustomPart(new File(path));
                 frame.setVisible(false);
                 frame.dispose();
-            }
-        });
-        frame.getContentPane().add(jp);
-        frame.pack();
-        frame.setLocationRelativeTo(mainWindow);
-        frame.setVisible(true);
-    }
-
-    public void editProtein(Protein p) {
-        final JDialog frame = new JDialog(mainWindow, "New Enzyme", true);
-        JPanel jp = new JPanel();
-        jp.setLayout(new BoxLayout(jp, BoxLayout.PAGE_AXIS));
-
-        UI.addTo(jp, new JLabel("Prefix URI"));
-        JTextField prefixURI = new JTextField();
-        prefixURI.setText(p.info.get(0));
-        int m = Math.max(20, prefixURI.getPreferredSize().height);
-        UI.addTFTo(jp, prefixURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Protein ID"));
-        JTextField id = new JTextField();
-        id.setText(p.id);
-        UI.addTFTo(jp, id, 300, m);
-
-        UI.addTo(jp, new JLabel("Names"));
-        JTextField synonyms = new JTextField();
-        synonyms.setText(p.info.get(1));
-        UI.addTFTo(jp, synonyms, 300, m);
-
-        UI.addTo(jp, new JLabel("Organism ID"));
-        JTextField organismID = new JTextField();
-        organismID.setText(p.info.get(2));
-        UI.addTFTo(jp, organismID, 300, m);
-
-        UI.addTo(jp, new JLabel("Organism Name"));
-        JTextField organismName = new JTextField();
-        organismName.setText(p.organism);
-        UI.addTFTo(jp, organismName, 300, m);
-
-        UI.addTo(jp, new JLabel("Organism URL"));
-        JTextField organismURL = new JTextField();
-        organismURL.setText(p.info.get(3));
-        UI.addTFTo(jp, organismURL, 300, m);
-
-        UI.addTo(jp, new JLabel("AA_SEQ"));
-        JTextField aaSeq = new JTextField();
-        aaSeq.setText(p.sequence);
-        UI.addTFTo(jp, aaSeq, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class Schemes"));
-        JTextField enzymeClassSchemes = new JTextField();
-        enzymeClassSchemes.setText(p.info.get(4));
-        UI.addTFTo(jp, enzymeClassSchemes, 300, m);
-
-        UI.addTo(jp, new JLabel("Enzyme Class IDs"));
-        JTextField enzymeClassIDs = new JTextField();
-        enzymeClassIDs.setText(p.info.get(5));
-        UI.addTFTo(jp, enzymeClassIDs, 300, m);
-
-        UI.addTo(jp, new JLabel("Source URI"));
-        JTextField sourceURI = new JTextField();
-        sourceURI.setText(p.info.get(6));
-        UI.addTFTo(jp, sourceURI, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefix URIs"));
-        JTextField annotationPrefixURIs = new JTextField();
-        annotationPrefixURIs.setText(p.info.get(7));
-        UI.addTFTo(jp, annotationPrefixURIs, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Prefixes"));
-        JTextField annotationPrefixes = new JTextField();
-        annotationPrefixes.setText(p.info.get(8));
-        UI.addTFTo(jp, annotationPrefixes, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Keys"));
-        JTextField annotationKeys = new JTextField();
-        annotationKeys.setText(p.info.get(9));
-        UI.addTFTo(jp, annotationKeys, 300, m);
-
-        UI.addTo(jp, new JLabel("Annotation Values"));
-        JTextField annotationValues = new JTextField();
-        annotationValues.setText(p.info.get(10));
-        UI.addTFTo(jp, annotationValues, 300, m);
-
-        JButton b1 = new JButton("Add");
-        UI.addToRight(jp, b1, false);
-        b1.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String path = s.projectPath + s.projectName + File.separator + "parts" + File.separator + id.getText();
-                try {
-                    PartsCreator.createProtein(path, prefixURI.getText(), id.getText(), sourceURI.getText(), split(synonyms),
-                            organismID.getText(), organismName.getText(), organismURL.getText(), aaSeq.getText(), split(enzymeClassSchemes),
-                            split(enzymeClassIDs), split(annotationPrefixURIs), split(annotationPrefixes), split(annotationKeys),
-                            split(annotationValues));
-                } catch (Exception ex) {
-
-                }
-                if (!p.id.equals(id.getText())) {
-                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
+                if (oldProtein != null && !p.id.equals(oldProtein.id)) {
+                    File file = new File(s.projectPath + s.projectName + File.separator + "parts" + File.separator + oldProtein.id);
                     file.delete();
                 }
-                p.id = id.getText();
-                p.name = split(synonyms)[0];
-                p.url = path;
-                p.ecNumber = split(enzymeClassIDs)[0];
-                p.sequence = aaSeq.getText();
-                p.organism = organismName.getText();
-                p.info.add(prefixURI.getText());
-                p.info.add(synonyms.getText());
-                p.info.add(organismID.getText());
-                p.info.add(organismURL.getText());
-                p.info.add(enzymeClassSchemes.getText());
-                p.info.add(enzymeClassIDs.getText());
-                p.info.add(sourceURI.getText());
-                p.info.add(annotationPrefixURIs.getText());
-                p.info.add(annotationKeys.getText());
-                p.info.add(annotationValues.getText());
-                frame.setVisible(false);
-                frame.dispose();
             }
         });
         frame.getContentPane().add(jp);
@@ -969,4 +554,139 @@ public class NewPartsManager {
         }
     }
 
+}
+class AnnotationsPanel extends JPanel{
+    public DefaultListModel annotations;
+
+    public AnnotationsPanel(int m){
+        JPanel pAnnotations = this;
+        pAnnotations.setLayout(new BoxLayout(pAnnotations, BoxLayout.Y_AXIS));
+        pAnnotations.setBorder(NewPartsManager.getBorder("Annotations"));
+
+        LabelField annotationPrefixURI = new LabelField("Annotation Prefix URI", "a1");
+        pAnnotations.add(annotationPrefixURI);
+
+        LabelField annotationPrefix = new LabelField("Annotation Prefix", "a2");
+        pAnnotations.add(annotationPrefix);
+
+        LabelField annotationKey = new LabelField("Annotation Key", "a3");
+        pAnnotations.add(annotationKey);
+
+        LabelField annotationValue = new LabelField("Annotation Value", "a4");
+        pAnnotations.add(annotationValue);
+
+        annotations = new DefaultListModel();
+        JList annotationsList = new JList(annotations);
+        UI.addTo(pAnnotations, annotationsList, 300, 120);
+
+        JPanel bpAnnotation = new JPanel();
+        bpAnnotation.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        bpAnnotation.setPreferredSize(new Dimension(300, 2 * m));
+        JButton bAddAnnotation = new JButton("Add");
+        bAddAnnotation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                annotations.addElement(new Annotation(annotationPrefixURI.field.getText(), annotationPrefix.field.getText(),
+                        annotationKey.field.getText(), annotationValue.field.getText()));
+            }
+        });
+        JButton bDeleteAnnotation = new JButton("Delete");
+        bDeleteAnnotation.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                annotations.remove(annotationsList.getSelectedIndex());
+            }
+        });
+
+        bpAnnotation.add(bAddAnnotation);
+        bpAnnotation.add(bDeleteAnnotation);
+        pAnnotations.add(bpAnnotation);
+    }
+
+}
+class EnzymesPanel extends JPanel{
+    DefaultListModel enzymes;
+
+    public EnzymesPanel(int m){
+        JPanel pEnzymes = this;
+        pEnzymes.setLayout(new BoxLayout(pEnzymes, BoxLayout.Y_AXIS));
+        pEnzymes.setBorder(NewPartsManager.getBorder("Enzymes"));
+
+        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme", "ec");
+        pEnzymes.add(enzymeClassScheme);
+
+        LabelField enzymeClassID = new LabelField("Enzyme Class ID", "1.2.3.4");
+        pEnzymes.add(enzymeClassID);
+
+        enzymes = new DefaultListModel();
+        JList enzymesList = new JList(enzymes);
+        UI.addTo(pEnzymes, enzymesList, 300, 120);
+
+        JPanel bpEnzymes = new JPanel();
+        bpEnzymes.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        bpEnzymes.setPreferredSize(new Dimension(300, 2 * m));
+        JButton bAddEnzyme = new JButton("Add");
+        bAddEnzyme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String id = Enzyme.getID(enzymeClassScheme.field.getText(), enzymeClassID.field.getText());
+                enzymes.addElement(new Enzyme(id, "", "", enzymeClassScheme.field.getText(), enzymeClassID.field.getText()));
+            }
+        });
+        JButton bDeleteEnzyme = new JButton("Delete");
+        bDeleteEnzyme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                enzymes.remove(enzymesList.getSelectedIndex());
+            }
+        });
+
+        bpEnzymes.add(bAddEnzyme);
+        bpEnzymes.add(bDeleteEnzyme);
+        pEnzymes.add(bpEnzymes);
+    }
+}
+class OrganismPanel extends JPanel {
+
+    DefaultListModel organisms;
+
+    public OrganismPanel(int m){
+        JPanel pOrganisms = this;
+        pOrganisms.setLayout(new BoxLayout(pOrganisms, BoxLayout.Y_AXIS));
+        pOrganisms.setBorder(NewPartsManager.getBorder("Organisms"));
+
+        LabelField organismID = new LabelField("Organism ID", "aaa");
+        pOrganisms.add(organismID);
+        LabelField organismName = new LabelField("Organism Name", "1.2.3.4");
+        pOrganisms.add(organismName);
+        LabelField organismURL = new LabelField("Organism URL", "1.2.3.4");
+        pOrganisms.add(organismURL);
+
+        organisms = new DefaultListModel();
+        JList organismsList = new JList(organisms);
+        UI.addTo(pOrganisms, organismsList, 300, 120);
+
+        JPanel bpOrganisms = new JPanel();
+        bpOrganisms.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        bpOrganisms.setPreferredSize(new Dimension(300, 2 * m));
+        JButton bAddOrganism = new JButton("Add");
+        bAddOrganism.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                organisms.addElement(new Organism(organismID.field.getText(),
+                        organismName.field.getText(), organismURL.field.getText()));
+            }
+        });
+        JButton bDeleteOrganism = new JButton("Delete");
+        bDeleteOrganism.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                organisms.remove(organismsList.getSelectedIndex());
+            }
+        });
+
+        bpOrganisms.add(bAddOrganism);
+        bpOrganisms.add(bDeleteOrganism);
+        pOrganisms.add(bpOrganisms);
+    }
 }

@@ -26,7 +26,7 @@ public class ImageComponent extends JComponent {
     protected void paintComponent(Graphics g) {
         Image im = null;
         int w = this.getWidth();
-        int h = this.getHeight()-14;
+        int h = this.getHeight()-40;
         Color bg = new Color(223, 244, 255);
         g.setColor(bg);
         g.fillRect(0, 0, this.getWidth(),  this.getHeight());
@@ -43,17 +43,17 @@ public class ImageComponent extends JComponent {
                     return Color.black;
                 }
             })
-                    .withSize(w, h)
+                    .withSize(w-30, h-30).withFillToFit()
                     .depict(mol).toImg();
         }catch(Exception e){
             e.printStackTrace();
         }
-        g.drawImage(im, 0, 0, null);
+        g.drawImage(im, 15, 15, null);
         g.setColor(Color.BLACK);
         g.drawRect(0, 0, this.getWidth()-1,  this.getHeight()-1);
-        g.drawLine(0, h, w, h);
+        //g.drawLine(0, h, w, h);
         if(text!=null){
-            g.drawString(text, 5, this.getHeight()-2);
+            //g.drawString(text, 5, this.getHeight()-2);
         }
     }
 

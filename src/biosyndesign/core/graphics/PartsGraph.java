@@ -1,12 +1,12 @@
 package biosyndesign.core.graphics;
 
 import biosyndesign.core.Main;
+import com.mxgraph.canvas.mxGraphics2DCanvas;
+import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxConstants;
-import com.mxgraph.util.mxEvent;
-import com.mxgraph.util.mxEventObject;
-import com.mxgraph.util.mxEventSource;
+import com.mxgraph.util.*;
+import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
 import org.apache.batik.anim.dom.SVGDOMImplementation;
@@ -33,11 +33,31 @@ public class PartsGraph extends JPanel implements Serializable {
         super();
         this.setLayout(new BorderLayout());
         graph = new mxGraph() {
-            // Overrides method to disallow edge label editing
+//            public void drawState(mxICanvas canvas, mxCellState state, boolean drawLabel) {
+//                super.drawState(canvas, state, drawLabel);
+//                if (canvas instanceof mxGraphics2DCanvas) //  drag&drop ignored              return;
+//                    if (model.isVertex(state.getCell())) {
+//                        Graphics2D g = ((mxGraphics2DCanvas) canvas).getGraphics();
+//                        Object userValue = model.getValue(state.getCell());
+//                        String textToDisplay = "testing";
+//                        if (textToDisplay != null) {
+//                            //Font scaledFont = mxUtils.getFont(state.getStyle(), canvas.getScale());
+//                            //g.setFont(scaledFont);
+//                        }
+//                        g.setFont(new Font("Verdana", Font.PLAIN, 14));
+//                        FontMetrics fm = g.getFontMetrics();
+//                        int w = SwingUtilities.computeStringWidth(fm, textToDisplay);
+//                        int h = fm.getAscent();
+//                        Color fontColor = mxUtils.getColor(state.getStyle(), mxConstants.STYLE_FONTCOLOR, Color.black);
+//                        g.setColor(fontColor);
+//                        g.drawString(textToDisplay, (int) state.getX() + (int) state.getWidth() + (int) canvas.getTranslate().getX() - w, (int) state.getY() + (int) state.getHeight() + (int) canvas.getTranslate().getY() + h);
+//                    }
+//            }
             public boolean isCellEditable(Object cell) {
                 return !getModel().isEdge(cell);
             }
         };
+
         Object parent = graph.getDefaultParent();
 
 
@@ -45,10 +65,12 @@ public class PartsGraph extends JPanel implements Serializable {
         Hashtable<String, Object> style = new Hashtable<String, Object>();
         style.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
         //style.put(mxConstants.STYLE_OPACITY, 50);
-        style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_BOLD);
-        style.put(mxConstants.STYLE_FILLCOLOR, "#addeed");
+        style.put(mxConstants.STYLE_FONTSTYLE, mxConstants.FONT_ITALIC);
+        style.put(mxConstants.STYLE_FONTCOLOR, Color.red);
         style.put(mxConstants.STYLE_ROUNDED, "1");
         style.put(mxConstants.STYLE_EDITABLE, "0");
+        style.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT);
+        style.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_BOTTOM);
         stylesheet.putCellStyle("COMPOUND", style);
 
         Hashtable<String, Object> style1 = new Hashtable<String, Object>();
@@ -67,6 +89,8 @@ public class PartsGraph extends JPanel implements Serializable {
         style2.put(mxConstants.STYLE_FILLCOLOR, "#ed9393");
         style2.put(mxConstants.STYLE_ROUNDED, "1");
         style2.put(mxConstants.STYLE_EDITABLE, "0");
+        style2.put(mxConstants.STYLE_STROKEWIDTH, "1.5");
+        style2.put(mxConstants.STYLE_STROKECOLOR, Color.BLACK);
         stylesheet.putCellStyle("REACTION", style2);
 
         Hashtable<String, Object> styler2 = new Hashtable<String, Object>();
@@ -76,6 +100,8 @@ public class PartsGraph extends JPanel implements Serializable {
         styler2.put(mxConstants.STYLE_FILLCOLOR, "#ed9393");
         styler2.put(mxConstants.STYLE_ROUNDED, "1");
         styler2.put(mxConstants.STYLE_EDITABLE, "0");
+        styler2.put(mxConstants.STYLE_STROKEWIDTH, "1.5");
+        styler2.put(mxConstants.STYLE_STROKECOLOR, Color.BLACK);
         stylesheet.putCellStyle("REACTION_NAT", styler2);
 
         Hashtable<String, Object> style3 = new Hashtable<String, Object>();
@@ -117,6 +143,13 @@ public class PartsGraph extends JPanel implements Serializable {
         stylesheet.putCellStyle("EDGE", edge1);
         //Object v1 = graph.insertVertex(parent, null, "Hello",  20,  20, 80, 30);
 
+        Hashtable<String, Object> edge2 = new Hashtable<String, Object>();
+        edge2.put(mxConstants.STYLE_FONTSIZE, 12);
+        edge2.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER);
+        edge2.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_TOP);
+        edge2.put(mxConstants.STYLE_ENDSIZE, 10);
+        edge2.put(mxConstants.STYLE_STARTSIZE, 10);
+        stylesheet.putCellStyle("EDGE_SMALL", edge2);
 
         graph.setAllowDanglingEdges(false);
         //graph.setCellsEditable(false);
@@ -177,7 +210,7 @@ public class PartsGraph extends JPanel implements Serializable {
 
         // Print to the SVG Graphics2D object
         boolean useCSS = true; // we want to use CSS style attributes
-        if(!path.toLowerCase().endsWith(".svg")){
+        if (!path.toLowerCase().endsWith(".svg")) {
             path += ".svg";
         }
         Writer out = new FileWriter(new File(path));
@@ -185,7 +218,7 @@ public class PartsGraph extends JPanel implements Serializable {
             svgGenerator.stream(root, out, useCSS, false);
         } catch (SVGGraphics2DIOException e) {
             e.printStackTrace();
-        }finally {
+        } finally {
             out.close();
         }
     }

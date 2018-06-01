@@ -235,11 +235,11 @@ public class LocalRepo implements SBOLInterface {
             }
         } else if (type == 2) {
             if (filter == 0) {
-                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e WHERE ECNumber " + op;
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e WHERE Enzyme " + op;
             } else if (filter == 1) {
-                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.ECNumber = ce.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.Enzyme = ce.Enzyme";
             } else if (filter == 2) {
-                sql = "SELECT e.ID, e.URL, e.ECNumber, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.ECNumber = re.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.Enzyme = re.Enzyme";
             }
         }
 
@@ -270,7 +270,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Protein[] getProteins(String ECNumber) {
-        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.ECNumber FROM proteins AS p WHERE p.ECNumber = '" + ECNumber + "'");
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + ECNumber + "'");
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
@@ -281,7 +281,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Protein[] getProteins(String ECNumber, String organism) {
-        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.ECNumber FROM proteins AS p WHERE p.ECNumber = '" + ECNumber + "' AND p.OrganismName = '" + organism + "'");
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + ECNumber + "' AND p.OrganismName = '" + organism + "'");
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
@@ -302,7 +302,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public boolean isNative(String reaction, String organism) {
-        JsonArray a = executeJSON("SELECT * FROM reaction_enzymes AS re INNER JOIN  proteins AS p ON re.Reaction = '" + reaction + "' AND p.OrganismName = '" + organism + "' AND re.Enzyme = p.ECNumber");
+        JsonArray a = executeJSON("SELECT * FROM reaction_enzymes AS re INNER JOIN  proteins AS p ON re.Reaction = '" + reaction + "' AND p.OrganismName = '" + organism + "' AND re.Enzyme = p.Enzyme");
         if (a != null && a.size() > 0) {
             return true;
         }
@@ -447,11 +447,11 @@ public class LocalRepo implements SBOLInterface {
                 String oName = definition.getChildText("organismname");
                 String ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
-                execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, ECNumber, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
+                execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, Enzyme, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
             } else {
                 //EC Number
                 String ECNumber = Common.ltrim("ec",definition.getChildText("enzyme_classid"));
-                execute("INSERT INTO ecnum(ID, ECNumber, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
+                execute("INSERT INTO ecnum(ID, Enzyme, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
             //Reaction

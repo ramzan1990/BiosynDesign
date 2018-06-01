@@ -155,11 +155,12 @@ public class ProjectIO {
 
     }
 
-    public void newProjectSelected(String organism, String prefix, File f) {
+    public void newProjectSelected(String organism, String prefix, String localPrefix, File f) {
         s.projectName = f.getName();
         s.projectPath = f.getAbsolutePath();
         s.organism = organism;
         s.prefix = prefix;
+        s.localPrefix = localPrefix;
         saveProjectAs2(null);
         Main.initManagers();
         mainWindow.setTitle("BiosynDesign - " + s.projectName);
@@ -275,7 +276,7 @@ public class ProjectIO {
             mainWindow.writeToConsole("Testing\nTesting\nTesting");
             remember();
         } else {
-            //remove(selectedIndex);
+            //showPathway(selectedIndex);
         }
 
     }
@@ -329,7 +330,7 @@ public class ProjectIO {
     public void saveComponentImage(ImageComponent ic, String id) {
         BufferedImage myImage;
         JComponent jc = (JComponent) ic;
-        jc.setSize(new Dimension(200, 100));
+        jc.setSize(new Dimension(400, 200));
         jc.repaint();
         myImage = new BufferedImage(jc.getWidth(), jc.getHeight(), BufferedImage.TYPE_INT_RGB);
         Graphics2D g = myImage.createGraphics();
@@ -338,6 +339,14 @@ public class ProjectIO {
             ImageIO.write(myImage, "png", new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + id + ".png"));
             mainWindow.setStatusLabel("Image saved");
         } catch (Exception e) {
+        }
+    }
+
+    public void saveSVG(String svg, String id) {
+        try (PrintWriter out = new PrintWriter(s.projectPath + s.projectName + File.separator + "ci" + File.separator + id + ".svg")) {
+            out.println(svg);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

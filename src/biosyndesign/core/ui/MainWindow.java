@@ -20,7 +20,7 @@ public class MainWindow extends BDFrame {
     private JMenu File, Parts, options,  export, HelpM, repoOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addECNumber, addEnzyme, competingReactions, chooseRepository,
     exportCDNA, exportAA, exportPathway, exportGraph;
-    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, hideCompounds;
+    private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, showPathway;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
     private JToolBar toolsPanel;
@@ -57,7 +57,7 @@ public class MainWindow extends BDFrame {
         export =  new JMenu("Export");
         chooseRepository = new JMenuItem("Choose Repository");
         useLocalRepo = new JCheckBoxMenuItem("Use Local Repository");
-        hideCompounds =  new JCheckBoxMenuItem("Hide Compounds");
+        showPathway =  new JCheckBoxMenuItem("Show Pathway");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -156,7 +156,7 @@ public class MainWindow extends BDFrame {
 
         addCompound.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.lpm.addCompound();
+                Main.lpm.addCompound(null);
             }
         });
         addReaction.addActionListener(new ActionListener() {
@@ -166,12 +166,12 @@ public class MainWindow extends BDFrame {
         });
         addECNumber.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.lpm.addECNumber();
+                Main.lpm.addEnzyme(null);
             }
         });
         addEnzyme.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                Main.lpm.addProtein();
+                Main.lpm.addProtein(null);
             }
         });
         competingReactions.addActionListener(new ActionListener() {
@@ -294,12 +294,11 @@ public class MainWindow extends BDFrame {
                 Main.guim.exportGraph();
             }
         });
-        options.add(hideCompounds);
-        hideCompounds.addActionListener(new ActionListener() {
+        options.add(showPathway);
+        showPathway.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.gm.remove = hideCompounds.isSelected();
-                Main.gm.updateGraph();
+               Main.guim.showPathway(showPathway.isSelected());
             }
         });
         repoOptions.add(chooseRepository);

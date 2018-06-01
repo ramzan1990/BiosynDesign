@@ -5,14 +5,15 @@ package biosyndesign.core.sbol.parts;
  */
 public class Protein extends Part{
 
-    public String ecNumber;
+    public String enzymeID;
+    public String enzymeClassScheme = "ec";
     public String sequence;
-    public String organism;
+    public Organism organism;
     public boolean nat;
 
     public Protein(String id, String organism, String url,String ecNumber) {
         super(id, "", url);
-        this.organism=organism;
-        this.ecNumber=ecNumber;
+        this.organism=new Organism(organism);
+        this.enzymeID =ecNumber;
     }
 }
