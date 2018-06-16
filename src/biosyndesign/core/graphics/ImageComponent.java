@@ -17,17 +17,24 @@ import java.awt.image.RGBImageFilter;
 public class ImageComponent extends JComponent {
     IAtomContainer mol;
     String text = null;
+    Color bg;
 
     public ImageComponent(IAtomContainer mol){
         super();
         this.mol = mol;
+        bg = new Color(223, 244, 255);
+    }
+
+    public ImageComponent(IAtomContainer mol, Color c) {
+        super();
+        this.mol = mol;
+        bg = c;
     }
 
     protected void paintComponent(Graphics g) {
         Image im = null;
         int w = this.getWidth();
         int h = this.getHeight()-40;
-        Color bg = new Color(223, 244, 255);
         g.setColor(bg);
         g.fillRect(0, 0, this.getWidth(),  this.getHeight());
         //mol.setProperty(CDKConstants.TITLE, text);.withMolTitle().withTitleColor(Color.BLACK)

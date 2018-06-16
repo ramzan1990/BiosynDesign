@@ -12,7 +12,6 @@ import com.mxgraph.canvas.mxGraphics2DCanvas;
 import com.mxgraph.canvas.mxGraphicsCanvas2D;
 import com.mxgraph.shape.mxStencil;
 import com.mxgraph.shape.mxStencilRegistry;
-import com.mxgraph.util.mxImage;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.mxXmlUtils;
 import com.mxgraph.view.mxGraph;
@@ -20,10 +19,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -98,26 +95,20 @@ public class GraphManager {
                 Document doc = mxXmlUtils.parseXml(mxUtils.readFile(s.projectPath + s.projectName + File.separator + "stencils.xml"));
                 Element shapes = (Element) doc.getDocumentElement();
                 NodeList list = shapes.getElementsByTagName("shape");
-                for (int ii = 0; ii < list.getLength(); ii++)
-                {
+                for (int ii = 0; ii < list.getLength(); ii++) {
                     Element shape = (Element) list.item(ii);
                     mxStencilRegistry.addStencil(shape.getAttribute("name"),
-                            new mxStencil(shape)
-                            {
+                            new mxStencil(shape) {
                                 protected mxGraphicsCanvas2D createCanvas(
-                                        final mxGraphics2DCanvas gc)
-                                {
+                                        final mxGraphics2DCanvas gc) {
                                     // Redirects image loading to graphics canvas
-                                    return new mxGraphicsCanvas2D(gc.getGraphics())
-                                    {
-                                        protected Image loadImage(String src)
-                                        {
+                                    return new mxGraphicsCanvas2D(gc.getGraphics()) {
+                                        protected Image loadImage(String src) {
                                             // Adds image base path to relative image URLs
                                             if (!src.startsWith("/")
                                                     && !src.startsWith("http://")
                                                     && !src.startsWith("https://")
-                                                    && !src.startsWith("file:"))
-                                            {
+                                                    && !src.startsWith("file:")) {
                                                 src = gc.getImageBasePath() + src;
                                             }
 
@@ -131,13 +122,13 @@ public class GraphManager {
             }
             ArrayList<String> usedParts = new ArrayList<>();
             ArrayList<Object> objects = new ArrayList<>();
-            if(showPathway){
+            if (showPathway) {
                 int i = 1;
                 Object prev = null;
-                for(CompoundReaction cr: finalPath) {
+                for (CompoundReaction cr : finalPath) {
                     Compound c = cr.c;
                     int rx = 200;
-                    int ry = 200*i++;
+                    int ry = 200 * i++;
                     File f = new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".svg");
                     Object v2;
                     if (f.exists()) {
@@ -146,12 +137,12 @@ public class GraphManager {
                         v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 20), rx, ry, 50 * scale, 25 * scale, "COMPOUND");
                     }
                     //s.graphNodes.put(v2, c);
-                    if(prev != null) {
+                    if (prev != null) {
                         graph.insertEdge(parent, null, cr.r.name, prev, v2, "EDGE_SMALL");
                     }
                     prev = v2;
                 }
-            }else {
+            } else {
                 Mover m = new Mover(180 * scale);
                 int off = 100 + 80 * scale + m.max(s.reactions.size()) * (120 * scale);
                 String compoundStyle;
@@ -165,7 +156,7 @@ public class GraphManager {
                     if (r.ec.size() == 0) {
                         rt = r.partialEC;
                     } else {
-                        rt = r.ec.get(r.pickedEC).ecNumber + " [" + r.ec.size() + "]";
+                        rt = r.ec.get(r.pickedEC).classScheme + ":" + r.ec.get(r.pickedEC).classID + " [" + r.ec.size() + "]";
                     }
                     if (r.enzyme != null) {
                         rt += "\n" + Common.restrict(r.enzyme.name, 14);
@@ -258,7 +249,7 @@ public class GraphManager {
                     int rx = m.x() + off;
                     int ry = m.y() + off;
                     Compound c = s.compounds.get(i);
-                    compoundStyle ="";
+                    compoundStyle = "";
                     if (c == s.target) {
                         compoundStyle = "TARGET";
                     } else if (c == s.source) {
@@ -272,7 +263,7 @@ public class GraphManager {
                         File f = new File(s.projectPath + s.projectName + File.separator + "ci" + File.separator + c.id + ".svg");
                         Object v2;
                         if (f.exists()) {
-                            v2 = graph.insertVertex(parent, null, compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND;fontSize=" + (4 * scale) + ";shape=" +c.id);
+                            v2 = graph.insertVertex(parent, null, compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND;fontSize=" + (4 * scale) + ";shape=" + c.id);
                         } else {
                             v2 = graph.insertVertex(parent, null, Common.restrict(c.name, 12) + "\n" + compoundStyle, rx, ry, 50 * scale, 25 * scale, "COMPOUND");
                         }
@@ -308,8 +299,6 @@ public class GraphManager {
     }
 
 
-
-
     public Object[] getSelected() {
         mxGraph graph = mainWindow.workSpacePanel.graph;
         return graph.getSelectionCells();
@@ -317,9 +306,9 @@ public class GraphManager {
 
 
     public void zoom(boolean b) {
-        if(b && scale<4){
+        if (b && scale < 4) {
             scale++;
-        }else if(!b && scale>1){
+        } else if (!b && scale > 1) {
             scale--;
         }
         Main.pm.updateStencils();

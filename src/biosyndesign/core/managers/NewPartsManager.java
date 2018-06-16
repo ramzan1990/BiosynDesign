@@ -610,9 +610,9 @@ class EnzymesPanel extends JPanel{
     public EnzymesPanel(int m){
         JPanel pEnzymes = this;
         pEnzymes.setLayout(new BoxLayout(pEnzymes, BoxLayout.Y_AXIS));
-        pEnzymes.setBorder(NewPartsManager.getBorder("Enzymes"));
+        pEnzymes.setBorder(NewPartsManager.getBorder("Reaction Class"));
 
-        LabelField enzymeClassScheme = new LabelField("Enzyme Class Scheme", "ec");
+        LabelField enzymeClassScheme = new LabelField("Reaction Class Scheme", "ec");
         pEnzymes.add(enzymeClassScheme);
 
         LabelField enzymeClassID = new LabelField("Enzyme Class ID", "1.2.3.4");

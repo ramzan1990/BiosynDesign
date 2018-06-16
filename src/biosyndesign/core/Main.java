@@ -12,7 +12,7 @@ import java.sql.SQLException;
 
 public class Main {
 
-    private static MainWindow mainWindow;
+    public static MainWindow mainWindow;
     private static ProjectState s;
     private static LocalRepo lp;
     public static ProjectIO projectIO;

@@ -26,7 +26,7 @@ public class PartsManagerFrame extends BDFrame {
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocation(dim.width / 2 - this.getSize().width / 2, dim.height / 2 - this.getSize().height / 2);
         this.setLayout(new BorderLayout());
-        JPanel  rightPanel = new JPanel();
+        JPanel rightPanel = new JPanel();
         rightPanel.setPreferredSize(new Dimension(220, 500));
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.PAGE_AXIS));
         rightPanel.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.LIGHT_GRAY));
@@ -40,7 +40,7 @@ public class PartsManagerFrame extends BDFrame {
         cmb0.setPreferredSize(new Dimension(dpcw, cmb0.getPreferredSize().height));
         cmb0.setMaximumSize(new Dimension(500, cmb0.getPreferredSize().height));
         String[] batches = lr.getDatasets();
-        for(String b:batches){
+        for (String b : batches) {
             cmb0.addItem(b);
         }
         UI.addTo(rightPanel, cmb0);
@@ -114,11 +114,11 @@ public class PartsManagerFrame extends BDFrame {
         cmb0.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(cmb0.getSelectedIndex()>-1) {
+                if (cmb0.getSelectedIndex() > -1) {
                     lr.setCurrentDataset(cmb0.getSelectedItem().toString());
                     b2.setEnabled(true);
                     cmb1.setSelectedIndex(0);
-                }else{
+                } else {
                     DefaultTableModel dtm = (DefaultTableModel) table.getModel();
                     dtm.setRowCount(0);
                 }
@@ -143,10 +143,10 @@ public class PartsManagerFrame extends BDFrame {
             public void actionPerformed(ActionEvent e) {
                 String name = JOptionPane.showInputDialog("Choose name for the dataset OR leave empty to import into current dataset:");
                 lr.importParts(name);
-                if(name.length() != 0){
+                if (name.length() != 0) {
                     cmb0.addItem(name);
                     cmb0.setSelectedItem(name);
-                }else{
+                } else {
                     cmb1.setSelectedIndex(cmb1.getSelectedIndex());
                 }
             }
@@ -155,8 +155,8 @@ public class PartsManagerFrame extends BDFrame {
         b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(cmb0.getSelectedIndex()!=-1) {
-                    String name= cmb0.getSelectedItem().toString();
+                if (cmb0.getSelectedIndex() != -1) {
+                    String name = cmb0.getSelectedItem().toString();
                     lr.deleteDataset(name);
                     cmb0.removeItem(name);
                     cmb0.setSelectedIndex(-1);
@@ -169,8 +169,8 @@ public class PartsManagerFrame extends BDFrame {
         b5.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int dialogResult = JOptionPane.showConfirmDialog (null, "Are you sure you want to reset your collection? All data will be lost.","Warning", JOptionPane.YES_NO_OPTION);
-                if(dialogResult == JOptionPane.YES_OPTION){
+                int dialogResult = JOptionPane.showConfirmDialog(null, "Are you sure you want to reset your collection? All data will be lost.", "Warning", JOptionPane.YES_NO_OPTION);
+                if (dialogResult == JOptionPane.YES_OPTION) {
                     //lr.resetDB(); ??
                     cmb0.removeAllItems();
                     DefaultTableModel dtm = (DefaultTableModel) table.getModel();
@@ -191,7 +191,9 @@ public class PartsManagerFrame extends BDFrame {
         this.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-                parent.setVisible(true);
+                if (parent != null) {
+                    parent.setVisible(true);
+                }
             }
         });
 
@@ -202,9 +204,9 @@ public class PartsManagerFrame extends BDFrame {
         cmb1.setSelectedIndex(0);
     }
 
-    private void showParts(Part[] p){
+    private void showParts(Part[] p) {
         String[][] rowData = new String[p.length][2];
-        for(int i =0; i<p.length; i++){
+        for (int i = 0; i < p.length; i++) {
             rowData[i][0] = p[i].id;
             rowData[i][1] = p[i].name;
         }

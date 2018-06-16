@@ -20,6 +20,7 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.*;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
@@ -58,6 +59,7 @@ public class PartsManager {
     private static SBOLInterface cInt;
     private static SBOLInterface sInt;
     private static SBOLInterface lInt;
+    public static int defaultFingerprinter;
 
 
     public PartsManager(ProjectState s, MainWindow mainWindow, GraphManager gm, LocalRepo lp) {
@@ -155,7 +157,9 @@ public class PartsManager {
                                 op = (Enzyme) temp[0];
                                 if (op != null) {
                                     s.enzymes.add(op);
-                                    //saveXML(op);
+                                    if(p[i].local) {
+                                        saveXML(op);
+                                    }
                                 }
                             }
                         }
@@ -169,12 +173,23 @@ public class PartsManager {
                     //-----------------------------------------------------
                     String ecToSend = "no_ec";
                     if (r.ec.size() > 0) {
-                        ecToSend = r.ec.get(r.pickedEC).ecNumber;
+                        ecToSend = r.ec.get(r.pickedEC).classID;
                     }
-                    ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
-                    if (zp.size() > 0) {
+                    Protein protein = null;
+                    if (p[i].local) {
+                        Protein[] proteins = cInt.getProteins(ecToSend);
+                        if(proteins.length>0) {
+                            protein = proteins[0];
+                        }
+                    } else {
+                        ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
+                        if(zp.size()>0) {
+                            protein = new Protein(zp.get(0), "", "", "");
+                        }
+                    }
+                    if (protein != null) {
                         r.nat = true;
-                        r.enzyme = (Protein) addPartsS(new Part[]{new Protein(zp.get(0), "", "", "")}, false, false)[0];
+                        r.enzyme = (Protein) addPartsS(new Part[]{protein}, false, false)[0];
                         r.enzymeType = "Native";
                         r.nativeEnzyme = true;
                         r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism.name);
@@ -261,7 +276,7 @@ public class PartsManager {
     }
 
     public void updateStencils() {
-        for(Compound c:s.compounds){
+        for (Compound c : s.compounds) {
             String smiles = c.smiles;
             if (smiles != null) {
                 try {
@@ -288,7 +303,7 @@ public class PartsManager {
                                 = SilentChemObjectBuilder.getInstance();
                         SmilesParser smipar = new SmilesParser(bldr);
                         IAtomContainer mol = smipar.parseSmiles(smiles);
-                        ic = new ImageComponent(mol);
+                        ic = new ImageComponent(mol, Color.WHITE);
                     } catch (Exception ex) {
                     }
                 }
@@ -313,7 +328,7 @@ public class PartsManager {
             sp.setPreferredSize(new Dimension(edit1.getPreferredSize().width + 40, 600));
             final JDialog frame = new JDialog(mainWindow, "", true);
             if (ic != null) {
-                ic.setPreferredSize(new Dimension(100, 100));
+                ic.setPreferredSize(new Dimension(200, 200));
                 frame.getContentPane().add(ic, BorderLayout.NORTH);
             }
             frame.getContentPane().add(sp, BorderLayout.CENTER);
@@ -378,7 +393,7 @@ public class PartsManager {
         UI.addTo(jp, l1);
         String[] lm = new String[r.ec.size()];
         for (int i = 0; i < lm.length; i++) {
-            lm[i] = r.ec.get(i).ecNumber;
+            lm[i] = r.ec.get(i).classID;
         }
         JList ecList = new JList(lm);
         JScrollPane ecPane = new JScrollPane();
@@ -398,6 +413,7 @@ public class PartsManager {
                 frame.setVisible(false);
                 frame.dispose();
                 gm.updateGraph();
+                updateTable();
             }
         });
         frame.getContentPane().add(jp);
@@ -454,7 +470,7 @@ public class PartsManager {
         UI.addTo(jp, cmb1);
 
         UI.addTo(jp, new JLabel("Organism Filter "));
-        String[] options = cInt.getOrganisms(r.ec.get(r.pickedEC).ecNumber);
+        String[] options = cInt.getOrganisms(r.ec.get(r.pickedEC).classID);
         JComboBox cmb2 = new JComboBox(options);
         int hh = (int) cmb2.getPreferredSize().getHeight();
         cmb2.setPreferredSize(new Dimension(450, hh));
@@ -528,7 +544,7 @@ public class PartsManager {
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb2, JList partsList) {
         ArrayList<String> names = new ArrayList<>();
         if (r.enzymeType.equals("Native")) {
-            prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, s.organism);
+            prots = cInt.getProteins(r.ec.get(r.pickedEC).classID, s.organism);
             int pick = -1;
             for (int i = 0; i < prots.length; i++) {
                 names.add(prots[i].id);
@@ -550,7 +566,7 @@ public class PartsManager {
                 public void actionPerformed(ActionEvent e) {
                     names.clear();
                     if (cmb2.getSelectedItem() != null && Common.isOrganism(cmb2.getSelectedItem().toString())) {
-                        prots = cInt.getProteins(r.ec.get(r.pickedEC).ecNumber, cmb2.getSelectedItem().toString());
+                        prots = cInt.getProteins(r.ec.get(r.pickedEC).classID, cmb2.getSelectedItem().toString());
                         int pick = -1;
                         for (int i = 0; i < prots.length; i++) {
                             names.add(prots[i].id);
@@ -568,7 +584,7 @@ public class PartsManager {
         } else {
             cmb2.setEnabled(false);
             cmb2.setSelectedIndex(-1);
-            prots = lInt.getProteins(r.ec.get(r.pickedEC).ecNumber);
+            prots = lInt.getProteins(r.ec.get(r.pickedEC).classID);
 
             int pick = -1;
             for (int i = 0; i < prots.length; i++) {
@@ -816,10 +832,12 @@ public class PartsManager {
                         for (int i = 0; i < table.getModel().getRowCount(); i++) {
                             table.getModel().setValueAt(newVals.get(i), i, 2);
                         }
+                        defaultFingerprinter = fComboBox.getSelectedIndex();
                     } catch (Exception ex) {
                     }
                 }
             });
+            fComboBox.setSelectedIndex(defaultFingerprinter);
             p.add(fComboBox);
             frame.getContentPane().add(p, BorderLayout.NORTH);
             frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
@@ -838,44 +856,48 @@ public class PartsManager {
                 if (reactant.smiles == null || product.smiles == null) {
                     continue;
                 }
-                IChemObjectBuilder bldr
-                        = SilentChemObjectBuilder.getInstance();
-                SmilesParser smilesParser = new SmilesParser(bldr);
-                IAtomContainer mol1 = smilesParser.parseSmiles(reactant.smiles);
-                for (int i = 0; i < r.stoichiometry.get(reactant) - 1; i++) {
-                    mol1.addAtom(mol1.getAtom(0));
-                }
-                IAtomContainer mol2 = smilesParser.parseSmiles(product.smiles);
-                for (int i = 0; i < r.stoichiometry.get(product) - 1; i++) {
-                    mol2.addAtom(mol2.getAtom(0));
-                }
-                IBitFingerprint bitset1 = null, bitset2 = null;
-                IFingerprinter fingerprinter = null;
-                if (f == 0) {
-                    fingerprinter = new PubchemFingerprinter(DefaultChemObjectBuilder.getInstance());
-                } else if (f == 1) {
-                    fingerprinter = new EStateFingerprinter();
-                } else if (f == 2) {
-                    fingerprinter = new ExtendedFingerprinter();
-                } else if (f == 3) {
-                    fingerprinter = new GraphOnlyFingerprinter();
-                } else if (f == 4) {
-                    fingerprinter = new HybridizationFingerprinter();
-                } else if (f == 5) {
-                    fingerprinter = new ShortestPathFingerprinter();
-                } else if (f == 6) {
-                    fingerprinter = new KlekotaRothFingerprinter();
-                } else if (f == 7) {
-                    fingerprinter = new MACCSFingerprinter();
-                } else if (f == 8) {
-                    fingerprinter = new SubstructureFingerprinter();
-                }
-                bitset1 = fingerprinter.getBitFingerprint(mol1);
-                bitset2 = fingerprinter.getBitFingerprint(mol2);
-                list.add(Double.toString(Tanimoto.calculate(bitset1, bitset2)));
+                list.add(Double.toString(getSim(f, reactant, product, r)));
             }
         }
         return list;
+    }
+
+    public double getSim(int f, Compound reactant, Compound product, Reaction r) throws CDKException {
+        IChemObjectBuilder bldr
+                = SilentChemObjectBuilder.getInstance();
+        SmilesParser smilesParser = new SmilesParser(bldr);
+        IAtomContainer mol1 = smilesParser.parseSmiles(reactant.smiles);
+        for (int i = 0; i < r.stoichiometry.get(reactant) - 1; i++) {
+            mol1.addAtom(mol1.getAtom(0));
+        }
+        IAtomContainer mol2 = smilesParser.parseSmiles(product.smiles);
+        for (int i = 0; i < r.stoichiometry.get(product) - 1; i++) {
+            mol2.addAtom(mol2.getAtom(0));
+        }
+        IBitFingerprint bitset1 = null, bitset2 = null;
+        IFingerprinter fingerprinter = null;
+        if (f == 0) {
+            fingerprinter = new PubchemFingerprinter(DefaultChemObjectBuilder.getInstance());
+        } else if (f == 1) {
+            fingerprinter = new EStateFingerprinter();
+        } else if (f == 2) {
+            fingerprinter = new ExtendedFingerprinter();
+        } else if (f == 3) {
+            fingerprinter = new GraphOnlyFingerprinter();
+        } else if (f == 4) {
+            fingerprinter = new HybridizationFingerprinter();
+        } else if (f == 5) {
+            fingerprinter = new ShortestPathFingerprinter();
+        } else if (f == 6) {
+            fingerprinter = new KlekotaRothFingerprinter();
+        } else if (f == 7) {
+            fingerprinter = new MACCSFingerprinter();
+        } else if (f == 8) {
+            fingerprinter = new SubstructureFingerprinter();
+        }
+        bitset1 = fingerprinter.getBitFingerprint(mol1);
+        bitset2 = fingerprinter.getBitFingerprint(mol2);
+        return Tanimoto.calculate(bitset1, bitset2);
     }
 
     public void deleteSelected() {

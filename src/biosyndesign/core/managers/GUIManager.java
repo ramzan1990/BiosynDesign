@@ -6,6 +6,7 @@ import biosyndesign.core.sbol.parts.Compound;
 import biosyndesign.core.sbol.parts.Reaction;
 import biosyndesign.core.ui.MainWindow;
 import biosyndesign.core.utils.CompoundReaction;
+import org.openscience.cdk.exception.CDKException;
 import org.sbolstandard.core2.SBOLDocument;
 import org.sbolstandard.core2.SBOLWriter;
 
@@ -16,11 +17,13 @@ public class GUIManager {
     private ProjectState s;
     private PartsManager pm;
     private MainWindow mainWindow;
+    ArrayList<Path> paths;
 
     public GUIManager(ProjectState s, PartsManager pm, MainWindow mainWindow) {
         this.s = s;
         this.pm = pm;
         this.mainWindow = mainWindow;
+        paths = new ArrayList<>();
     }
 
     public void chooseRepository() {
@@ -105,14 +108,27 @@ public class GUIManager {
     }
 
     public void showPathway(boolean selected) {
-        Main.gm.showPathway = selected;
-        ArrayList<CompoundReaction> path = new ArrayList<>();
-        path.add(new CompoundReaction(s.source, null));
-        findPath(s.source, new ArrayList<Reaction>(), s.reactions.size(), path);
-        Main.gm.updateGraph();
+        try {
+            Main.gm.showPathway = selected;
+            ArrayList<CompoundReaction> path = new ArrayList<>();
+            path.add(new CompoundReaction(s.source, null));
+            findPath(s.source, new ArrayList<Reaction>(), s.reactions.size(), path, 0);
+            double bestCost = Double.MAX_VALUE;
+            ArrayList<CompoundReaction> bestPath = null;
+            for(Path p: paths){
+                if(p.cost<bestCost){
+                    bestCost = p.cost;
+                    bestPath = p.path;
+                }
+            }
+            Main.gm.finalPath = bestPath;
+            Main.gm.updateGraph();
+        }catch (Exception e){
+
+        }
     }
 
-    private void findPath(Compound start, ArrayList<Reaction> exclude, int n, ArrayList<CompoundReaction> path) {
+    private void findPath(Compound start, ArrayList<Reaction> exclude, int n, ArrayList<CompoundReaction> path, double pathCost) throws CDKException {
         if (n <= 0) {
             return;
         }
@@ -134,7 +150,8 @@ public class GUIManager {
                 ArrayList<CompoundReaction> newPath = new ArrayList<>();
                 newPath.addAll(path);
                 newPath.add(c);
-                Main.gm.finalPath = newPath;
+                double newCost = pathCost + 1.0/Main.pm.getSim(Main.pm.defaultFingerprinter, path.get(path.size() - 1).c, c.c,  c.r);
+                paths.add(new Path(newPath, newCost));
                 return;
             }
         }
@@ -142,7 +159,17 @@ public class GUIManager {
             ArrayList<CompoundReaction> newPath = new ArrayList<>();
             newPath.addAll(path);
             newPath.add(c);
-            findPath(c.c, exclude, n, newPath);
+            double newCost = pathCost + 1.0/Main.pm.getSim(Main.pm.defaultFingerprinter, path.get(path.size() - 1).c, c.c,  c.r);
+            findPath(c.c, exclude, n, newPath, newCost);
         }
+    }
+}
+class Path{
+    public ArrayList<CompoundReaction> path;
+    public double cost;
+
+    public Path(ArrayList<CompoundReaction> path, double cost){
+        this.path = path;
+        this.cost = cost;
     }
 }

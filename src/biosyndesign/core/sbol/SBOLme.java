@@ -1,5 +1,6 @@
 package biosyndesign.core.sbol;
 
+import biosyndesign.core.Main;
 import biosyndesign.core.sbol.parts.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -16,6 +17,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -282,6 +284,7 @@ public class SBOLme implements SBOLInterface {
             EntityUtils.consume(entity);
         }  catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
+            Main.mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
         return result.toString();
     }

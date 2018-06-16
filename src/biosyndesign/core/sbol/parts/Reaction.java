@@ -40,7 +40,7 @@ public class Reaction extends Part{
 
     public String getEName() {
         if(pickedEC >=0 && ec.size()>pickedEC){
-            return "EC:"+ec.get(pickedEC).ecNumber;
+            return "EC:"+ec.get(pickedEC).classID;
         }
         return "EC:Partial";
     }
