@@ -14,6 +14,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +30,9 @@ public class LocalRepo implements SBOLInterface {
 
     private String protocol = "jdbc:derby:";
     private final String lp = System.getProperty("user.home") + File.separator + "BiosynDesign" + File.separator + "LocalParts";
-    private String dbName;
+    public String dbName;
     private ArrayList<String> dbNames;
+    static int sc = 0;
 
     public void init() {
         Connection conn = null;
@@ -39,8 +41,7 @@ public class LocalRepo implements SBOLInterface {
         ResultSet rs = null;
         try {
             Properties props = new Properties();
-            dbName = "default";
-            conn = DriverManager.getConnection(protocol + dbName
+            conn = DriverManager.getConnection(protocol + "default"
                     + ";create=true", props);
 
             conn.setAutoCommit(false);
@@ -49,6 +50,9 @@ public class LocalRepo implements SBOLInterface {
             boolean first = false;
             try {
                 rs = s.executeQuery("select * from dblist");
+                if(!rs.next()){
+                    first = true;
+                }
             } catch (Exception e) {
                 first = true;
             }
@@ -235,11 +239,11 @@ public class LocalRepo implements SBOLInterface {
             }
         } else if (type == 2) {
             if (filter == 0) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e WHERE Enzyme " + op;
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e WHERE Enzyme " + op;
             } else if (filter == 1) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.Enzyme = ce.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.Enzyme = ce.Enzyme";
             } else if (filter == 2) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM ecnum AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.Enzyme = re.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.Enzyme = re.Enzyme";
             }
         }
 
@@ -334,20 +338,43 @@ public class LocalRepo implements SBOLInterface {
             changeDBList(name, true);
         }
         checkDB();
-        FileDialog fd = new FileDialog((Frame) null, "Choose Directory", FileDialog.LOAD);
-        fd.setMultipleMode(true);
-        fd.setVisible(true);
-        if (fd.getFiles().length > 0) {
+        JFileChooser fc = new JFileChooser();
+        ;
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setMultiSelectionEnabled(false);
+        fc.showDialog(null, "Import");
+        if (fc.getSelectedFile() != null) {
             File nd = new File(lp + File.separator + name);
             nd.mkdirs();
-            for (File f : fd.getFiles()) {
+            List<File> files = new ArrayList<>();
+            listFiles(fc.getSelectedFile(), files);
+            for (File f : files) {
                 try {
                     File np = new File(lp + File.separator + name + File.separator + f.getName());
-                    Files.copy(f.toPath(), np.toPath());
+                    try {
+                        if(np.exists()){
+                            np.delete();
+                        }
+                        Files.copy(f.toPath(), np.toPath());
+                    }catch (Exception e){
+
+                    }
                     addPart(np);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+        JOptionPane.showMessageDialog(null, "Done!" + sc);
+    }
+
+    public void listFiles(File directory, List<File> files) {
+        File[] fList = directory.listFiles();
+        for (File file : fList) {
+            if (file.isFile()) {
+                files.add(file);
+            } else if (file.isDirectory()) {
+                listFiles(file, files);
             }
         }
     }
@@ -374,6 +401,7 @@ public class LocalRepo implements SBOLInterface {
             } catch (Exception e) {
             }
             FileUtils.deleteDirectory(new File(name));
+            setCurrentDataset(null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -414,14 +442,25 @@ public class LocalRepo implements SBOLInterface {
         xml = xml.replaceAll(":", "");
         String url = f.getAbsolutePath();
         SAXBuilder jdomBuilder = new SAXBuilder();
-        Document jdomDocument = jdomBuilder.build(new StringReader(xml));
+        Document jdomDocument = null;
+        try {
+            jdomDocument = jdomBuilder.build(new StringReader(xml));
+        }catch (Exception e){
+            return;
+        }
         XPathFactory xFactory = XPathFactory.instance();
         Element root = jdomDocument.getRootElement();
         if (root.getChild("sbolComponentDefinition") != null) {
             Element definition = root.getChild("sbolComponentDefinition");
             String id = definition.getChildText("sboldisplayId");
-            String name = definition.getChildText("dctermstitle").replaceAll("'", "''");
-            if (definition.getChild("compoundsynonym") != null) {
+            String name;
+            if (definition.getChildText("dctermstitle") != null) {
+                name = definition.getChildText("dctermstitle").replaceAll("'", "''");
+            } else {
+                name = id;
+            }
+            if (definition.getChild("compoundsynonym") != null || definition.getChild("compoundsource") != null
+                    || definition.getChild("compoundcomposition") != null) {
                 //Compound
                 String keggid = definition.getChildText("compoundkegg_id");
                 String drugID = "";
@@ -445,19 +484,35 @@ public class LocalRepo implements SBOLInterface {
                 //Protein
                 String oID = definition.getChildText("organismkegg_id");
                 String oName = definition.getChildText("organismname");
-                String ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
+                if(oName.contains("'")){
+                    oName = oName.replaceAll("'", "''");
+                }
+                String ECNumber = null;
+                if(definition.getChildText("enzyme_classid")!= null) {
+                    ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
+                }else{
+                    int tt = 1+1;
+                }
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
+                if(seq.length()>32700){
+                    sc++;
+                }
                 execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, Enzyme, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
             } else {
                 //EC Number
-                String ECNumber = Common.ltrim("ec",definition.getChildText("enzyme_classid"));
-                execute("INSERT INTO ecnum(ID, Enzyme, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
+                String ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
+                execute("INSERT INTO enzymes(ID, ClassID, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
             }
         } else {
             //Reaction
             Element definition = root.getChild("sbolModuleDefinition");
             String id = definition.getChildText("sboldisplayId");
-            String name = definition.getChildText("dctermstitle").replaceAll("'", "''");
+            String name;
+            if (definition.getChildText("dctermstitle") != null) {
+                name = definition.getChildText("dctermstitle").replaceAll("'", "''");
+            } else {
+                name = id;
+            }
             String keggid = definition.getChildText("reactionkegg_id");
             ArrayList<String> enzymes = new ArrayList();
             ArrayList<String> compounds = new ArrayList();
@@ -467,7 +522,7 @@ public class LocalRepo implements SBOLInterface {
                 Element fc = e.getChild("sbolFunctionalComponent");
                 String fcName = fc.getChildText("sboldisplayId");
                 if (fcName.endsWith("enzyme")) {
-                    enzymes.add(Common.ltrim("ec",fc.getChildText("enzyme_classid")));
+                    enzymes.add(Common.ltrim("ec", fc.getChildText("enzyme_classid")));
                 } else {
                     compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
                 }
@@ -572,9 +627,11 @@ public class LocalRepo implements SBOLInterface {
             statements.add(s);
             try {
                 s.execute("TRUNCATE TABLE cdb ");
-                s = conn.createStatement();
-                statements.add(s);
-                s.execute("insert into cdb values ('" + value + "') ");
+                if(value != null) {
+                    s = conn.createStatement();
+                    statements.add(s);
+                    s.execute("insert into cdb values ('" + value + "') ");
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

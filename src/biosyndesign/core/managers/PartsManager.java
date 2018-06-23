@@ -627,7 +627,7 @@ public class PartsManager {
         pop.show(mainWindow, x, y + 50);
     }
 
-    public void rowClickedCDNA(int row, int x, int y) {
+    public void rowClickedCDS(int row, int x, int y) {
         int c = 0;
         Reaction cr = null;
         for (Reaction r : s.reactions) {

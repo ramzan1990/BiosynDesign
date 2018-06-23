@@ -19,7 +19,7 @@ public class MainWindow extends BDFrame {
     private static final int panelMargin = 0;
     private JMenu File, Parts, options,  export, HelpM, repoOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addReactionClass, addEnzyme, competingReactions, chooseRepository,
-    exportCDNA, exportAA, exportPathway, exportGraph, showLocalParts;
+            exportCDS, exportAA, exportPathway, exportGraph, showLocalParts;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, showPathway;
     private JPanel dataSelectPanel, consolePanel, dataTransformPanel;
     private JToolBar dataPanel;
@@ -70,7 +70,7 @@ public class MainWindow extends BDFrame {
         addReaction = new JMenuItem("Add Reaction");
         addReactionClass = new JMenuItem("Add Reaction Class");
         addEnzyme = new JMenuItem("Add Protein");
-        exportCDNA= new JMenuItem("Export cDNA");
+        exportCDS = new JMenuItem("Export CDS");
         exportAA= new JMenuItem("Export AA Sequences");
         exportPathway= new JMenuItem("Export pathway");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
@@ -268,7 +268,7 @@ public class MainWindow extends BDFrame {
         });
         export.add(exportPathway);
         export.add(exportAA);
-        export.add(exportCDNA);
+        export.add(exportCDS);
         exportPathway.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -281,10 +281,10 @@ public class MainWindow extends BDFrame {
                 Main.guim.exportAA();
             }
         });
-        exportCDNA.addActionListener(new ActionListener() {
+        exportCDS.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.guim.exportCDNA();
+                Main.guim.exportCDS();
             }
         });
         export.addSeparator();
@@ -350,19 +350,19 @@ public class MainWindow extends BDFrame {
                 Main.pm.rowClicked(enzymeTable.getSelectedRow(), e.getX(), e.getY()+50);
             }
         });
-        String[] columnNamesGenes = { "Enzyme Name", "Primary Structure", "cDNA"};
+        String[] columnNamesGenes = { "Enzyme Name", "Primary Structure", "CDS"};
         DefaultTableModel genesModel = new DefaultTableModel(columnNamesGenes, 0);
         genesTable = new JTable(genesModel);
         genesTable.addMouseListener(new MouseAdapter(){
             public void mouseClicked(MouseEvent e) {
-                Main.pm.rowClickedCDNA(genesTable.getSelectedRow(), e.getX(), e.getY()+50);
+                Main.pm.rowClickedCDS(genesTable.getSelectedRow(), e.getX(), e.getY()+50);
             }
         });
 
 
         tbp.addTab("Pathway", workSpacePanel);
         tbp.addTab("Enzyme", new JScrollPane(enzymeTable));
-        tbp.addTab("Transcript", new JScrollPane(genesTable));
+        tbp.addTab("Gene", new JScrollPane(genesTable));
         dataSelectPanel = new JPanel();
         dataSelectPanel.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
         GridLayout blayout = new GridLayout(3, 2);

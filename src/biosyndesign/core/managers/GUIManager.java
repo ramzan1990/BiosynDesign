@@ -89,7 +89,7 @@ public class GUIManager {
         }
     }
 
-    public void exportCDNA() {
+    public void exportCDS() {
         String file = Main.projectIO.saveFile();
         try {
             SBOLDocument doc = new SBOLDocument();

@@ -83,7 +83,7 @@ public class PartsManagerFrame extends BDFrame {
                     cmb2.addItem("EC number");
                     cmb2.addItem("Transformed compound");
                     cmb2.addItem("Catalyzing reaction");
-                    showParts(lr.catalog("ecnum"));
+                    showParts(lr.catalog("enzymes"));
                 }
             }
         });
@@ -141,9 +141,12 @@ public class PartsManagerFrame extends BDFrame {
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String name = JOptionPane.showInputDialog("Choose name for the dataset OR leave empty to import into current dataset:");
+                String name = JOptionPane.showInputDialog("Choose name for the dataset:");
+                if (name == null || name.length() == 0) {
+                    return;
+                }
                 lr.importParts(name);
-                if (name.length() != 0) {
+                if (!name.equals(lr.dbName)) {
                     cmb0.addItem(name);
                     cmb0.setSelectedItem(name);
                 } else {
@@ -201,7 +204,12 @@ public class PartsManagerFrame extends BDFrame {
         //this.pack();
         this.setLocationRelativeTo(null);
         this.setResizable(false);
+
+        if (batches.length > 0) {
+            cmb0.setSelectedIndex(0);
+        }
         cmb1.setSelectedIndex(0);
+
     }
 
     private void showParts(Part[] p) {
@@ -211,6 +219,13 @@ public class PartsManagerFrame extends BDFrame {
             rowData[i][1] = p[i].name;
         }
         table.setModel(new DefaultTableModel(rowData, columnNames));
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = table.rowAtPoint(evt.getPoint());
+                Main.pm.showInfo(p[row]);
+            }
+        });
     }
 
 }

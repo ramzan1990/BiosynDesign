@@ -108,6 +108,7 @@ public class UI {
 
     public static void addTo(JPanel jp, JComponent l) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.setMaximumSize(new Dimension(panel.getMaximumSize().width, l.getPreferredSize().height+10));
         panel.add(l);
         jp.add(panel);
     }

@@ -1,10 +1,10 @@
 CREATE TABLE compound_names (
-  Compound varchar(255),
+  Compound varchar(500),
   Name varchar(300)
 );
 CREATE TABLE compounds (
   ID varchar(40) CONSTRAINT COMPOUNDS_PK PRIMARY KEY,
-  Name varchar(255),
+  Name varchar(500),
   URL varchar(300),
   KeggID varchar(40),
   DrugID varchar(40),
@@ -14,13 +14,13 @@ CREATE TABLE compound_enzymes (
   Compound varchar(40),
   Enzyme varchar(40)
 );
-CREATE TABLE ecnum (
+CREATE TABLE enzymes (
   ID varchar(40),
-  ECNumber varchar(40),
+  ClassID varchar(40),
   URL varchar(300),
-  Name varchar(255)
+  Name varchar(500)
 );
-CREATE INDEX index1 ON ecnum(ECNumber);
+CREATE INDEX index1 ON enzymes(ClassID);
 CREATE TABLE oIDs (
   ID varchar(60)
 );
@@ -31,28 +31,28 @@ CREATE TABLE proteins (
   ID varchar(80),
   OrganismID varchar(80),
   OrganismName varchar(300),
-  ECNumber varchar(80),
+  Enzyme varchar(80),
   URL varchar(300),
-  sequence varchar(7000)
+  sequence CLOB
 );
-CREATE INDEX index2 ON proteins(OrganismID,ECNumber);
-CREATE INDEX index3 ON proteins(OrganismName,ECNumber);
+CREATE INDEX index2 ON proteins(OrganismID,Enzyme);
+CREATE INDEX index3 ON proteins(OrganismName,Enzyme);
 CREATE INDEX index4 ON proteins(OrganismID);
 CREATE INDEX index5 ON proteins(OrganismName);
-CREATE INDEX index6 ON proteins(ECNumber);
+CREATE INDEX index6 ON proteins(Enzyme);
 CREATE INDEX index7 ON proteins(ID);
 CREATE TABLE reaction_compounds (
-  Reaction varchar(255),
-  Compound varchar(255)
+  Reaction varchar(500),
+  Compound varchar(500)
 );
 CREATE INDEX index8 ON reaction_compounds(Reaction,Compound);
 CREATE TABLE reaction_enzymes (
-  Reaction varchar(255),
-  Enzyme varchar(255)
+  Reaction varchar(500),
+  Enzyme varchar(500)
 );
 CREATE TABLE reaction_products (
-  Reaction varchar(255),
-  Product varchar(255)
+  Reaction varchar(500),
+  Product varchar(500)
 );
 CREATE INDEX index9 ON reaction_products(Product);
 CREATE INDEX index10 ON reaction_products(Reaction,Product);
@@ -61,6 +61,6 @@ CREATE TABLE reactions (
   ID varchar(255) CONSTRAINT REACTIONS_PK PRIMARY KEY,
   URL varchar(300),
   KeggID varchar(40),
-  Name varchar(255),
+  Name varchar(500),
   Energy varchar(255)
 );
