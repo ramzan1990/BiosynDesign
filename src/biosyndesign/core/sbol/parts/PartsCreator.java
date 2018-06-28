@@ -11,6 +11,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
 import java.util.Vector;
+
+import javax.management.relation.Role;
 import javax.xml.namespace.QName;
 
 import org.freehep.graphicsio.test.TestTransparency;
@@ -119,13 +121,14 @@ public class PartsCreator {
     }
 
 
-    public static void createReaction(String f, String prefixURI, String reactionID, String sourceURI, String[] reactants, String[] products, double[] reactantsStoichiometry, double[] productsStoichiometry,
+    public static void createReaction(String f, String prefixURI, String reactionID, String sourceURI, String[] synonyms, String[] reactants, String[] products, double[] reactantsStoichiometry, double[] productsStoichiometry,
                                       String[] enzymeClassSchemes, String[] enzymeClassIDs, String[] annotationPrefixURIs, String[] annotationPrefixes, String[] annotationKeys, String[] annotationValues)
             throws PartsCreationException {
 
         final String reactionPrefixURI = prefixURI + "/parts/reaction";
         final String genericEnzymeURI = prefixURI + "/parts/enzyme/ENZYME";
 
+        final String annotationSynonym = "synonym";
         final String annotationEnzymeClassPrefixURI = SBOLME_ANNOTATION_PREFIX_URL + "/enzyme_class#";
         final String annotationEnzymeClassPrefix = "enzyme_class";
         //final String annotationEnzymeClassScheme = "scheme";
@@ -147,6 +150,13 @@ public class PartsCreator {
 
             ModuleDefinition mdef = doc.createModuleDefinition(reactionID);
             if (sourceURI != null) mdef.setWasDerivedFrom(new URI(sourceURI));
+
+            if (synonyms[0] != null) {
+                mdef.setName(synonyms[0]);
+                QName qName = new QName(reactionAnnotationPrefixURI, annotationSynonym, annotationPrefix);
+                for (int i = 1; i < synonyms.length; i++) mdef.createAnnotation(qName, synonyms[i]);
+            }
+
 
             if (enzymeClassIDs.length > 0) {
                 FunctionalComponent fCom = mdef.createFunctionalComponent("enzyme", AccessType.PUBLIC, URI.create(genericEnzymeURI), DirectionType.INOUT);
@@ -192,61 +202,11 @@ public class PartsCreator {
 
 
     private static void testReactionCreation() {
-/*<<<<<<< HEAD
-    	String f;
-    	String prefixURI;
-    	String reactionID;
-    	String sourceURI;
-    	String[] reactants;
-    	String[] products;
-    	double[] reactantsStoichiometry;
-    	double[] productsStoichiometry;
-		String [] enzymeClassSchemes;
-		String [] enzymeClassIDs;
-		String [] annotationPrefixURIs;
-		String [] annotationPrefixes;
-		String [] annotationKeys;
-		String [] annotationValues;
-
-
-		f = System.getProperty("user.home") + "/reaction1.xml";
-		System.out.println(f);
-		prefixURI = "http://www.aaa.bbb";
-		reactionID = "R00209";
-		sourceURI = "http://www.genome.jp/dbget-bin/www_bget?R00209";
-		reactants = new String [] {
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00003",
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00010",
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00022"
-		};
-		reactantsStoichiometry = new double [] {1, 1, 1};
-		products = new String [] {
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00011",
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00024",
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00004",
-				"http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00080"
-		};
-		productsStoichiometry = new double [] {1, 1, 1, 1};
-		enzymeClassSchemes = new String [] {"ec", "ec", "ec"};
-		enzymeClassIDs = new String [] {"1.2.4.1", "1.8.1.4", "2.3.1.12"};
-		annotationPrefixURIs = new String [] {"http://test.test#", "http://test.test#"};
-		annotationPrefixes = new String [] {"test", "test"};
-		annotationKeys = new String [] {"key1", "key2"};
-		annotationValues = new String []{"val1", "val2"};
-
-		try {
-			createReaction(f, prefixURI, reactionID, sourceURI, reactants, products, reactantsStoichiometry, productsStoichiometry,
-					enzymeClassSchemes, enzymeClassIDs,  annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
-		} catch(PartsCreationException e) {
-			System.out.println("error");
-			e.printStackTrace();
-		}
-=======
-*/
         String f;
         String prefixURI;
         String reactionID;
         String sourceURI;
+        String [] synonyms;
         String[] reactants;
         String[] products;
         double[] reactantsStoichiometry;
@@ -257,7 +217,6 @@ public class PartsCreator {
         String[] annotationPrefixes;
         String[] annotationKeys;
         String[] annotationValues;
-//>>>>>>> branch 'master' of https://github.com/ramzan1990/BiosynDesign
 
 
         f = System.getProperty("user.home") + "/reaction1.xml";
@@ -265,6 +224,7 @@ public class PartsCreator {
         prefixURI = "http://www.aaa.bbb";
         reactionID = "R00209";
         sourceURI = "http://www.genome.jp/dbget-bin/www_bget?R00209";
+        synonyms = new String[]{"Methylmalonyl-CoA carboxyltransferase", "Transcarboxylase"};
         reactants = new String[]{
                 "http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00003",
                 "http://www.cbrc.kaust.edu.sa/sbolme/parts/compound/ME_C00010",
@@ -286,7 +246,7 @@ public class PartsCreator {
         annotationValues = new String[]{"val1", "val2"};
 
         try {
-            createReaction(f, prefixURI, reactionID, sourceURI, reactants, products, reactantsStoichiometry, productsStoichiometry,
+            createReaction(f, prefixURI, reactionID, sourceURI, synonyms, reactants, products, reactantsStoichiometry, productsStoichiometry,
                     enzymeClassSchemes, enzymeClassIDs, annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
         } catch (PartsCreationException e) {
             System.out.println("error");
@@ -450,6 +410,88 @@ public class PartsCreator {
             throw new PartsCreationException(e.getMessage());
         }
     }
+    public static void createProtein(String f, String prefixURI, String proteinID, String sourceURI, String[] synonyms, String organismID,
+                                     String organismName, String organismURI, String aaSeq, String cds, String[] enzymeClassSchemes, String[] enzymeClassIDs,
+                                     String[] annotationPrefixURIs, String[] annotationPrefixes, String[] annotationKeys, String[] annotationValues) throws PartsCreationException {
+
+        final String proteinPrefixURI = prefixURI + "/parts/protein/" + organismID;
+
+        final String annotationProteinPrefix = "protein";
+        final String annotationProteinPrefixURI = SBOLME_ANNOTATION_PREFIX_URL + "/protein#";
+
+        final String annotationEnzymeClassPrefixURI = SBOLME_ANNOTATION_PREFIX_URL + "/enzyme_class#";
+        final String annotationEnzymeClassPrefix = "enzyme_class";
+        final String annotationEnzymeClassID = "id";
+
+        final String annotationOrganismPrefixURI = SBOLME_ANNOTATION_PREFIX_URL + "/organism#";
+        final String annotationOrganismPrefix = "organism";
+        final String annotationOrganismSource = "source";
+        final String annotationOrganismID = "id";
+        final String annotationOrganismName = "name";
+
+        SBOLDocument doc = new SBOLDocument();
+
+        try {
+            doc.setTypesInURIs(false);
+            doc.addNamespace(URI.create(annotationProteinPrefixURI), annotationProteinPrefix);
+            doc.addNamespace(URI.create(annotationOrganismPrefixURI), annotationOrganismPrefix);
+
+            for (int i = 0; i < annotationPrefixURIs.length; i++) {
+                doc.addNamespace(URI.create(annotationPrefixURIs[i]), annotationPrefixes[i]);
+            }
+
+            doc.setDefaultURIprefix(proteinPrefixURI);
+            ComponentDefinition cdef = doc.createComponentDefinition(proteinID, ComponentDefinition.PROTEIN);
+            if (sourceURI != null) cdef.setWasDerivedFrom(new URI(sourceURI));
+
+            if (synonyms.length > 0) cdef.setName(synonyms[0]);
+
+            QName qName = new QName(annotationProteinPrefixURI, annotationOrganismID, annotationOrganismPrefix);
+            cdef.createAnnotation(qName, organismID);
+
+            qName = new QName(annotationProteinPrefixURI, annotationOrganismName, annotationOrganismPrefix);
+            cdef.createAnnotation(qName, organismName);
+
+            qName = new QName(annotationProteinPrefixURI, annotationOrganismSource, annotationOrganismPrefix);
+            cdef.createAnnotation(qName, organismURI);
+
+            qName = new QName(annotationEnzymeClassPrefixURI, annotationEnzymeClassID, annotationEnzymeClassPrefix);
+            for (int i = 0; i < enzymeClassIDs.length; i++)
+                cdef.createAnnotation(qName, enzymeClassSchemes[i] + ":" + enzymeClassIDs[i]);
+
+
+            if (aaSeq != null) cdef.addSequence(doc.createSequence(proteinID + "_seq", aaSeq, Sequence.IUPAC_PROTEIN));
+
+            if( cds != null ) {
+                for (int i = 0; i < annotationPrefixURIs.length; i++) {
+                    qName = new QName(annotationPrefixURIs[i], annotationKeys[i], annotationPrefixes[i]);
+                    cdef.createAnnotation(qName, annotationValues[i]);
+                }
+
+                cdef = doc.createComponentDefinition(proteinID + "_cds", ComponentDefinition.DNA);
+                if (sourceURI != null) cdef.setWasDerivedFrom(new URI(sourceURI));
+
+                if (synonyms.length > 0) cdef.setName(synonyms[0]);
+                cdef.addRole(SequenceOntology.CDS);
+
+                qName = new QName(annotationProteinPrefixURI, annotationOrganismID, annotationOrganismPrefix);
+                cdef.createAnnotation(qName, organismID);
+
+                qName = new QName(annotationProteinPrefixURI, annotationOrganismName, annotationOrganismPrefix);
+                cdef.createAnnotation(qName, organismName);
+
+                qName = new QName(annotationProteinPrefixURI, annotationOrganismSource, annotationOrganismPrefix);
+                cdef.createAnnotation(qName, organismURI);
+
+                cdef.addSequence(doc.createSequence(proteinID + "_coding_seq", cds, Sequence.IUPAC_DNA));
+            }
+
+            SBOLWriter.write(doc, f);
+        } catch (Exception e) {
+            throw new PartsCreationException(e.getMessage());
+        }
+    }
+
 
 
     private static void testProteinCreation() {
@@ -462,6 +504,7 @@ public class PartsCreator {
         String organismName;
         String organismURI;
         String aaSeq;
+        String cds;
         String[] enzymeClassSchemes;
         String[] enzymeClassIDs;
         String[] annotationPrefixURIs;
@@ -479,6 +522,14 @@ public class PartsCreator {
         organismName = "Corynebacterium argentoratense";
         organismURI = "http://www.genome.jp/kegg-bin/show_organism?org=" + organismID;
         aaSeq = "MKLKVTVNGIAYSVDVEVEEETRQLGSIVFGSSPTNTPAAPTTASVQGVSANAIAAPLAGSVSKVLVAEGDAIEAGQVLLVLEAMKMETEITAPKAGTVGAIHVSEGDAVQGGQGLIEIDD";
+        cds = 	"atgaaacttaaggtgaccgtcaacggtattgcctactccgtcgacgtcgaggtggaggaa" +
+                "gagacccgccagctcggttcgattgtgttcggctctagcccgaccaacactcccgcagcc" +
+                "ccgacgaccgcgtccgtccagggcgtgtctgcaaacgctatcgcagccccccttgcgggc" +
+                "tccgtatccaaggtgcttgttgcagagggcgacgccattgaggcaggtcaagtcctgctc" +
+                "gtgctggaagccatgaaaatggaaacggaaattaccgcgccgaaggccggcaccgtcggt" +
+                "gctatccacgtgtccgagggcgatgcggttcaaggcggacagggcctcattgaaatcgat" +
+                "gactaa";
+        cds = null;
         enzymeClassSchemes = new String[]{"ec"};
         enzymeClassIDs = new String[]{"2.1.3.1"};
 
@@ -488,7 +539,7 @@ public class PartsCreator {
         annotationValues = new String[]{"val1", "val2"};
 
         try {
-            createProtein(f, prefixURI, proteinID, sourceURI, synonyms, organismID, organismName, organismURI, aaSeq, enzymeClassSchemes, enzymeClassIDs, annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
+            createProtein(f, prefixURI, proteinID, sourceURI, synonyms, organismID, organismName, organismURI, aaSeq, cds, enzymeClassSchemes, enzymeClassIDs, annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
         } catch (PartsCreationException e) {
             System.out.println("error");
             e.printStackTrace();
@@ -501,7 +552,8 @@ public class PartsCreator {
         //testCompoundCreation();
         //testReactionCreation();
         //testEnzymeClassCreation();
-        //testProteinCreation();
+        testProteinCreation();
+        /*
         try {
             Scanner scan1 = new Scanner(new File("C:\\Users\\Jumee\\Desktop\\test2\\test2\\parts\\R00209"));
             //scan1.useDelimiter("\\Z");
@@ -526,6 +578,7 @@ public class PartsCreator {
         } catch (Exception ex) {
 
         }
+        */
     }
 
 }

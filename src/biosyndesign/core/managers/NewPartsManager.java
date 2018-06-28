@@ -124,6 +124,8 @@ public class NewPartsManager {
         pNorth.add(id);
         LabelField sourceURI = new LabelField("Source URI", "http://www.genome.jp/dbget-bin/www_bget?R00209");
         pNorth.add(sourceURI);
+        LabelField synonyms = new LabelField("Synonyms", "");
+        pNorth.add(synonyms);
 
         base.add(pNorth);
         base.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -277,7 +279,7 @@ public class NewPartsManager {
                 }
                 try {
                     PartsCreator.createReaction(path, s.localPrefix, id.field.getText(), sourceURI.field.getText(),
-                            reactants, products, rStoichiometry, pStoichiometry, enzymeClassSchemes, enzymeClassIDs,
+                            split(synonyms.field), reactants, products, rStoichiometry, pStoichiometry, enzymeClassSchemes, enzymeClassIDs,
                             annotationPrefixURIs, annotationPrefixes, annotationKeys, annotationValues);
                 } catch (Exception ex) {
                     ex.printStackTrace();
