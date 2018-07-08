@@ -35,6 +35,15 @@ public class UI {
 
         dataPanel.add(panel);
     }
+    public static void addToLeft(JPanel dataPanel, Component b1) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panel.add(b1);
+
+        panel.setPreferredSize(new Dimension(250, b1.getPreferredSize().height+5));
+        panel.setMaximumSize(new Dimension(250, b1.getPreferredSize().height+5));
+
+        dataPanel.add(panel);
+    }
     public static void addToRight(JPanel dataPanel, Component b1, boolean s) {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panel.add(b1);

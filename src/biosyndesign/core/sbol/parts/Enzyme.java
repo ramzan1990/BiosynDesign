@@ -8,9 +8,9 @@ public class Enzyme extends Part{
     public String classScheme = "ec";
 
 
-    public Enzyme(String id, String name, String url, String ecNumber) {
+    public Enzyme(String id, String name, String url, String enzymeClassID) {
         super(id, name, url);
-        this.classID = ecNumber;
+        this.classID = enzymeClassID;
     }
 
     public Enzyme(String id, String name, String url, String classScheme, String classID) {
@@ -19,9 +19,9 @@ public class Enzyme extends Part{
         this.classScheme = classScheme;
     }
 
-    public Enzyme(String ecNumber) {
+    public Enzyme(String enzymeClassID) {
         super("", "", "");
-        this.classID = ecNumber;
+        this.classID = enzymeClassID;
     }
 
     public boolean equals(Object obj) {

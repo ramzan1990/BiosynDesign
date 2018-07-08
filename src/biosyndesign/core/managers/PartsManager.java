@@ -11,6 +11,7 @@ import biosyndesign.core.utils.Bio;
 import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 import biosyndesign.core.utils.svg2xml.Svg2XmlGui;
+import com.google.gson.JsonObject;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.view.mxGraph;
 import org.apache.commons.io.FileUtils;
@@ -20,7 +21,6 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.exception.CDKException;
-import org.openscience.cdk.exception.InvalidSmilesException;
 import org.openscience.cdk.fingerprint.*;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.interfaces.IChemObjectBuilder;
@@ -151,13 +151,13 @@ public class PartsManager {
                             }
                         }
                         if (op == null) {
-                            Part[] temp = cInt.findParts(2, 0, id);
+                            Part[] temp = cInt.findParts(2, 0, id, 0);
                             if (temp.length == 0) {
                             } else {
                                 op = (Enzyme) temp[0];
                                 if (op != null) {
                                     s.enzymes.add(op);
-                                    if(p[i].local) {
+                                    if (p[i].local) {
                                         saveXML(op);
                                     }
                                 }
@@ -178,12 +178,12 @@ public class PartsManager {
                     Protein protein = null;
                     if (p[i].local) {
                         Protein[] proteins = cInt.getProteins(ecToSend);
-                        if(proteins.length>0) {
+                        if (proteins.length > 0) {
                             protein = proteins[0];
                         }
                     } else {
                         ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
-                        if(zp.size()>0) {
+                        if (zp.size() > 0) {
                             protein = new Protein(zp.get(0), "", "", "");
                         }
                     }
@@ -192,8 +192,8 @@ public class PartsManager {
                         r.enzyme = (Protein) addPartsS(new Part[]{protein}, false, false)[0];
                         r.enzymeType = "Native";
                         r.nativeEnzyme = true;
-                        r.cDNA = cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism.name);
-                        r.baseCDNA = r.cDNA;
+                        r.CDS = r.enzyme.CDS;
+                        r.baseCDS = r.CDS;
                     } else {
                         r.enzymeType = "Foreign";
                     }
@@ -252,7 +252,14 @@ public class PartsManager {
                         continue;
                     }
                     Protein pr = (Protein) p[i];
-                    pr.sequence = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
+                    List<Element> seqs = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument);
+                    for (Element e : seqs) {
+                        if (e.getParentElement().getAttributeValue("rdfabout").contains("coding_seq")) {
+                            pr.CDS = e.getValue();
+                        } else {
+                            pr.sequence = e.getValue();
+                        }
+                    }
                     pr.name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.organism = new Organism(xFactory.compile("//organismname", Filters.element()).evaluate(jdomDocument).get(0).getValue());
                     pr.url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
@@ -342,7 +349,7 @@ public class PartsManager {
     }
 
     public void findReactions(Compound cell) {
-        Part[] parts = cInt.findParts(1, 1, cell.id);
+        Part[] parts = cInt.findParts(1, 1, cell.id, 0);
         String[] names = new String[parts.length];
         for (int i = 0; i < names.length; i++) {
             names[i] = parts[i].name;
@@ -519,8 +526,8 @@ public class PartsManager {
             public void actionPerformed(ActionEvent e) {
                 r.enzyme = prots[partsList.getSelectedIndex()];
                 addPartsS(new Part[]{r.enzyme}, true, true);
-                r.cDNA = getCDNA(r);
-                r.baseCDNA = r.cDNA;
+                r.CDS = r.enzyme.CDS;
+                r.baseCDS = r.CDS;
                 frame.setVisible(false);
                 frame.dispose();
                 updateTable();
@@ -537,9 +544,9 @@ public class PartsManager {
         mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
-    public String getCDNA(Reaction r) {
+/*    public String getCDNA(Reaction r) {
         return cInt.getCDNA(r.enzyme.sequence, r.enzyme.organism.name);
-    }
+    }*/
 
     private void prepareEnzymeDialog(Reaction r, JComboBox cmb2, JList partsList) {
         ArrayList<String> names = new ArrayList<>();
@@ -610,7 +617,7 @@ public class PartsManager {
             if (r.enzyme != null) {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, r.enzyme.name, r.enzyme.sequence});
                 if (!r.enzymeType.equals("Native")) {
-                    dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.cDNA});
+                    dtm2.addRow(new Object[]{r.enzyme.name, r.enzyme.sequence, r.CDS});
                 }
             } else {
                 dtm1.addRow(new Object[]{r.getEName(), r.enzymeType, "", ""});
@@ -1064,7 +1071,7 @@ public class PartsManager {
         gm.updateGraph();
     }
 
-    public void search(int c1, int c2, String value) {
+    public void search(int c1, int c2, String value, int page) {
         if (value.length() == 0) {
             JOptionPane.showMessageDialog(null, "Value cannot be empty!");
             return;
@@ -1072,17 +1079,21 @@ public class PartsManager {
         new Thread() {
             public void run() {
                 try {
-                    searchParts = cInt.findParts(c1, c2, value);
+                    searchParts = cInt.findParts(c1, c2, value, page);
                     String[] names = new String[searchParts.length];
                     for (int i = 0; i < names.length; i++) {
                         names[i] = searchParts[i].name + " [" + searchParts[i].id + "]";
                     }
-                    mainWindow.setResults(names);
+                    mainWindow.setResults(names, getQueryInfo());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         }.start();
+    }
+
+    public JsonObject getQueryInfo() {
+        return cInt.getQueryInfo();
     }
 
     public void addPartsSelected(int[] selectedIndices) {

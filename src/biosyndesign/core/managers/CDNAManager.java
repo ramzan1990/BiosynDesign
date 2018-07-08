@@ -199,9 +199,9 @@ public class CDNAManager {
         seqTASC.setPreferredSize(new Dimension(wd, 200));
         seqTASC.setBackground(Color.WHITE);
         UI.addTo(jp, seqTASC);
-        UI.addTo(jp, new JLabel("cDNA "));
+        UI.addTo(jp, new JLabel("CDS "));
         cDNATA = new JTextArea();
-        cDNATA.setText(breakString(r.cDNA, 60));
+        cDNATA.setText(breakString(r.CDS, 60));
         cDNATA.setLineWrap(true);
         font = new Font(Font.MONOSPACED, Font.PLAIN, 22);
         attributes = new HashMap<TextAttribute, Object>();
@@ -253,12 +253,12 @@ public class CDNAManager {
                 }
             }
         });
-        JButton b3 = new JButton("Default cDNA");
+        JButton b3 = new JButton("Default CDS");
         b3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                r.baseCDNA = pm.getCDNA(r);
-                cDNATA.setText(r.baseCDNA);
+                r.baseCDS = r.enzyme.CDS;
+                cDNATA.setText(r.baseCDS);
                 seqTA.setCaretPosition(0);
                 cDNATA.setCaretPosition(0);
             }
@@ -291,7 +291,7 @@ public class CDNAManager {
                         }
                         line = line.toLowerCase();
                         line = line.replaceAll("u", "t");
-                        r.baseCDNA = line;
+                        r.baseCDS = line;
                         cDNATA.setText(line);
                         seqTA.setCaretPosition(0);
                         cDNATA.setCaretPosition(0);
@@ -310,7 +310,7 @@ public class CDNAManager {
                 checkCDNA();
             }
         });
-        JButton b6 = new JButton("Base cDNA");
+        JButton b6 = new JButton("Base CDS");
         b6.addMouseListener(new MouseListener() {
             int cp;
 
@@ -323,7 +323,7 @@ public class CDNAManager {
             public void mousePressed(MouseEvent e) {
                 newCDNA = cDNATA.getText();
                 cp = cDNATASC.getVerticalScrollBar().getValue();
-                cDNATA.setText(r.baseCDNA);
+                cDNATA.setText(r.baseCDS);
                 setScroll();
             }
 
@@ -535,7 +535,7 @@ public class CDNAManager {
         ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                r.cDNA = cDNATA.getText();
+                r.CDS = cDNATA.getText();
                 r.comments = cloneList(comments);
                 frame.setVisible(false);
                 frame.dispose();
@@ -546,7 +546,7 @@ public class CDNAManager {
         apply.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                r.cDNA = cDNATA.getText();
+                r.CDS = cDNATA.getText();
                 r.comments = cloneList(comments);
                 pm.updateTable();
             }
@@ -596,19 +596,19 @@ public class CDNAManager {
             int i = 0;
             for (String m : s) {
                 if (!codons.get(c.get(i++).toUpperCase()).equals(m)) {
-                    JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+                    JOptionPane.showMessageDialog(null, "CDS sequence is wrong!");
                     return;
                 }
             }
             do {
                 if (!codons.get(c.get(i++).toUpperCase()).equals("STOP")) {
-                    JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+                    JOptionPane.showMessageDialog(null, "CDS sequence is wrong!");
                     return;
                 }
             } while (i < c.size());
-            JOptionPane.showMessageDialog(null, "cDNA sequence is correct!");
+            JOptionPane.showMessageDialog(null, "CDS sequence is correct!");
         }catch (Exception e){
-            JOptionPane.showMessageDialog(null, "cDNA sequence is wrong!");
+            JOptionPane.showMessageDialog(null, "CDS sequence is wrong!");
         }
     }
 

@@ -23,23 +23,6 @@ import org.sbolstandard.core2.*;
  */
 public class PartsCreator {
 
-    public static void newCompound(String f, String COMPOUND_ID, String[] SYNONYMS, String[] EXTERNAL_LINKS, String FORMULA, String SMILES, String CHARGE, String prefix) {
-    }
-
-    public static void newReaction(String f, String[] REACTANTS, String[] PRODUCTS, int[] REACTANTS_STOICHIOMETRY,
-                                   int[] PRODUCTS_STOICHIOMETRY, String[] EC_NUMBERS, String KEGG_REACTION, String REACTION_ID,
-                                   String FREE_ENERGY_VALUE, String prefix) {
-
-    }
-
-    public static void newECNumber(String f, String EC_NUMBER, String[] NAMES, String[] SYNONYMS, String EXTERNAL_LINK, String[] FORMULAS, String[] COFACTORS, String prefix) {
-    }
-
-    public static void newProtein(String f, String PROTEIN_ID, String[] PROTEIN_NAMES, String ORGANISM_ID,
-                                  String ORGANISM_NAME, String ORGANISM_URL, String[] EXTERNAL_LINKS, String AA_SEQ, String[] EC_NUMBERS, String prefix) {
-    }
-
-
     private static final String SBOLME_ANNOTATION_PREFIX_URL = "http://www.cbrc.kaust.edu.sa/sbolme/annotation";
 
     public static void createCompound(String f, String prefixURI, String compoundID, String smilesSeq, String sourceURI, String formula, String[] synonyms,

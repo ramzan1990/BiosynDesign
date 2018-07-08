@@ -26,18 +26,18 @@ import java.util.zip.ZipInputStream;
 
 public class SBOLme implements SBOLInterface {
     public String prefix;
-    HttpClient httpclient;
+    private HttpClient httpclient;
+    private JsonObject foundParts;
 
 
     public SBOLme(String prefix) {
         this.prefix = prefix;
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(4 * 1000).setSocketTimeout(15 * 1000).setConnectionRequestTimeout(1*1000).build();
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(4 * 1000).setSocketTimeout(15 * 1000).setConnectionRequestTimeout(1 * 1000).build();
         httpclient = HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
     }
 
 
-
-    public Part[] findParts(int type, int filter, String value) {
+    public Part[] findParts(int type, int filter, String value, int page) {
         String result = null;
         try {
             HttpPost httpPost;
@@ -50,7 +50,7 @@ public class SBOLme implements SBOLInterface {
                 nvps.add(new BasicNameValuePair("type", "0" + type));
                 nvps.add(new BasicNameValuePair("filter", "" + filter));
                 nvps.add(new BasicNameValuePair("value", value));
-                nvps.add(new BasicNameValuePair("page", "1"));
+                nvps.add(new BasicNameValuePair("page", Integer.toString(page + 1)));
                 nvps.add(new BasicNameValuePair("max", "25"));
             }
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
@@ -58,8 +58,8 @@ public class SBOLme implements SBOLInterface {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
-        JsonArray a = jsonObject.getAsJsonArray("rows");
+        foundParts = new JsonParser().parse(result.toString()).getAsJsonObject();
+        JsonArray a = foundParts.getAsJsonArray("rows");
         Part[] parts = new Part[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
@@ -71,7 +71,7 @@ public class SBOLme implements SBOLInterface {
             } else if (o.has("Name")) {
                 name = o.get("Name").getAsString();
             }
-            if (type == 0){
+            if (type == 0) {
                 parts[i] = new Compound(o.get("ID").getAsString(), name, o.get("URL").getAsString());
             } else if (type == 1) {
                 double energy = 1000;
@@ -79,25 +79,25 @@ public class SBOLme implements SBOLInterface {
                     energy = o.get("Energy").getAsDouble();
                 }
                 parts[i] = new Reaction(o.get("ID").getAsString(), name, o.get("URL").getAsString(), energy);
-            } else  if (type == 2) {
+            } else if (type == 2) {
                 parts[i] = new Enzyme(o.get("ID").getAsString(), o.get("Title").getAsString(), o.get("URL").getAsString(), o.get("ECNumber").getAsString());
             }
         }
         return parts;
     }
 
-    public Protein[] getProteins(String ecNumber) {
-        return getProteins(ecNumber, "");
+    public Protein[] getProteins(String enzyme) {
+        return getProteins(enzyme, "");
     }
 
-    public Protein[] getProteins(String ecNumber, String organism) {
+    public Protein[] getProteins(String enzyme, String organism) {
         String result = null;
         try {
             HttpPost httpPost = new HttpPost(prefix + "/php/query.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("type", "3"));
             nvps.add(new BasicNameValuePair("organism", organism));
-            nvps.add(new BasicNameValuePair("ec_number", ecNumber));
+            nvps.add(new BasicNameValuePair("ec_number", enzyme));
             nvps.add(new BasicNameValuePair("sequence", ""));
             nvps.add(new BasicNameValuePair("page", "1"));
             nvps.add(new BasicNameValuePair("max", "300"));
@@ -111,7 +111,7 @@ public class SBOLme implements SBOLInterface {
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ecNumber);
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), enzyme);
         }
         return p;
     }
@@ -170,7 +170,7 @@ public class SBOLme implements SBOLInterface {
         if (a.size() < max) {
             max = a.size();
         }
-        Reaction[] p = new Reaction [max];
+        Reaction[] p = new Reaction[max];
         for (int i = 0; i < p.length; i++) {
             JsonObject o = a.get(i).getAsJsonObject();
             p[i] = new Reaction(o.get("ID").getAsString(), o.get("Name").getAsString(), o.get("URL").getAsString(), 1000); //o.get("FreeEnergy").getAsDouble()
@@ -197,12 +197,12 @@ public class SBOLme implements SBOLInterface {
     }
 
     @Override
-    public String[] getOrganisms(String ecNumber) {
+    public String[] getOrganisms(String enzyme) {
         String result = null;
         try {
             HttpPost httpPost = new HttpPost(prefix + "/php/Bd/get_organisms.php");
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-            nvps.add(new BasicNameValuePair("ec", ecNumber));
+            nvps.add(new BasicNameValuePair("ec", enzyme));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             result = getResponse(httpPost);
         } catch (Exception e) {
@@ -214,12 +214,12 @@ public class SBOLme implements SBOLInterface {
         String options[] = new String[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            options[i] =o.get("OrganismName").getAsString();
+            options[i] = o.get("OrganismName").getAsString();
         }
         return options;
     }
 
-    @Override
+/*    @Override
     public String getCDNA(String sequence, String organism) {
         String result = null;
         try {
@@ -235,10 +235,10 @@ public class SBOLme implements SBOLInterface {
 
         JsonObject jsonObject = new JsonParser().parse(result.toString()).getAsJsonObject();
         JsonArray a = jsonObject.getAsJsonArray("rows");
-        return  a.get(0).getAsJsonObject().get("cDNA").getAsString();
-    }
+        return a.get(0).getAsJsonObject().get("CDS").getAsString();
+    }*/
 
-    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String enzyme, String output) {
         ZipInputStream zin = null;
         ArrayList<String> prots = new ArrayList<>();
         try {
@@ -246,7 +246,7 @@ public class SBOLme implements SBOLInterface {
             List<NameValuePair> nvps = new ArrayList<NameValuePair>();
             nvps.add(new BasicNameValuePair("reaction", reaction));
             nvps.add(new BasicNameValuePair("organism", organism));
-            nvps.add(new BasicNameValuePair("ec_number", ecNumber));
+            nvps.add(new BasicNameValuePair("ec_number", enzyme));
             httpPost.setEntity(new UrlEncodedFormEntity(nvps));
             HttpResponse response = httpclient.execute(httpPost);
             HttpEntity entity = response.getEntity();
@@ -255,11 +255,11 @@ public class SBOLme implements SBOLInterface {
             }
             ZipEntry ze = null;
             while ((ze = zin.getNextEntry()) != null) {
-                FileOutputStream fout = new FileOutputStream(output +ze.getName());
+                FileOutputStream fout = new FileOutputStream(output + ze.getName());
                 for (int c = zin.read(); c != -1; c = zin.read()) {
                     fout.write(c);
                 }
-                if(ze.getName().length() - ze.getName().replace("_", "").length() == 3){
+                if (ze.getName().length() - ze.getName().replace("_", "").length() == 3) {
                     prots.add(ze.getName());
                 }
                 zin.closeEntry();
@@ -273,6 +273,11 @@ public class SBOLme implements SBOLInterface {
         return prots;
     }
 
+    @Override
+    public JsonObject getQueryInfo() {
+        return foundParts;
+    }
+
     private String getResponse(HttpPost httpPost) {
         StringBuffer result = new StringBuffer();
         try {
@@ -282,7 +287,7 @@ public class SBOLme implements SBOLInterface {
             for (int c; (c = in.read()) >= 0; )
                 result.append((char) c);
             EntityUtils.consume(entity);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Connection to the server failed please try again.");
             Main.mainWindow.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }

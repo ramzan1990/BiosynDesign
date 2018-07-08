@@ -3,6 +3,7 @@ package biosyndesign.core.ui;
 import biosyndesign.core.Main;
 import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.sbol.parts.Part;
+import biosyndesign.core.sbol.parts.Protein;
 import biosyndesign.core.utils.UI;
 
 import javax.swing.*;
@@ -16,10 +17,14 @@ import java.awt.event.*;
 public class PartsManagerFrame extends BDFrame {
     private LocalRepo lr;
     private JTable table;
-    private String[] columnNames = new String[]{"ID", "Name"};
+    private PartsManagerFrame thisFrame;
+    private JLabel statusLabel;
+    private JLabel maxPageLabel;
+    private int page = 0;
 
     public PartsManagerFrame(JFrame parent) {
         super();
+        thisFrame = this;
         lr = Main.getLocalRepo();
         int w = 800;
         this.setSize(new Dimension(w, 600));
@@ -39,8 +44,8 @@ public class PartsManagerFrame extends BDFrame {
         cmb0 = new JComboBox();
         cmb0.setPreferredSize(new Dimension(dpcw, cmb0.getPreferredSize().height));
         cmb0.setMaximumSize(new Dimension(500, cmb0.getPreferredSize().height));
-        String[] batches = lr.getDatasets();
-        for (String b : batches) {
+        String[] datasets = lr.getDatasets();
+        for (String b : datasets) {
             cmb0.addItem(b);
         }
         UI.addTo(rightPanel, cmb0);
@@ -61,10 +66,12 @@ public class PartsManagerFrame extends BDFrame {
         cmb2.setMaximumSize(new Dimension(500, cmb2.getPreferredSize().height));
         cmb1.addItem("Compound");
         cmb1.addItem("Reaction");
-        cmb1.addItem("EC Number");
+        cmb1.addItem("Enzyme");
+        cmb1.addItem("Protein");
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                page = 0;
                 cmb2.removeAllItems();
                 if (cmb1.getSelectedIndex() == 0) {
                     cmb2.addItem("Compound name or ID");
@@ -80,10 +87,15 @@ public class PartsManagerFrame extends BDFrame {
                     cmb2.addItem("Catalyzing enzyme class");
                     showParts(lr.catalog("reactions"));
                 } else if (cmb1.getSelectedIndex() == 2) {
-                    cmb2.addItem("EC number");
+                    cmb2.addItem("Enzyme class ID");
                     cmb2.addItem("Transformed compound");
                     cmb2.addItem("Catalyzing reaction");
                     showParts(lr.catalog("enzymes"));
+                } else if (cmb1.getSelectedIndex() == 3) {
+                    cmb2.addItem("Protein ID");
+                    cmb2.addItem("Enzyme class ID");
+                    cmb2.addItem("Organism");
+                    showParts(lr.catalog("proteins"));
                 }
             }
         });
@@ -106,7 +118,7 @@ public class PartsManagerFrame extends BDFrame {
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Part[] p = lr.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                Part[] p = lr.findParts(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText(), 0);
                 showParts(p);
             }
         });
@@ -114,6 +126,7 @@ public class PartsManagerFrame extends BDFrame {
         cmb0.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                page = 0;
                 if (cmb0.getSelectedIndex() > -1) {
                     lr.setCurrentDataset(cmb0.getSelectedItem().toString());
                     b2.setEnabled(true);
@@ -130,34 +143,107 @@ public class PartsManagerFrame extends BDFrame {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.PAGE_AXIS));
 
         String[][] rowData = new String[][]{{"", ""}};
+        String[] columnNames = new String[]{"ID", "Name"};
         table = new JTable(rowData, columnNames);
         JScrollPane scrollPane = new JScrollPane(table);
         topPanel.add(scrollPane);
+        JPanel paginationPanel = new JPanel();
+        paginationPanel.setLayout(new BoxLayout(paginationPanel, BoxLayout.LINE_AXIS));
+        paginationPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        JTextField pageTF = new JTextField();
+        pageTF.setText(page + "");
+        JButton prevPage = new JButton("Previous");
+        prevPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(page>0) {
+                    Part[] p = lr.getPage(--page, cmb1.getSelectedIndex());
+                    showParts(p);
+                    pageTF.setText(page + "");
+                }
+            }
+        });
+        JButton nextPage = new JButton("Next");
+        nextPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(page + 1 < Math.ceil((double) lr.totalRows / lr.maxRowsPage)) {
+                    Part[] p = lr.getPage(++page, cmb1.getSelectedIndex());
+                    showParts(p);
+                    pageTF.setText(page + "");
+                }
+            }
+        });
+
+        JButton gotoPage = new JButton("Go to");
+        gotoPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int pn = Integer.parseInt(pageTF.getText());
+                    Part[] p = lr.getPage(pn, cmb1.getSelectedIndex());
+                    showParts(p);
+                    page = pn;
+                } catch (Exception ex) {
+                }
+                pageTF.setText(page + "");
+            }
+        });
+        paginationPanel.add(prevPage);
+        paginationPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        paginationPanel.add(nextPage);
+        paginationPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        paginationPanel.add(gotoPage);
+        paginationPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        pageTF.setPreferredSize(gotoPage.getPreferredSize());
+        pageTF.setMaximumSize(gotoPage.getPreferredSize());
+        paginationPanel.add(pageTF);
+        maxPageLabel = new JLabel();
+        paginationPanel.add(maxPageLabel);
+        topPanel.add(paginationPanel);
         JPanel lowerPanel = new JPanel(new BorderLayout());
         JPanel jp1 = new JPanel();
         JPanel jp2 = new JPanel();
-        JButton b3 = new JButton("Import Parts");
-        jp2.add(b3);
-        b3.addActionListener(new ActionListener() {
+        jp2.setLayout(new BoxLayout(jp2, BoxLayout.LINE_AXIS));
+        jp2.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        JButton bc = new JButton("Create Dataset");
+        jp2.add(bc);
+        jp2.add(Box.createRigidArea(new Dimension(10, 0)));
+        bc.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                page = 0;
                 String name = JOptionPane.showInputDialog("Choose name for the dataset:");
                 if (name == null || name.length() == 0) {
                     return;
                 }
-                lr.importParts(name);
-                if (!name.equals(lr.dbName)) {
-                    cmb0.addItem(name);
-                    cmb0.setSelectedItem(name);
-                } else {
-                    cmb1.setSelectedIndex(cmb1.getSelectedIndex());
-                }
+                lr.createDB(name);
+                cmb0.addItem(name);
+                cmb0.setSelectedItem(name);
             }
         });
-        JButton b4 = new JButton("Delete Parts");
+
+        JButton b3 = new JButton("Import Parts");
+        jp2.add(b3);
+        jp2.add(Box.createRigidArea(new Dimension(10, 0)));
+        b3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                thisFrame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                if (cmb0.getSelectedItem() != null) {
+                    new Thread(() -> {
+                        lr.importParts(cmb0.getSelectedItem().toString(), statusLabel);
+                        thisFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    }).start();
+                }
+
+            }
+        });
+        JButton b4 = new JButton("Delete Dataset");
         b4.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                page = 0;
                 if (cmb0.getSelectedIndex() != -1) {
                     String name = cmb0.getSelectedItem().toString();
                     lr.deleteDataset(name);
@@ -182,6 +268,9 @@ public class PartsManagerFrame extends BDFrame {
             }
         });
         jp2.add(b4);
+        //jp2.add(Box.createHorizontalGlue());
+        statusLabel = new JLabel("Ready");
+        jp1.add(statusLabel);
         //jp2.add(b5);
         lowerPanel.add(jp1, BorderLayout.EAST);
         lowerPanel.add(jp2, BorderLayout.WEST);
@@ -205,7 +294,7 @@ public class PartsManagerFrame extends BDFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
 
-        if (batches.length > 0) {
+        if (datasets.length > 0) {
             cmb0.setSelectedIndex(0);
         }
         cmb1.setSelectedIndex(0);
@@ -213,10 +302,24 @@ public class PartsManagerFrame extends BDFrame {
     }
 
     private void showParts(Part[] p) {
-        String[][] rowData = new String[p.length][2];
-        for (int i = 0; i < p.length; i++) {
-            rowData[i][0] = p[i].id;
-            rowData[i][1] = p[i].name;
+        String[] columnNames;
+        String[][] rowData;
+        if (p.length > 0 && p[0] instanceof Protein) {
+            rowData = new String[p.length][3];
+            columnNames = new String[]{"ID", "Enzyme class ID", "Organism"};
+            for (int i = 0; i < p.length; i++) {
+                Protein prot = (Protein) p[i];
+                rowData[i][0] = prot.id;
+                rowData[i][1] = prot.enzymeID;
+                rowData[i][2] = prot.organism.name;
+            }
+        } else {
+            columnNames = new String[]{"ID", "Name"};
+            rowData = new String[p.length][2];
+            for (int i = 0; i < p.length; i++) {
+                rowData[i][0] = p[i].id;
+                rowData[i][1] = p[i].name;
+            }
         }
         table.setModel(new DefaultTableModel(rowData, columnNames));
         table.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -226,6 +329,7 @@ public class PartsManagerFrame extends BDFrame {
                 Main.pm.showInfo(p[row]);
             }
         });
+        maxPageLabel.setText(" " + (int) Math.ceil((double) lr.totalRows / lr.maxRowsPage) + " total pages");
     }
 
 }

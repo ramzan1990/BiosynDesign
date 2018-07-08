@@ -4,6 +4,7 @@ import biosyndesign.core.Main;
 import biosyndesign.core.graphics.PartsGraph;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.utils.UI;
+import com.google.gson.JsonObject;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -17,7 +18,7 @@ import javax.swing.table.DefaultTableModel;
 public class MainWindow extends BDFrame {
 
     private static final int panelMargin = 0;
-    private JMenu File, Parts, options,  export, HelpM, repoOptions, Window;
+    private JMenu File, Parts, options, export, HelpM, repoOptions, Window;
     private JMenuItem ClearConsole, Exit, Save, Help, About, NewProject, SaveAs, OpenProject, addCompound, addReaction, addReactionClass, addEnzyme, competingReactions, chooseRepository,
             exportCDS, exportAA, exportPathway, exportGraph, showLocalParts;
     private JCheckBoxMenuItem HideDataPanel, HideTools, HideConsole, useLocalRepo, showPathway;
@@ -38,7 +39,9 @@ public class MainWindow extends BDFrame {
     private JLabel statusLabel, infoLabel;
     private JButton b3;
     private JScrollPane partsPane;
-
+    private Pagination p;
+    private JLabel partsListLabel;
+    private JPanel partsPanel;
 
     public MainWindow() {
         super();
@@ -54,10 +57,10 @@ public class MainWindow extends BDFrame {
         HelpM = new JMenu("Help");
         repoOptions = new JMenu("Repository");
         options = new JMenu("Options");
-        export =  new JMenu("Export");
+        export = new JMenu("Export");
         chooseRepository = new JMenuItem("Choose Repository");
         useLocalRepo = new JCheckBoxMenuItem("Use Local Repository");
-        showPathway =  new JCheckBoxMenuItem("Show Pathway");
+        showPathway = new JCheckBoxMenuItem("Show Pathway");
         Window = new JMenu("Window");
         Exit = new JMenuItem("Exit");
         Save = new JMenuItem("Save");
@@ -71,10 +74,10 @@ public class MainWindow extends BDFrame {
         addReactionClass = new JMenuItem("Add Reaction Class");
         addEnzyme = new JMenuItem("Add Protein");
         exportCDS = new JMenuItem("Export CDS");
-        exportAA= new JMenuItem("Export AA Sequences");
-        exportPathway= new JMenuItem("Export pathway");
+        exportAA = new JMenuItem("Export AA Sequences");
+        exportPathway = new JMenuItem("Export pathway");
         competingReactions = new JMenuItem("Find Competing Native Reactions");
-        exportGraph= new JMenuItem("Export graph as SVG");
+        exportGraph = new JMenuItem("Export graph as SVG");
         showLocalParts = new JMenuItem("Show Local Parts");
 
         NewProject.addActionListener(new ActionListener() {
@@ -307,7 +310,7 @@ public class MainWindow extends BDFrame {
         showPathway.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-               Main.guim.showPathway(showPathway.isSelected());
+                Main.guim.showPathway(showPathway.isSelected());
             }
         });
         repoOptions.add(chooseRepository);
@@ -345,17 +348,17 @@ public class MainWindow extends BDFrame {
             }
         };
         enzymeTable = new JTable(enzymeModel);
-        enzymeTable.addMouseListener(new MouseAdapter(){
+        enzymeTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                Main.pm.rowClicked(enzymeTable.getSelectedRow(), e.getX(), e.getY()+50);
+                Main.pm.rowClicked(enzymeTable.getSelectedRow(), e.getX(), e.getY() + 50);
             }
         });
-        String[] columnNamesGenes = { "Enzyme Name", "Primary Structure", "CDS"};
+        String[] columnNamesGenes = {"Enzyme Name", "Primary Structure", "CDS"};
         DefaultTableModel genesModel = new DefaultTableModel(columnNamesGenes, 0);
         genesTable = new JTable(genesModel);
-        genesTable.addMouseListener(new MouseAdapter(){
+        genesTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                Main.pm.rowClickedCDS(genesTable.getSelectedRow(), e.getX(), e.getY()+50);
+                Main.pm.rowClickedCDS(genesTable.getSelectedRow(), e.getX(), e.getY() + 50);
             }
         });
 
@@ -523,7 +526,8 @@ public class MainWindow extends BDFrame {
         update.setToolTipText("Refresh");
         update.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {
-                Main.gm.updateGraph(); Main.pm.updateTable();
+                Main.gm.updateGraph();
+                Main.pm.updateTable();
             }
 
             public void mousePressed(MouseEvent e) {
@@ -586,7 +590,6 @@ public class MainWindow extends BDFrame {
                 similarity.setIcon(new ImageIcon(Main.class.getResource("ui/images/similar-1.png")));
             }
         });
-
 
 
         commonReaction = new JLabel();
@@ -725,8 +728,8 @@ public class MainWindow extends BDFrame {
         lt.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                JOptionPane.showMessageDialog(null, "Organism Name: " + Main.guim.getOrganism() + "\n"+
-                "More info later.");
+                JOptionPane.showMessageDialog(null, "Organism Name: " + Main.guim.getOrganism() + "\n" +
+                        "More info later.");
             }
 
         });
@@ -797,45 +800,83 @@ public class MainWindow extends BDFrame {
         b2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText());
+                p.page = 0;
+                p.pageTF.setText("1");
+                Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText(), 0);
             }
         });
         cmb2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (cmb1.getSelectedIndex() == 0) {
-                    if(cmb2.getSelectedIndex() == 0){
+                    if (cmb2.getSelectedIndex() == 0) {
                         qValueTF.setText("Pyruvate");
-                    }else  if(cmb2.getSelectedIndex() == 1){
+                    } else if (cmb2.getSelectedIndex() == 1) {
                         qValueTF.setText("DB00119");
-                    }else  if(cmb2.getSelectedIndex() == 2){
+                    } else if (cmb2.getSelectedIndex() == 2) {
                         qValueTF.setText("ME_R00006");
-                    }else  if(cmb2.getSelectedIndex() == 3){
+                    } else if (cmb2.getSelectedIndex() == 3) {
                         qValueTF.setText("Pyruvate");
-                    }else  if(cmb2.getSelectedIndex() == 4){
+                    } else if (cmb2.getSelectedIndex() == 4) {
                         qValueTF.setText("2.3.1.74");
-                    }else  if(cmb2.getSelectedIndex() == 5){
+                    } else if (cmb2.getSelectedIndex() == 5) {
                         qValueTF.setText("CC(=O)C(=O)O");
                     }
 
                 } else if (cmb1.getSelectedIndex() == 1) {
-                    if(cmb2.getSelectedIndex() == 0){
+                    if (cmb2.getSelectedIndex() == 0) {
                         qValueTF.setText("ME_R00006");
-                    }else  if(cmb2.getSelectedIndex() == 1){
+                    } else if (cmb2.getSelectedIndex() == 1) {
                         qValueTF.setText("Pyruvate");
-                    }else  if(cmb2.getSelectedIndex() == 2){
+                    } else if (cmb2.getSelectedIndex() == 2) {
                         qValueTF.setText("2.3.1.74");
                     }
                 }
             }
         });
+        partsPanel = new JPanel();
+        partsListLabel = new JLabel("0 results");
+        partsListLabel.setForeground(Color.LIGHT_GRAY);
+        UI.addToLeft(partsPanel, partsListLabel);
         partsList = new JList();
         partsPane = new JScrollPane();
         partsPane.setViewportView(partsList);
         partsPane.setPreferredSize(new Dimension(dpcw, 200));
         partsPane.setMaximumSize(new Dimension(dpcw, 200));
         partsPane.setBorder(BorderFactory.createEmptyBorder(0, panelMargin, 0, panelMargin));
-        UI.addTo(dataPanel, partsPane);
+        partsPanel.add(partsPane);
+        p = new Pagination();
+        p.nextPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JsonObject ob = Main.pm.getQueryInfo();
+                if(p.page < Main.pm.getQueryInfo().get("count").getAsInt()-1) {
+                    Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText(), ++p.page);
+                }
+            }
+        });
+        p.prevPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JsonObject ob = Main.pm.getQueryInfo();
+                if(p.page > 0) {
+                    Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText(), --p.page);
+                }
+            }
+        });
+        p.gotoPage.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int np = Integer.parseInt(p.pageTF.getText()) - 1;
+                if(np < Main.pm.getQueryInfo().get("count").getAsInt()-1 && np>=0) {
+                    p.page = np;
+                    Main.pm.search(cmb1.getSelectedIndex(), cmb2.getSelectedIndex(), qValueTF.getText(), p.page);
+                }
+            }
+        });
+        partsPanel.add(p);
+        partsPanel.setVisible(false);
+
         //dataPanel.add(Box.createRigidArea(new Dimension(0, 10)));
         b3 = new JButton(" Add");
         b3.setIcon(new ImageIcon(Main.class.getResource("ui/images/load.png")));
@@ -846,12 +887,9 @@ public class MainWindow extends BDFrame {
                 Main.pm.addPartsSelected(partsList.getSelectedIndices());
             }
         });
-        UI.addToRight(dataPanel, b3);
-        b3.setVisible(false);
-        partsPane.setVisible(false);
+        UI.addToRight(partsPanel, b3);
 
-
-
+        dataPanel.add(partsPanel);
         // </editor-fold>
         // <editor-fold desc="console">
         consoleArea = new JTextArea();
@@ -915,10 +953,11 @@ public class MainWindow extends BDFrame {
         infoLabel.setText("Compounds: " + i1 + "   Reactions: " + i2 + "  ");
     }
 
-    public void setResults(String[] names) {
+    public void setResults(String[] names, JsonObject queryInfo) {
         partsList.setModel(new DefaultComboBoxModel(names));
-        b3.setVisible(true);
-        partsPane.setVisible(true);
+        partsListLabel.setText("Page " + (p.page + 1) + " out of " + queryInfo.get("total").getAsInt() + " results");
+        p.pageTF.setText((p.page+1) + "");
+        partsPanel.setVisible(true);
         partsPane.repaint();
     }
 }

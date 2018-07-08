@@ -3,26 +3,29 @@ package biosyndesign.core.sbol;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Protein;
 import biosyndesign.core.sbol.parts.Reaction;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 
 public interface SBOLInterface {
 
-    public Part[] findParts(int type, int filter, String value);
+    Part[] findParts(int type, int filter, String value, int page);
 
-    public Protein[] getProteins(String ecNumber);
+    Protein[] getProteins(String enzyme);
 
-    public Protein[] getProteins(String ecNumber, String organism);
+    Protein[] getProteins(String enzyme, String organism);
 
-    public Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting);
+    Reaction[] findCompetingReactions(String organism, String compound, int maxCompeting);
 
-    public Reaction[] commonReactions(String id1, String id2);
+    Reaction[] commonReactions(String id1, String id2);
 
-    public boolean isNative(String reaction, String organism);
+    boolean isNative(String reaction, String organism);
 
-    String[] getOrganisms(String ecNumber);
+    String[] getOrganisms(String enzyme);
 
-    String getCDNA(String sequence, String organism);
+    //String getCDNA(String sequence, String organism);
 
-    ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output);
+    ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String enzyme, String output);
+
+    JsonObject getQueryInfo();
 }

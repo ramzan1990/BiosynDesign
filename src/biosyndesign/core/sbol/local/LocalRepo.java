@@ -33,6 +33,10 @@ public class LocalRepo implements SBOLInterface {
     public String dbName;
     private ArrayList<String> dbNames;
     static int sc = 0;
+    public int totalRows = 0;
+    private String prevSQL;
+    public int maxRowsPage = 50;
+    private int count = 0;
 
     public void init() {
         Connection conn = null;
@@ -50,7 +54,7 @@ public class LocalRepo implements SBOLInterface {
             boolean first = false;
             try {
                 rs = s.executeQuery("select * from dblist");
-                if(!rs.next()){
+                if (!rs.next()) {
                     first = true;
                 }
             } catch (Exception e) {
@@ -150,6 +154,15 @@ public class LocalRepo implements SBOLInterface {
             s = conn.createStatement();
             statements.add(s);
             rs = s.executeQuery(sql);
+            totalRows = 0;
+            while (rs.next()) {
+                totalRows++;
+            }
+            prevSQL = sql;
+            s = conn.createStatement();
+            s.setMaxRows(maxRowsPage);
+            statements.add(s);
+            rs = s.executeQuery(sql);
             result = Utils.resultSetToJsonArray(rs);
         } catch (Exception e) {
             e.printStackTrace();
@@ -157,6 +170,57 @@ public class LocalRepo implements SBOLInterface {
             Utils.close(rs, statements, conn);
         }
         return result;
+    }
+
+    public JsonArray getJSON(int page) {
+        JsonArray result = null;
+        Connection conn = null;
+        ArrayList<Statement> statements = new ArrayList<Statement>();
+        Statement s;
+        ResultSet rs = null;
+        try {
+            Properties props = new Properties();
+            conn = DriverManager.getConnection(protocol + dbName
+                    + ";create=true", props);
+
+            s = conn.createStatement();
+            statements.add(s);
+            rs = s.executeQuery(prevSQL + " offset " + (page - 1) * maxRowsPage + " rows fetch first " + maxRowsPage + " rows only");
+            result = Utils.resultSetToJsonArray(rs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            Utils.close(rs, statements, conn);
+        }
+        return result;
+    }
+
+    public Part[] getPage(int page, int type) {
+        JsonArray ja = getJSON(page);
+        if (ja != null && ja.size() > 0) {
+            Part[] parts = new Part[ja.size()];
+            for (int i = 0; i < parts.length; i++) {
+                JsonObject o = ja.get(i).getAsJsonObject();
+                Part p = null;
+                if (type == 0) {
+                    p = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                } else if (type == 1) {
+                    double energy = 1000;
+                    if (o.has("ENERGY") && !o.get("ENERGY").isJsonNull()) {
+                        energy = o.get("ENERGY").getAsDouble();
+                    }
+                    p = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), energy);
+                } else if (type == 2) {
+                    p = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), o.get("ClassID").getAsString());
+                } else if (type == 3) {
+                    p = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), o.get("ENZYME").getAsString());
+                }
+                p.local = true;
+                parts[i] = p;
+            }
+            return parts;
+        }
+        return null;
     }
 
     public JsonArray execute(String sql) {
@@ -183,7 +247,7 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
-    public Part[] findParts(int type, int filter, String value) {
+    public Part[] findParts(int type, int filter, String value, int page) {
         JsonArray ja;
         String sql = null, op = null;
         if ((type == 0 && filter == 4) || (type == 1 && filter == 2) || (type == 2 && filter == 0)) {
@@ -239,19 +303,26 @@ public class LocalRepo implements SBOLInterface {
             }
         } else if (type == 2) {
             if (filter == 0) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e WHERE Enzyme " + op;
+                sql = "SELECT e.ID, e.URL, e.ClassID, e.Name FROM enzymes AS e WHERE ClassID " + op;
             } else if (filter == 1) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.Enzyme = ce.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.ClassID, e.Name FROM enzymes AS e INNER JOIN (SELECT * FROM compund_enzymes WHERE Compound = '" + value + "') AS ce ON e.ClassID = ce.Enzyme";
             } else if (filter == 2) {
-                sql = "SELECT e.ID, e.URL, e.Enzyme, e.Title FROM enzymes AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.Enzyme = re.Enzyme";
+                sql = "SELECT e.ID, e.URL, e.ClassID, e.Name FROM enzymes AS e INNER JOIN (SELECT * FROM reaction_enzymes WHERE Reaction = '" + value + "') AS re ON e.ClassID = re.Enzyme";
+            }
+        } else if (type == 3) {
+            if (filter == 0) {
+                sql = "SELECT p.ID, p.OrganismName, p.Enzyme, URL FROM proteins AS p WHERE p.ID ='" + value + "'";
+            } else if (filter == 1) {
+                sql = "SELECT p.ID, p.OrganismName, p.Enzyme, URL FROM proteins AS p WHERE p.Enzyme ='" + value + "'";
+            } else if (filter == 2) {
+                sql = "SELECT p.ID, p.OrganismName, p.Enzyme, URL FROM proteins AS p WHERE p.OrganismName ='" + value + "'";
             }
         }
-
         ja = executeJSON(sql);
         if (ja != null && ja.size() > 0) {
-            JsonObject o = ja.get(0).getAsJsonObject();
             Part[] parts = new Part[ja.size()];
             for (int i = 0; i < parts.length; i++) {
+                JsonObject o = ja.get(i).getAsJsonObject();
                 Part p = null;
                 if (type == 0) {
                     p = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
@@ -262,7 +333,9 @@ public class LocalRepo implements SBOLInterface {
                     }
                     p = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), energy);
                 } else if (type == 2) {
-                    p = new Part(o.get("ID").getAsString(), o.get("TITLE").getAsString(), o.get("URL").getAsString());
+                    p = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), o.get("ClassID").getAsString());
+                } else if (type == 3) {
+                    p = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), o.get("ENZYME").getAsString());
                 }
                 p.local = true;
                 parts[i] = p;
@@ -273,23 +346,23 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
-    public Protein[] getProteins(String ECNumber) {
-        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + ECNumber + "'");
+    public Protein[] getProteins(String enzyme) {
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + enzyme + "'");
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), ECNumber);
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), enzyme);
         }
         return p;
     }
 
     @Override
-    public Protein[] getProteins(String ECNumber, String organism) {
-        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + ECNumber + "' AND p.OrganismName = '" + organism + "'");
+    public Protein[] getProteins(String enzyme, String organism) {
+        JsonArray a = executeJSON("SELECT p.ID, p.URL, p.OrganismID, p.OrganismName, p.Enzyme FROM proteins AS p WHERE p.Enzyme = '" + enzyme + "' AND p.OrganismName = '" + organism + "'");
         Protein[] p = new Protein[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), ECNumber);
+            p[i] = new Protein(o.get("ID").getAsString(), o.get("OrganismName").getAsString(), o.get("URL").getAsString(), enzyme);
         }
         return p;
     }
@@ -314,32 +387,32 @@ public class LocalRepo implements SBOLInterface {
     }
 
     @Override
-    public String[] getOrganisms(String ecNumber) {
+    public String[] getOrganisms(String enzyme) {
         return new String[0];
     }
 
-    @Override
-    public String getCDNA(String sequence, String organism) {
-        return "";
-    }
 
     @Override
-    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String ecNumber, String output) {
+    public ArrayList<String> getZipAndReturnProteins(String reaction, String organism, String enzyme, String output) {
         return null;
     }
 
+    @Override
+    public JsonObject getQueryInfo() {
+        return null;
+    }
 
-    public void importParts(String name) {
-        if (name.length() == 0) {
-            name = dbName;
-        } else {
-            dbNames.add(name);
-            dbName = name;
-            changeDBList(name, true);
-        }
+    public void createDB(String name) {
+        dbNames.add(name);
+        dbName = name;
+        changeDBList(name, true);
+        resetDB();
+    }
+
+    public void importParts(String name, JLabel status) {
+        changeDBList(name, true);
         checkDB();
         JFileChooser fc = new JFileChooser();
-        ;
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setMultiSelectionEnabled(false);
         fc.showDialog(null, "Import");
@@ -352,20 +425,30 @@ public class LocalRepo implements SBOLInterface {
                 try {
                     File np = new File(lp + File.separator + name + File.separator + f.getName());
                     try {
-                        if(np.exists()){
+                        if (np.exists()) {
                             np.delete();
                         }
                         Files.copy(f.toPath(), np.toPath());
-                    }catch (Exception e){
+                    } catch (Exception e) {
 
                     }
                     addPart(np);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            status.setText("Added " + ++count + " parts");
+                        }
+                    });
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
-        JOptionPane.showMessageDialog(null, "Done!" + sc);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                status.setText("Finished. Added " + count + " parts");
+            }
+        });
     }
 
     public void listFiles(File directory, List<File> files) {
@@ -445,7 +528,7 @@ public class LocalRepo implements SBOLInterface {
         Document jdomDocument = null;
         try {
             jdomDocument = jdomBuilder.build(new StringReader(xml));
-        }catch (Exception e){
+        } catch (Exception e) {
             return;
         }
         XPathFactory xFactory = XPathFactory.instance();
@@ -484,24 +567,22 @@ public class LocalRepo implements SBOLInterface {
                 //Protein
                 String oID = definition.getChildText("organismkegg_id");
                 String oName = definition.getChildText("organismname");
-                if(oName.contains("'")){
+                if (oName.contains("'")) {
                     oName = oName.replaceAll("'", "''");
                 }
-                String ECNumber = null;
-                if(definition.getChildText("enzyme_classid")!= null) {
-                    ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
-                }else{
-                    int tt = 1+1;
+                String enzyme = null;
+                if (definition.getChildText("enzyme_classid") != null) {
+                    enzyme = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
                 }
                 String seq = root.getChild("sbolSequence").getChildText("sbolelements");
-                if(seq.length()>32700){
+                if (seq.length() > 32700) {
                     sc++;
                 }
-                execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, Enzyme, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + ECNumber + "','" + url + "','" + seq + "')");
+                execute("INSERT INTO proteins(ID,  OrganismID, OrganismName, Enzyme, URL, Sequence) VALUES ('" + id + "','" + oID + "','" + oName + "','" + enzyme + "','" + url + "','" + seq + "')");
             } else {
                 //EC Number
-                String ECNumber = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
-                execute("INSERT INTO enzymes(ID, ClassID, Name, URL) VALUES ('" + id + "','" + ECNumber + "','" + name + "','" + url + "')");
+                String enzyme = Common.ltrim("ec", definition.getChildText("enzyme_classid"));
+                execute("INSERT INTO enzymes(ID, ClassID, Name, URL) VALUES ('" + id + "','" + enzyme + "','" + name + "','" + url + "')");
             }
         } else {
             //Reaction
@@ -602,11 +683,21 @@ public class LocalRepo implements SBOLInterface {
         if (dbName == null) {
             return new Part[]{};
         }
-        JsonArray a = executeJSON("SELECT ID, Name, URL FROM " + table);
-        Part[] p = new Part[a.size()];
-        for (int i = 0; i < a.size(); i++) {
-            JsonObject o = a.get(i).getAsJsonObject();
-            p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+        Part[] p;
+        if (table.equals("proteins")) {
+            JsonArray a = executeJSON("SELECT ID, OrganismName, Enzyme, URL FROM " + table);
+            p = new Part[a.size()];
+            for (int i = 0; i < a.size(); i++) {
+                JsonObject o = a.get(i).getAsJsonObject();
+                p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), o.get("ENZYME").getAsString());
+            }
+        } else {
+            JsonArray a = executeJSON("SELECT ID, Name, URL FROM " + table);
+            p = new Part[a.size()];
+            for (int i = 0; i < a.size(); i++) {
+                JsonObject o = a.get(i).getAsJsonObject();
+                p[i] = new Part(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+            }
         }
         return p;
     }
@@ -627,7 +718,7 @@ public class LocalRepo implements SBOLInterface {
             statements.add(s);
             try {
                 s.execute("TRUNCATE TABLE cdb ");
-                if(value != null) {
+                if (value != null) {
                     s = conn.createStatement();
                     statements.add(s);
                     s.execute("insert into cdb values ('" + value + "') ");
