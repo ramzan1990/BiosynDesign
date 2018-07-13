@@ -5,13 +5,13 @@ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
 xmlns:sbol="http://sbols.org/v2#"
 xmlns:dcterms="http://purl.org/dc/terms/"
 xmlns:compound="http://www.cbrc.kaust.edu.sa/sbolme/annotation/compound"
-xmlns:ecnum="http://www.cbrc.kaust.edu.sa/sbolme/annotation/ecnum#"
+xmlns:enzyme_class="http://www.cbrc.kaust.edu.sa/sbolme/annotation/enzyme_class#"
 >
 
 <xsl:template match="/">
     <html>
       <body>
-  <h3>Ecnum</h3>
+  <h3>Enzyme</h3>
   <xsl:apply-templates select="/rdf:RDF/sbol:ComponentDefinition"/>
   </body>
   </html>
@@ -24,8 +24,8 @@ xmlns:ecnum="http://www.cbrc.kaust.edu.sa/sbolme/annotation/ecnum#"
         <td><a target="_blank" href="{@rdf:about}" download=""><xsl:value-of select="@rdf:about"/></a></td>        
 	 </tr>
 	 <tr>
-        <td>EC Number</td>
-        <td><xsl:value-of select="ecnum:id"/></td>
+        <td>Enzyme Class ID</td>
+        <td><xsl:value-of select="enzyme_class:id"/></td>
 	 </tr>
 	  <tr>
         <td>Title</td>
@@ -33,12 +33,12 @@ xmlns:ecnum="http://www.cbrc.kaust.edu.sa/sbolme/annotation/ecnum#"
 	 </tr>
 	 <tr>
         <td>Cofactor info</td>
-        <td><xsl:value-of select="ecnum:cofactor"/></td>
+        <td><xsl:value-of select="enzyme_class:id"/></td>
 	 </tr>
  </table>	
 <h3>Data sources</h3>
 <ul>
-<xsl:for-each select="ecnum:source">
+<xsl:for-each select="enzyme_class:source">
         <li>
             <a target="_blank" href="{.}"><xsl:value-of select="." /></a>
         </li>
@@ -46,12 +46,12 @@ xmlns:ecnum="http://www.cbrc.kaust.edu.sa/sbolme/annotation/ecnum#"
 </ul>
 
 <xsl:choose>
-  <xsl:when test="ecnum:synonym"><h3>Names</h3></xsl:when>
+  <xsl:when test="enzyme_class:synonym"><h3>Names</h3></xsl:when>
 </xsl:choose>
 
 
 <ul>
-<xsl:for-each select="ecnum:synonym">
+<xsl:for-each select="enzyme_class:synonym">
         <li>
             <xsl:value-of select="." />
         </li>
@@ -59,7 +59,7 @@ xmlns:ecnum="http://www.cbrc.kaust.edu.sa/sbolme/annotation/ecnum#"
 </ul>
 <h3>Reaction equations</h3>
 <ul>
-<xsl:for-each select="ecnum:formula">
+<xsl:for-each select="enzyme_class:formula">
         <li>
             <xsl:value-of select="." />
         </li>

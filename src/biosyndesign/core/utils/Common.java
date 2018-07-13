@@ -1,13 +1,20 @@
 package biosyndesign.core.utils;
 
+import biosyndesign.core.graphics.ImageComponent;
+import biosyndesign.core.sbol.parts.*;
 import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
+import org.openscience.cdk.silent.SilentChemObjectBuilder;
+import org.openscience.cdk.smiles.SmilesParser;
 
 import javax.swing.*;
+import javax.xml.transform.*;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.awt.*;
 import java.io.*;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -156,5 +163,59 @@ public class Common {
             s = s.substring(p.length(), s.length());
         }
         return s;
+    }
+
+    public static void showInfo(Part c, String url, JFrame parent) {
+        try {
+            ImageComponent ic = null;
+            TransformerFactory factory = TransformerFactory.newInstance();
+            Templates template = null;
+            if (c instanceof Compound) {
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "compound.xsl")));
+                String smiles = ((Compound) c).smiles;
+                if (smiles != null) {
+                    try {
+                        IChemObjectBuilder bldr
+                                = SilentChemObjectBuilder.getInstance();
+                        SmilesParser smipar = new SmilesParser(bldr);
+                        IAtomContainer mol = smipar.parseSmiles(smiles);
+                        ic = new ImageComponent(mol, Color.WHITE);
+                    } catch (Exception ex) {
+                    }
+                }
+            } else if (c instanceof Reaction) {
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "reaction.xsl")));
+            } else if (c instanceof Enzyme) {
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "enzyme.xsl")));
+            } else if (c instanceof Protein) {
+                template = factory.newTemplates(new StreamSource(
+                        new FileInputStream("xsl" + File.separator + "protein.xsl")));
+            }
+            Transformer xformer = template.newTransformer();
+            Source source = new StreamSource(new FileInputStream(url));
+            Result result = new StreamResult(new FileOutputStream("temp.html"));
+            xformer.transform(source, result);
+            String html = new String(Files.readAllBytes(Paths.get("temp.html")));
+            JEditorPane edit1 = new JEditorPane("text/html", html);
+            ScrollPane sp = new ScrollPane();
+            sp.add(edit1);
+            sp.setPreferredSize(new Dimension(edit1.getPreferredSize().width + 40, 600));
+            final JDialog frame = new JDialog(parent, "", true);
+            if (ic != null) {
+                ic.setPreferredSize(new Dimension(200, 200));
+                frame.getContentPane().add(ic, BorderLayout.NORTH);
+            }
+            frame.getContentPane().add(sp, BorderLayout.CENTER);
+            frame.pack();
+            frame.setSize(new Dimension(1024, 768));
+            frame.setLocationRelativeTo(parent);
+            frame.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }

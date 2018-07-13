@@ -433,6 +433,11 @@ public class LocalRepo implements SBOLInterface {
 
                     }
                     addPart(np);
+                    try {
+                        Files.copy(f.toPath(), np.toPath());
+                    } catch (Exception e) {
+
+                    }
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             status.setText("Added " + ++count + " parts");
@@ -526,11 +531,7 @@ public class LocalRepo implements SBOLInterface {
         String url = f.getAbsolutePath();
         SAXBuilder jdomBuilder = new SAXBuilder();
         Document jdomDocument = null;
-        try {
-            jdomDocument = jdomBuilder.build(new StringReader(xml));
-        } catch (Exception e) {
-            return;
-        }
+        jdomDocument = jdomBuilder.build(new StringReader(xml));
         XPathFactory xFactory = XPathFactory.instance();
         Element root = jdomDocument.getRootElement();
         if (root.getChild("sbolComponentDefinition") != null) {
@@ -696,7 +697,13 @@ public class LocalRepo implements SBOLInterface {
             p = new Part[a.size()];
             for (int i = 0; i < a.size(); i++) {
                 JsonObject o = a.get(i).getAsJsonObject();
-                p[i] = new Part(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                if(table.equals("compounds")){
+                    p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                }else if(table.equals("reactions")){
+                    p[i] = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), 0);
+                }else if(table.equals("enzymes")){
+                    p[i] = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), "");
+                }
             }
         }
         return p;

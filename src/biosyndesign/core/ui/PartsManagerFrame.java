@@ -4,12 +4,14 @@ import biosyndesign.core.Main;
 import biosyndesign.core.sbol.local.LocalRepo;
 import biosyndesign.core.sbol.parts.Part;
 import biosyndesign.core.sbol.parts.Protein;
+import biosyndesign.core.utils.Common;
 import biosyndesign.core.utils.UI;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 
 /**
  * Created by Umarov on 1/23/2017.
@@ -20,7 +22,8 @@ public class PartsManagerFrame extends BDFrame {
     private PartsManagerFrame thisFrame;
     private JLabel statusLabel;
     private JLabel maxPageLabel;
-    private int page = 0;
+    private int page = 1;
+    private Part[] currentParts;
 
     public PartsManagerFrame(JFrame parent) {
         super();
@@ -71,7 +74,7 @@ public class PartsManagerFrame extends BDFrame {
         cmb1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                page = 0;
+                page = 1;
                 cmb2.removeAllItems();
                 if (cmb1.getSelectedIndex() == 0) {
                     cmb2.addItem("Compound name or ID");
@@ -126,7 +129,7 @@ public class PartsManagerFrame extends BDFrame {
         cmb0.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                page = 0;
+                page = 1;
                 if (cmb0.getSelectedIndex() > -1) {
                     lr.setCurrentDataset(cmb0.getSelectedItem().toString());
                     b2.setEnabled(true);
@@ -156,7 +159,7 @@ public class PartsManagerFrame extends BDFrame {
         prevPage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(page>0) {
+                if(page>1) {
                     Part[] p = lr.getPage(--page, cmb1.getSelectedIndex());
                     showParts(p);
                     pageTF.setText(page + "");
@@ -167,7 +170,7 @@ public class PartsManagerFrame extends BDFrame {
         nextPage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(page + 1 < Math.ceil((double) lr.totalRows / lr.maxRowsPage)) {
+                if(page < Math.ceil((double) lr.totalRows / lr.maxRowsPage)) {
                     Part[] p = lr.getPage(++page, cmb1.getSelectedIndex());
                     showParts(p);
                     pageTF.setText(page + "");
@@ -234,6 +237,7 @@ public class PartsManagerFrame extends BDFrame {
                     new Thread(() -> {
                         lr.importParts(cmb0.getSelectedItem().toString(), statusLabel);
                         thisFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                        cmb1.setSelectedIndex(0);
                     }).start();
                 }
 
@@ -299,6 +303,19 @@ public class PartsManagerFrame extends BDFrame {
         }
         cmb1.setSelectedIndex(0);
 
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                //if(SwingUtilities.isRightMouseButton(evt)) {
+                if(currentParts!=null) {
+                    int row = table.rowAtPoint(evt.getPoint());
+                    if(row>=0 && row<currentParts.length) {
+                        Common.showInfo(currentParts[row], currentParts[row].url, thisFrame);
+                    }
+                }
+                //}
+            }
+        });
     }
 
     private void showParts(Part[] p) {
@@ -322,13 +339,7 @@ public class PartsManagerFrame extends BDFrame {
             }
         }
         table.setModel(new DefaultTableModel(rowData, columnNames));
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = table.rowAtPoint(evt.getPoint());
-                Main.pm.showInfo(p[row]);
-            }
-        });
+        currentParts = p;
         maxPageLabel.setText(" " + (int) Math.ceil((double) lr.totalRows / lr.maxRowsPage) + " total pages");
     }
 

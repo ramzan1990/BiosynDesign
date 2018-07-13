@@ -954,10 +954,15 @@ public class MainWindow extends BDFrame {
     }
 
     public void setResults(String[] names, JsonObject queryInfo) {
-        partsList.setModel(new DefaultComboBoxModel(names));
-        partsListLabel.setText("Page " + (p.page + 1) + " out of " + queryInfo.get("total").getAsInt() + " results");
-        p.pageTF.setText((p.page+1) + "");
-        partsPanel.setVisible(true);
-        partsPane.repaint();
+        if(queryInfo.get("count").getAsInt()==0){
+            partsListLabel.setText("0 results");
+        }else {
+            partsList.setModel(new DefaultComboBoxModel(names));
+            partsListLabel.setText("Page " + (p.page + 1) + " out of " + queryInfo.get("count").getAsInt()
+                    + " [" + Main.pm.getQueryInfo().get("total").getAsInt() + " results]");
+            p.pageTF.setText((p.page + 1) + "");
+            partsPanel.setVisible(true);
+            partsPane.repaint();
+        }
     }
 }

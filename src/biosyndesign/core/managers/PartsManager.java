@@ -75,7 +75,13 @@ public class PartsManager {
     private void saveXML(Part p) {
         try {
             //System.out.println("saving...");
-            URL website = new URL(s.prefix + "/" + p.url);
+            String address;
+            if(p.url.startsWith("http")){
+                address = p.url;
+            }else{
+                address = s.prefix + "/" + p.url;
+            }
+            URL website = new URL(address);
             //ReadableByteChannel rbc = Channels.newChannel(website.openStream());
             //FileOutputStream fos = new FileOutputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + p.id);
             //fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
@@ -230,7 +236,9 @@ public class PartsManager {
                         }
                         r.stoichiometry.put(op, s);
                     }
-
+                    r.name = Common.between(xml, "<dctermstitle>", "</dctermstitle>");
+                    r.url = xFactory.compile("//sbolModuleDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
+                    r.url = r.url.replace("http", "http:");
                 } else if (p[i] instanceof Compound) {
                     int index = s.compounds.indexOf(p[i]);
                     if (index != -1) {
@@ -239,6 +247,7 @@ public class PartsManager {
                     }
                     p[i].name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     p[i].url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
+                    p[i].url = p[i].url.replace("http", "http:");
                     try {
                         ((Compound) p[i]).smiles = xFactory.compile("//sbolelements", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     } catch (Exception e) {
@@ -263,6 +272,7 @@ public class PartsManager {
                     pr.name = xFactory.compile("//dctermstitle", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.organism = new Organism(xFactory.compile("//organismname", Filters.element()).evaluate(jdomDocument).get(0).getValue());
                     pr.url = xFactory.compile("//sbolComponentDefinition", Filters.element()).evaluate(jdomDocument).get(0).getAttributeValue("rdfabout");
+                    pr.url = pr.url.replace("http", "http:");
                     pr.enzymeID = xFactory.compile("//enzyme_classid", Filters.element()).evaluate(jdomDocument).get(0).getValue();
                     pr.nat = pr.organism.equals(s.organism);
                     s.proteins.add(pr);
@@ -297,55 +307,9 @@ public class PartsManager {
 
     public void showInfo(Part c) {
         try {
-            ImageComponent ic = null;
-            TransformerFactory factory = TransformerFactory.newInstance();
-            Templates template = null;
-            if (c instanceof Compound) {
-                template = factory.newTemplates(new StreamSource(
-                        new FileInputStream("xsl" + File.separator + "compound.xsl")));
-                String smiles = ((Compound) c).smiles;
-                if (smiles != null) {
-                    try {
-                        IChemObjectBuilder bldr
-                                = SilentChemObjectBuilder.getInstance();
-                        SmilesParser smipar = new SmilesParser(bldr);
-                        IAtomContainer mol = smipar.parseSmiles(smiles);
-                        ic = new ImageComponent(mol, Color.WHITE);
-                    } catch (Exception ex) {
-                    }
-                }
-            } else if (c instanceof Reaction) {
-                template = factory.newTemplates(new StreamSource(
-                        new FileInputStream("xsl" + File.separator + "reaction.xsl")));
-            } else if (c instanceof Enzyme) {
-                template = factory.newTemplates(new StreamSource(
-                        new FileInputStream("xsl" + File.separator + "enzyme.xsl")));
-            } else if (c instanceof Protein) {
-                template = factory.newTemplates(new StreamSource(
-                        new FileInputStream("xsl" + File.separator + "protein.xsl")));
-            }
-            Transformer xformer = template.newTransformer();
-            Source source = new StreamSource(new FileInputStream(s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id));
-            Result result = new StreamResult(new FileOutputStream("temp.html"));
-            xformer.transform(source, result);
-            String html = new String(Files.readAllBytes(Paths.get("temp.html")));
-            JEditorPane edit1 = new JEditorPane("text/html", html);
-            ScrollPane sp = new ScrollPane();
-            sp.add(edit1);
-            sp.setPreferredSize(new Dimension(edit1.getPreferredSize().width + 40, 600));
-            final JDialog frame = new JDialog(mainWindow, "", true);
-            if (ic != null) {
-                ic.setPreferredSize(new Dimension(200, 200));
-                frame.getContentPane().add(ic, BorderLayout.NORTH);
-            }
-            frame.getContentPane().add(sp, BorderLayout.CENTER);
-            frame.pack();
-            frame.setSize(new Dimension(1024, 768));
-            frame.setLocationRelativeTo(mainWindow);
-            frame.setVisible(true);
+            Common.showInfo(c, s.projectPath + s.projectName + File.separator + "parts" + File.separator + c.id, mainWindow);
         } catch (Exception e) {
         }
-
     }
 
     public void findReactions(Compound cell) {
