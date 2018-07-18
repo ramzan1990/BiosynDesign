@@ -182,15 +182,17 @@ public class PartsManager {
                         ecToSend = r.ec.get(r.pickedEC).classID;
                     }
                     Protein protein = null;
-                    if (p[i].local) {
-                        Protein[] proteins = cInt.getProteins(ecToSend);
-                        if (proteins.length > 0) {
-                            protein = proteins[0];
-                        }
-                    } else {
-                        ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
-                        if (zp.size() > 0) {
-                            protein = new Protein(zp.get(0), "", "", "");
+                    if(!ecToSend.equals("no_ec")) {
+                        if (p[i].local) {
+                            Protein[] proteins = cInt.getProteins(ecToSend);
+                            if (proteins.length > 0) {
+                                protein = proteins[0];
+                            }
+                        } else {
+                            ArrayList<String> zp = saveReactionAndReturnProteins(p[i].id, ecToSend);
+                            if (zp.size() > 0) {
+                                protein = new Protein(zp.get(0), "", "", "");
+                            }
                         }
                     }
                     if (protein != null) {
