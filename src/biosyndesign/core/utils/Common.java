@@ -185,8 +185,13 @@ public class Common {
                     }
                 }
             } else if (c instanceof Reaction) {
-                template = factory.newTemplates(new StreamSource(
-                        new FileInputStream("xsl" + File.separator + "reaction.xsl")));
+                if(c.custom){
+                    template = factory.newTemplates(new StreamSource(
+                            new FileInputStream("xsl" + File.separator + "reaction2.xsl")));
+                }else{
+                    template = factory.newTemplates(new StreamSource(
+                            new FileInputStream("xsl" + File.separator + "reaction.xsl")));
+                }
             } else if (c instanceof Enzyme) {
                 template = factory.newTemplates(new StreamSource(
                         new FileInputStream("xsl" + File.separator + "enzyme.xsl")));

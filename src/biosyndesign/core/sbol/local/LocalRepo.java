@@ -318,7 +318,7 @@ public class LocalRepo implements SBOLInterface {
                 sql = "SELECT p.ID, p.OrganismName, p.Enzyme, URL FROM proteins AS p WHERE p.OrganismName ='" + value + "'";
             }
         }
-        ja = executeJSON(sql);
+        ja = executeJSON(sql + " offset " + (page - 1) * maxRowsPage + " rows fetch first " + maxRowsPage + " rows only");
         if (ja != null && ja.size() > 0) {
             Part[] parts = new Part[ja.size()];
             for (int i = 0; i < parts.length; i++) {
@@ -374,6 +374,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Reaction[] commonReactions(String id1, String id2) {
+        //"SELECT r.ID, r.URL, r.Name FROM reactions AS r WHERE EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '$c1') AND EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '$c2')"
         return new Reaction[0];
     }
 
@@ -388,6 +389,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public String[] getOrganisms(String enzyme) {
+        //SELECT DISTINCT o.Name AS OrganismName FROM (SELECT OrganismID FROM proteins WHERE ECNumber = '$ec') AS p JOIN organisms AS o ON p.OrganismID = o.ID
         return new String[0];
     }
 
@@ -690,7 +692,7 @@ public class LocalRepo implements SBOLInterface {
             p = new Part[a.size()];
             for (int i = 0; i < a.size(); i++) {
                 JsonObject o = a.get(i).getAsJsonObject();
-                p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), o.get("ENZYME").getAsString());
+                p[i] = new Protein(o.get("ID").getAsString(), o.get("ORGANISMNAME").getAsString(), o.get("URL").getAsString(), o.get("ENZYME").getAsString()).setLocal(true);
             }
         } else {
             JsonArray a = executeJSON("SELECT ID, Name, URL FROM " + table);
@@ -698,11 +700,11 @@ public class LocalRepo implements SBOLInterface {
             for (int i = 0; i < a.size(); i++) {
                 JsonObject o = a.get(i).getAsJsonObject();
                 if(table.equals("compounds")){
-                    p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString());
+                    p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString()).setLocal(true);
                 }else if(table.equals("reactions")){
-                    p[i] = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), 0);
+                    p[i] = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), 0).setLocal(true);
                 }else if(table.equals("enzymes")){
-                    p[i] = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), "");
+                    p[i] = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), "").setLocal(true);
                 }
             }
         }

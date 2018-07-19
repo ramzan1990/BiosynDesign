@@ -158,6 +158,9 @@ public class GraphManager {
                     } else {
                         rt = r.ec.get(r.pickedEC).classScheme + ":" + r.ec.get(r.pickedEC).classID + " [" + r.ec.size() + "]";
                     }
+                    if (r.name != null && r.name.length()>0) {
+                        rt += "\n" + Common.restrict(r.name, 14);
+                    }
                     if (r.enzyme != null) {
                         rt += "\n" + Common.restrict(r.enzyme.name, 14);
                     }

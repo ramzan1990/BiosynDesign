@@ -11,6 +11,7 @@ public class Part implements Serializable {
     public String name;
     public String id;
     public boolean local;
+    public boolean custom;
     public ArrayList<String> info;
     public ArrayList<Annotation> annotations;
 

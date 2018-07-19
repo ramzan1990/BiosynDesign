@@ -86,6 +86,7 @@ public class NewPartsManager {
                 }
                 c.smiles = smiles.field.getText();
                 c.setLocal(true);
+                c.custom = true;
                 Main.pm.addParts(new Part[]{c}, true);
                 c.info.add(synonyms.field.getText());
                 c.info.add(formula.field.getText());
@@ -287,6 +288,7 @@ public class NewPartsManager {
 
                 Reaction r = new Reaction(id.field.getText(), "", path, -1);
                 r.setLocal(true);
+                r.custom = true;
                 r.info.add(sourceURI.field.getText());
                 for (int i = 0; i < annotationsPanel.annotations.size(); i++) {
                     r.annotations.add((Annotation) annotationsPanel.annotations.getElementAt(i));
@@ -373,6 +375,7 @@ public class NewPartsManager {
                 }
                 Enzyme e = new Enzyme(id.field.getText(), split(synonyms.field)[0], path, enzymeClassScheme.field.getText(), enzymeClassID.field.getText());
                 e.setLocal(true);
+                e.custom = true;
                 Main.pm.addParts(new Part[]{e}, true);
                 e.info.add(synonyms.field.getText());
                 e.info.add(formulas.field.getText());
@@ -490,6 +493,7 @@ public class NewPartsManager {
                 p.sequence = aaSeq.field.getText();
                 p.organism = new Organism(organismID.field.getText(), organismName.field.getText(), organismURL.field.getText());
                 p.setLocal(true);
+                p.custom = true;
                 p.info.add(synonyms.field.getText());
                 p.info.add(sourceURI.field.getText());
                 Main.pm.addParts(new Part[]{p}, true);

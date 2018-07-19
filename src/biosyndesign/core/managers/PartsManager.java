@@ -976,7 +976,7 @@ public class PartsManager {
         if (key != null) {
             for (Reaction r : s.reactions) {
                 if (r.compounds.contains(c) && !r.local) {
-                    JOptionPane.showMessageDialog(null, "Cannot showPathway compound because it is used in reaction.");
+                    JOptionPane.showMessageDialog(null, "Cannot delete compound because it is used in reaction.");
                     return;
                 }
             }
