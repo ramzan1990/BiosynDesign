@@ -248,6 +248,7 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Part[] findParts(int type, int filter, String value, int page) {
+        page += 1;
         JsonArray ja;
         String sql = null, op = null;
         if ((type == 0 && filter == 4) || (type == 1 && filter == 2) || (type == 2 && filter == 0)) {
@@ -374,8 +375,15 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public Reaction[] commonReactions(String id1, String id2) {
-        //"SELECT r.ID, r.URL, r.Name FROM reactions AS r WHERE EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '$c1') AND EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '$c2')"
-        return new Reaction[0];
+        JsonArray a = executeJSON("SELECT r.ID, r.URL, r.Name FROM reactions AS r WHERE EXISTS" +
+                " (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '"+id1+"')" +
+                " AND EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '"+id2+"')");
+        Reaction[] r = new Reaction[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            r[i] = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), 0);
+        }
+        return r;
     }
 
     @Override
@@ -389,8 +397,13 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public String[] getOrganisms(String enzyme) {
-        //SELECT DISTINCT o.Name AS OrganismName FROM (SELECT OrganismID FROM proteins WHERE ECNumber = '$ec') AS p JOIN organisms AS o ON p.OrganismID = o.ID
-        return new String[0];
+        JsonArray a = executeJSON("SELECT DISTINCT o.Name AS OrganismName FROM (SELECT OrganismID FROM proteins WHERE ECNumber = 'enzyme') AS p JOIN organisms AS o ON p.OrganismID = o.ID");
+        String[] organisms = new String[a.size()];
+        for (int i = 0; i < a.size(); i++) {
+            JsonObject o = a.get(i).getAsJsonObject();
+            organisms[i] = o.get("ORGANISMNAME").getAsString();
+        }
+        return organisms;
     }
 
 
@@ -401,7 +414,10 @@ public class LocalRepo implements SBOLInterface {
 
     @Override
     public JsonObject getQueryInfo() {
-        return null;
+        JsonObject ob = new JsonObject();
+        ob.add("count", new JsonPrimitive(Math.ceil((double)totalRows/maxRowsPage)));
+        ob.add("total", new JsonPrimitive(totalRows));
+        return ob;
     }
 
     public void createDB(String name) {
@@ -608,7 +624,11 @@ public class LocalRepo implements SBOLInterface {
                 if (fcName.endsWith("enzyme")) {
                     enzymes.add(Common.ltrim("ec", fc.getChildText("enzyme_classid")));
                 } else {
-                    compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
+                    if(Common.countMatches(fcName, "_")==1){
+                        compounds.add(fcName);
+                    }else {
+                        compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
+                    }
                 }
             }
             execute("INSERT INTO reactions(ID, KeggID, URL, Name, Energy) VALUES ('" + id + "','" + keggid + "','" + url + "','" + name + "', '0')");

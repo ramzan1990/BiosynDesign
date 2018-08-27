@@ -1,6 +1,8 @@
 package biosyndesign.core.sbol.parts;
 
-public class Organism {
+import java.io.Serializable;
+
+public class Organism implements Serializable {
     public String ID;
     public String name;
     public String URL;

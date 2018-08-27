@@ -687,7 +687,7 @@ public class MainWindow extends BDFrame {
 
 
         toolsPanel = new JToolBar();
-        toolsPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        toolsPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.DARK_GRAY));
         toolsPanel.setLayout(new BoxLayout(toolsPanel, BoxLayout.X_AXIS));
         // toolsPanel.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
         toolsPanel.add(Box.createRigidArea(new Dimension(8, 0)));

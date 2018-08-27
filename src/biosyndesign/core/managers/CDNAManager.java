@@ -142,7 +142,7 @@ public class CDNAManager {
         seqTA = new JTextArea();
         seqTA.setText(extendSeq(r.enzyme.sequence));
         seqTA.setLineWrap(true);
-        Font font = new Font(Font.MONOSPACED, Font.PLAIN, 16);
+        Font font = new Font("Courier New", Font.PLAIN, 16);
         Map<TextAttribute, Object> attributes = new HashMap<TextAttribute, Object>();
         //attributes.put(TextAttribute.TRACKING, 0.01);
         Font font2 = font.deriveFont(attributes);
@@ -203,11 +203,11 @@ public class CDNAManager {
         cDNATA = new JTextArea();
         cDNATA.setText(breakString(r.CDS, 60));
         cDNATA.setLineWrap(true);
-        font = new Font(Font.MONOSPACED, Font.PLAIN, 22);
+        font = new Font("Courier New", Font.PLAIN, 22);
         attributes = new HashMap<TextAttribute, Object>();
         //attributes.put(TextAttribute.TRACKING, 0.038);
         font2 = font.deriveFont(attributes);
-        cDNATA.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 22));
+        cDNATA.setFont(new Font("Courier New", Font.PLAIN, 22));
         JButton b1 = new JButton("Annotate");
         JPanel bp = new JPanel();
         bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
