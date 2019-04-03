@@ -430,6 +430,7 @@ public class LocalRepo implements SBOLInterface {
     public void importParts(String name, JLabel status) {
         changeDBList(name, true);
         checkDB();
+        count = 0;
         JFileChooser fc = new JFileChooser();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setMultiSelectionEnabled(false);
