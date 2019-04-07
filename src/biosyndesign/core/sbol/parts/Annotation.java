@@ -1,6 +1,8 @@
 package biosyndesign.core.sbol.parts;
 
-public class Annotation {
+import java.io.Serializable;
+
+public class Annotation implements Serializable {
     public String annotationPrefixURI;
     public String annotationPrefix;
     public String annotationKey;

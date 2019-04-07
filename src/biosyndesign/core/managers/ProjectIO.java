@@ -174,7 +174,6 @@ public class ProjectIO {
             clear();
             Main.initManagers();
             mainWindow.setVisible(true);
-            mainWindow.writeToConsole("Testing\nTesting\nTesting");
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             remember();
         }
