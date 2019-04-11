@@ -376,8 +376,8 @@ public class LocalRepo implements SBOLInterface {
     @Override
     public Reaction[] commonReactions(String id1, String id2) {
         JsonArray a = executeJSON("SELECT r.ID, r.URL, r.Name FROM reactions AS r WHERE EXISTS" +
-                " (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '"+id1+"')" +
-                " AND EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '"+id2+"')");
+                " (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '" + id1 + "')" +
+                " AND EXISTS (SELECT NULL FROM reaction_compounds AS rc WHERE rc.Reaction = r.ID AND rc.Compound = '" + id2 + "')");
         Reaction[] r = new Reaction[a.size()];
         for (int i = 0; i < a.size(); i++) {
             JsonObject o = a.get(i).getAsJsonObject();
@@ -415,7 +415,7 @@ public class LocalRepo implements SBOLInterface {
     @Override
     public JsonObject getQueryInfo() {
         JsonObject ob = new JsonObject();
-        ob.add("count", new JsonPrimitive(Math.ceil((double)totalRows/maxRowsPage)));
+        ob.add("count", new JsonPrimitive(Math.ceil((double) totalRows / maxRowsPage)));
         ob.add("total", new JsonPrimitive(totalRows));
         return ob;
     }
@@ -562,10 +562,12 @@ public class LocalRepo implements SBOLInterface {
             } else {
                 name = id;
             }
-            if (definition.getChild("compoundsynonym") != null || definition.getChild("compoundsource") != null
-                    || definition.getChild("compoundcomposition") != null) {
+            if (definition.getAttributeValue("rdfabout").contains("/parts/compound")) {
                 //Compound
-                String keggid = definition.getChildText("compoundkegg_id");
+                String keggid = "";
+                if (definition.getChild("compoundkegg_id") != null) {
+                    keggid = definition.getChildText("compoundkegg_id");
+                }
                 String drugID = "";
                 try {
                     drugID = definition.getChild("compounddrug").getChild("druginformation").getAttributeValue("rdfabout");
@@ -625,9 +627,9 @@ public class LocalRepo implements SBOLInterface {
                 if (fcName.endsWith("enzyme")) {
                     enzymes.add(Common.ltrim("ec", fc.getChildText("enzyme_classid")));
                 } else {
-                    if(Common.countMatches(fcName, "_")==1){
+                    if (Common.countMatches(fcName, "_") == 1) {
                         compounds.add(fcName);
-                    }else {
+                    } else {
                         compounds.add(fcName.substring(0, fcName.lastIndexOf("_")));
                     }
                 }
@@ -720,11 +722,11 @@ public class LocalRepo implements SBOLInterface {
             p = new Part[a.size()];
             for (int i = 0; i < a.size(); i++) {
                 JsonObject o = a.get(i).getAsJsonObject();
-                if(table.equals("compounds")){
+                if (table.equals("compounds")) {
                     p[i] = new Compound(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString()).setLocal(true);
-                }else if(table.equals("reactions")){
+                } else if (table.equals("reactions")) {
                     p[i] = new Reaction(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), 0).setLocal(true);
-                }else if(table.equals("enzymes")){
+                } else if (table.equals("enzymes")) {
                     p[i] = new Enzyme(o.get("ID").getAsString(), o.get("NAME").getAsString(), o.get("URL").getAsString(), "").setLocal(true);
                 }
             }

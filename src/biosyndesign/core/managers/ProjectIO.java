@@ -272,7 +272,6 @@ public class ProjectIO {
             Main.initManagers();
             mainWindow.setTitle("BiosynDesign - " + s.projectName);
             mainWindow.setVisible(true);
-            mainWindow.writeToConsole("Testing\nTesting\nTesting");
             remember();
         } else {
             //showPathway(selectedIndex);
